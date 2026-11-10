@@ -1,0 +1,316 @@
+﻿# Sesion3_Factores_Dimensiones_Calidad.pptx
+
+Origen: C:\Users\Zoraida Velasquez\Downloads\Sesion3_Factores_Dimensiones_Calidad.pptx
+Diapositivas: 18
+
+## Diapositiva 1
+INGENIERÍA DE SOFTWARE II  ·  UNIDAD 1
+Gestión, Aseguramiento y
+Factores de la Calidad del Software
+De cómo se gestiona y asegura la calidad, a sus factores, dimensiones, costo y dilema
+Sesión 3  ·  28 de agosto de 2026  ·  Universidad de La Guajira
+
+## Diapositiva 2
+ANTES DE EMPEZAR · GESTIÓN DE LA CALIDAD
+¿Qué es gestionar la calidad?
+Gestionar la calidad es sostener, con una política y un sistema documentado, el compromiso de toda la organización con la calidad del software (ISO 9001:2000, citada en Pressman, 2010).
+✓
+Definir una política que dé énfasis a la importancia de la calidad.
+✓
+Documentar el sistema de calidad: el proceso, el manual de operación y el control de documentos.
+✓
+Apoyar el control y aseguramiento con un plan de calidad centrado en el cliente.
+✓
+Establecer mecanismos de revisión del propio sistema de gestión.
+✓
+Identificar recursos para la calidad: personal, capacitación e infraestructura.
+✓
+Definir métodos de corrección y de mejora continua del proceso.
+ISO 9001:2000, citada en Pressman (2010, cap. 16).
+2
+
+## Diapositiva 3
+PLANIFICACIÓN DE LA CALIDAD
+De la idea al plan de trabajo
+1
+Descomponer
+el problema
+Dividir funciones y casos de uso en partes manejables.
+→
+2
+Definir la EDT
+(WBS)
+Organizar el trabajo por entregables o por fases del proyecto.
+→
+3
+Construir la red
+de tareas
+Definir interdependencias entre tareas (PERT/CPM).
+→
+4
+Elaborar el
+cronograma
+Estimar esfuerzo, duración e inicio de cada tarea (diagrama de Gantt).
+Pressman (2010, caps. 24 y 27) — la planificación traduce el alcance del proyecto en un plan de trabajo verificable.
+3
+
+## Diapositiva 4
+ASEGURAMIENTO DE LA CALIDAD (SQA)
+SQA: el patrón que garantiza la calidad
+Patrón planeado y sistemático de acciones que se requieren para garantizar alta calidad en el software (Pressman, 2010, cap. 16).
+Estándares
+El IEEE, la ISO y otras organizaciones producen estándares para ingeniería de software; se adoptan de forma voluntaria o los impone el cliente.
+Revisiones y auditorías
+Las revisiones técnicas buscan detectar errores; las auditorías verifican que se sigan los procesos y estándares establecidos.
+Pruebas
+Función de control de calidad cuyo objetivo principal es detectar errores; el ACS garantiza que se planeen y ejecuten con eficiencia.
+Administración del cambio
+El ACS asegura que existan prácticas adecuadas de gestión del cambio, que de otro modo genera confusión y mala calidad.
+Administración de proveedores
+El ACS evalúa la calidad del software adquirido a terceros: paquetes, shells personalizados o código a la medida.
+Seguridad
+El ACS evalúa el efecto de las fallas del software y toma medidas cuando las consecuencias pueden ser catastróficas.
+4
+
+## Diapositiva 5
+ANTES DE EMPEZAR · ASEGURAMIENTO DE LA CALIDAD (SQA)
+¿Qué hace en la práctica el grupo de ACS?
+Tareas del grupo de ACS
+✓
+Prepara el plan de ACS del proyecto.
+✓
+Participa en la descripción del proceso de software.
+✓
+Revisa que las actividades cumplan el proceso definido.
+✓
+Audita los productos del trabajo seleccionados.
+✓
+Documenta y da seguimiento a las desviaciones.
+✓
+Reporta el incumplimiento a la alta dirección.
+Metas que persigue
+✓
+Calidad de los requerimientos.
+✓
+Calidad del diseño.
+✓
+Calidad del código.
+✓
+Eficacia del control de calidad.
+El Plan de ACS
+Documenta alcance, estándares aplicables, revisiones y auditorías, herramientas y roles: es la hoja de ruta del aseguramiento para cada proyecto (IEEE, 1993, citada en Pressman, 2010).
+5
+
+## Diapositiva 6
+ACTIVIDAD EN CLASE
+Del concepto a la práctica: aseguramiento de la calidad
+1
+Formar
+ equipo con tus compañeros de mesa.
+2
+Elegir
+ un elemento del ACS: estándares, revisiones/auditorías, pruebas, administración del cambio, administración de proveedores o seguridad.
+3
+Buscar
+ y leer un artículo o fuente confiable sobre ese elemento.
+4
+Elaborar
+ un resumen ejecutivo del artículo.
+5
+Preparar
+ una presentación de máximo 8 diapositivas y súbela a la plataforma del curso.
+6
+Socialización
+
+aleatoria
+.
+Adaptado de la guía de actividad de semestres anteriores (Unidad 1 — Aseguramiento de la Calidad).
+6
+
+## Diapositiva 7
+ANTES DE EMPEZAR · MODELOS Y ESTÁNDARES (SESIÓN 2)
+Y los modelos que ya vimos el 21 de agosto
+Cada equipo expuso uno de estos ocho temas:
+ISO/IEC 25010
+(producto)
+ISO/IEC 25010
+(uso)
+Factores de
+McCall
+Dimensiones de
+Garvin
+ISO 9000 /
+9001
+CMMI
+Six Sigma
+Mejora continua
+(PHVA / Kaizen)
+Hoy profundizamos en dos de estos modelos — McCall y Garvin — y sumamos dos ideas nuevas: el costo y el dilema de la calidad.
+7
+
+## Diapositiva 8
+SESIÓN 3 · UNIDAD 1
+¿Qué vamos a construir hoy?
+Objetivo: comprender cómo se gestiona, asegura, estructura, mide y cuestiona la calidad del software.
+1
+Estructura de un modelo de calidad
+(factor → criterio → métrica)
+2
+Factores de McCall
+3
+Dimensiones de Garvin
+4
+El dilema de la calidad
+5
+El costo de la calidad
+Ya cubrimos gestión, planificación y aseguramiento de la calidad — ahora vamos a lo concreto: cómo se factoriza, mide y cuestiona la calidad de un producto.
+8
+
+## Diapositiva 9
+¿Cuánto cuesta hacer software
+de calidad… y cuánto cuesta
+NO hacerlo?
+Piénsalo antes de seguir.
+
+## Diapositiva 10
+1 · ESTRUCTURA DE UN MODELO DE CALIDAD
+De lo general a lo particular
+Medida: indicación cuantitativa de un atributo del producto  ·  Medición: acto de determinar esa medida  ·  Métrica: medida del grado en que un sistema, componente o proceso posee un atributo dado (Pressman, 2010).
+10
+
+## Diapositiva 11
+2 · FACTORES DE MCCALL (1977)
+Tres ángulos para mirar el software
+McCall, Richards y Walters (1977) agrupan los factores de calidad en tres aspectos del producto de software:
+Operación
+sus características operativas
+Revisión
+su capacidad de ser modificado
+Transición
+su adaptabilidad a nuevos ambientes
+Pressman (2010, cap. 14).
+11
+
+## Diapositiva 12
+2 · FACTORES DE MCCALL
+Grupo Operación — 5 factores
+Corrección
+Grado de cumplimiento de las especificaciones y objetivos del usuario.
+Confiabilidad
+Grado en el que el sistema está disponible para usarse.
+Usabilidad
+Esfuerzo necesario para aprender a utilizarlo.
+Integridad /
+Seguridad
+Grado en el que se controla el acceso al programa o los datos por usuarios no autorizados.
+Eficiencia /
+Performance
+Cantidad de recursos y código requeridos para realizar una función.
+Tabla “Capacidades y factores del producto”, según McCall (Khosravi, 2004); citado en Pressman (2010).
+12
+
+## Diapositiva 13
+2 · FACTORES DE MCCALL
+Grupos Revisión y Transición — 6 factores
+Revisión
+Facilidad de
+mantenimiento
+Esfuerzo para localizar y corregir un error en un programa en funcionamiento.
+Flexibilidad
+Esfuerzo requerido para modificar un software en funcionamiento.
+Facilidad de
+prueba
+Esfuerzo requerido para probar un programa y verificar que cumple sus funciones.
+Transición
+Portabilidad
+Esfuerzo para migrar un programa de un entorno de operación a otro.
+Reusabilidad
+Esfuerzo para que el programa (o parte de él) se use en otro proyecto.
+Interoperabilidad
+Esfuerzo para que un sistema o programa opere conjuntamente con otro.
+13
+
+## Diapositiva 14
+3 · DIMENSIONES DE GARVIN (1987)
+Una mirada multidimensional a la calidad
+Desempeño
+¿Entrega todo el contenido y las funciones que el usuario necesita?
+Características
+¿Sorprende y agrada a los usuarios la primera vez que lo usan?
+Confiabilidad
+¿Entrega toda su funcionalidad sin fallar?
+Conformidad
+¿Concuerda con los estándares y convenciones de diseño?
+Durabilidad
+¿Puede recibir mantenimiento sin generar efectos colaterales?
+Servicio
+¿Puede recibir mantenimiento en un tiempo aceptablemente breve?
+Estética
+¿Tiene una elegancia y un flujo propios, aunque sean subjetivos?
+Percepción
+¿Influye la reputación del proveedor en cómo se percibe su calidad?
+Garvin (1987), citado en Pressman (2010) — una visión “suave” que complementa los factores “duros” como los de McCall.
+14
+
+## Diapositiva 15
+4 · EL DILEMA DE LA CALIDAD
+¿Hasta dónde vale la pena perseguir la calidad?
+Software que lo cumple todo
+Usa demasiados recursos y tiempo. El resultado: un producto muy costoso que quizá nadie compre.
+Software de mala calidad
+Lo invertido no se recupera porque nadie lo compra, o el mantenimiento termina costando más que construirlo bien.
+¿Y
+entonces?
+Software “suficientemente bueno”: la organización decide, de forma consciente, cuánta calidad es la correcta para cada producto y cada cliente (Pressman, 2010).
+15
+
+## Diapositiva 16
+5 · EL COSTO DE LA CALIDAD
+Prevenir, evaluar o fallar: ¿qué prefieres pagar?
+Prevención
+Planear, diseñar y capacitar para evitar defectos.
+Evaluación
+Revisiones técnicas, métricas y pruebas del producto.
+Falla interna
+Repetir trabajo y corregir errores antes de entregar.
+Falla externa
+Quejas, garantías, soporte y pérdida de reputación.
+Costo promedio de corregir el mismo defecto, según cuándo se detecta:
+US$977
+Durante la codificación
+US$7,136
+Durante las pruebas del sistema — más de 7 veces el costo
+Boehm y Basili, datos elaborados por Cigital, Inc. (2007); citados en Pressman (2010).
+16
+
+## Diapositiva 17
+PARA CERRAR
+6 ideas para no olvidar
+✓
+Gestionar la calidad exige una política y un sistema documentado (ISO 9001).
+✓
+Planificar la calidad traduce el alcance en EDT, red de tareas y cronograma.
+✓
+El aseguramiento (SQA) es el patrón de acciones — estándares, revisiones, pruebas y más — que garantiza esa calidad.
+✓
+Un modelo de calidad conecta factores generales con métricas medibles.
+✓
+McCall mira el software desde su operación, revisión y transición; Garvin, desde 8 dimensiones más subjetivas.
+✓
+Prevenir siempre cuesta menos que corregir una falla ya entregada.
+Próxima sesión · 4 de septiembre
+Calidad en desarrollo ágil — Definición de Hecho, criterios de aceptación e integración continua.
+17
+
+## Diapositiva 18
+REFERENCIAS
+Referencias (APA 7)
+Boehm, B., & Basili, V. R. (2001). Software defect reduction top 10 list. Computer, 34(1), 135–137. (Citado en Pressman, 2010).
+Garvin, D. A. (1987). Competing on the eight dimensions of quality. Harvard Business Review, 65(6), 101–109. (Citado en Pressman, 2010).
+Institute of Electrical and Electronics Engineers. (1993). IEEE standard for software quality assurance plans (IEEE Std 730-1993). (Citada en Pressman, 2010).
+International Organization for Standardization. (2000). ISO 9001:2000 — Quality management systems — Requirements. (Citada en Pressman, 2010).
+McCall, J. A., Richards, P. K., & Walters, G. F. (1977). Factors in software quality (RADC-TR-77-369). General Electric. (Citados en Pressman, 2010).
+Pressman, R. S. (2010). Ingeniería del software: Un enfoque práctico (7a ed.). McGraw-Hill Interamericana. (Texto guía del curso — Caps. 14, 16, 24 y 27).
+18
+
+

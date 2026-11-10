@@ -1,0 +1,21 @@
+
+> inventario-alquiler-implementos@1.0.0 build
+> npm run build --workspace backend && npm run build --workspace frontend
+
+
+> backend@1.0.0 build
+> nest build
+
+
+> frontend@1.0.0 build
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build
+
+[36mvite v7.3.7 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 2616 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.63 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
+[2mdist/[22m[35massets/index-KbhN25lM.css  [39m[1m[2m 36.07 kB[22m[1m[22m[2m │ gzip:   6.72 kB[22m
+[2mdist/[22m[36massets/index-D2bu-CqO.js   [39m[1m[2m486.53 kB[22m[1m[22m[2m │ gzip: 144.30 kB[22m
+[32m✓ built in 24.56s[39m

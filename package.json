@@ -1,0 +1,56 @@
+{
+  "name": "inventario-alquiler-implementos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de administración de inventario y alquiler de implementos de construcción",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c yellow,cyan \"npm run start:dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "dev:backend": "npm run start:dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait && npm run db:setup",
+    "db:setup": "npm run prisma:generate --workspace backend && npm run prisma:deploy --workspace backend && npm run prisma:seed --workspace backend",
+    "db:deploy": "npm run prisma:deploy --workspace backend",
+    "db:migrate": "npm run prisma:migrate:dev --workspace backend",
+    "db:seed": "npm run prisma:seed --workspace backend",
+    "db:studio": "npm run prisma:studio --workspace backend",
+    "prisma:generate": "npm run prisma:generate --workspace backend",
+    "test": "npm run test --workspace backend && npm run test --workspace frontend",
+    "test:backend": "npm run test --workspace backend",
+    "test:frontend": "npm run test --workspace frontend",
+    "test:e2e": "playwright test",
+    "check:env": "node scripts/check-env-examples.mjs",
+    "lint": "eslint backend/src frontend/src"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.56.1",
+    "concurrently": "^10.0.6",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript-eslint": "^8.46.4"
+  },
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
+    },
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "prisma@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true
+  }
+}

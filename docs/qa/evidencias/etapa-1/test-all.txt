@@ -1,0 +1,30 @@
+
+> inventario-alquiler-implementos@1.0.0 test
+> npm run test --workspace backend && npm run test --workspace frontend
+
+
+> backend@1.0.0 test
+> jest
+
+PASS src/common/utils/dates.spec.ts (10.771 s)
+PASS src/app.controller.spec.ts (12.171 s)
+
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        13.681 s, estimated 20 s
+Ran all test suites.
+
+> frontend@1.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/Zoraida Velasquez/Documents/vscode projects/ing-software-ii/frontend[39m
+
+ [32m✓[39m src/lib/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 22:10:08
+[2m   Duration [22m 15.30s[2m (transform 148ms, setup 349ms, collect 12.07s, tests 24ms, environment 1.78s, prepare 261ms)[22m
+

@@ -1,0 +1,25 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './auth/AuthContext';
+import { ToastProvider } from './components/Toast';
+import './index.css';
+
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('No se encontró el elemento root para montar la aplicación.');
+}
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <ToastProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </ToastProvider>
+  </StrictMode>,
+);

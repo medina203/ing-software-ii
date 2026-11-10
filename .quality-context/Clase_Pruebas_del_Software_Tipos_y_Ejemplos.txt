@@ -1,0 +1,783 @@
+﻿# Clase_Pruebas_del_Software_Tipos_y_Ejemplos.pptx
+
+Origen: C:\Users\Zoraida Velasquez\Downloads\Clase_Pruebas_del_Software_Tipos_y_Ejemplos.pptx
+Diapositivas: 31
+
+## Diapositiva 1
+UNIDAD 2
+Pruebas del Software
+Tipos de pruebas: definición y caso de prueba documentado
+Ingeniería de Software II · Grupo B1
+
+## Diapositiva 2
+REPASO
+¿Qué son las pruebas del software?
+Proceso para verificar y validar
+la funcionalidad de un programa o aplicación ejecutándolo con herramientas manuales o automatizadas, para encontrar defectos y comprobar que cumple los requisitos antes de entregarlo.
+VERIFICACIÓN
+¿Construimos el producto correctamente?
+El software implementa bien cada función especificada.
+VALIDACIÓN
+¿Construimos el producto correcto?
+El software responde a lo que el cliente realmente necesita.
+«Las pruebas pueden mostrar la presencia de errores, pero nunca su ausencia.»  
+— E. W. Dijkstra
+
+## Diapositiva 3
+HILO CONDUCTOR
+Caso de estudio: el sistema SIGA-U
+Todos los ejemplos de hoy se documentan sobre el mismo sistema, para que se vea qué evalúa cada tipo de prueba sobre un producto conocido.
+Inicio de sesión
+Autenticación de estudiantes y docentes
+Inscripción
+Selección de asignaturas y control de cruces
+Pagos
+Recibos y pasarela de pago externa (API)
+Notas y reportes
+Consulta de notas, promedio e histórico
+Homologaciones
+Módulo nuevo que llega en la versión 2.4
+Infraestructura
+Servidor Linux, BD con réplica, versión web y móvil
+SIGA-U es un sistema ficticio con fines didácticos. Los datos de prueba son sintéticos.
+
+## Diapositiva 4
+PLANTILLA
+Anatomía de un caso de prueba documentado
+1
+ID
+Código único y trazable (CP-UNI-01).
+2
+Objetivo
+Qué se quiere comprobar y qué requisito cubre.
+3
+Precondiciones
+Estado del sistema y del entorno antes de ejecutar.
+4
+Datos de prueba
+Entradas concretas que se van a usar.
+5
+Pasos
+Acciones numeradas y reproducibles.
+6
+Resultado esperado
+Lo que debe pasar; se define ANTES de ejecutar.
+7
+Resultado obtenido
+Lo que realmente pasó al ejecutar.
+8
+Estado
+PASA o FALLA; si falla, se registra un defecto.
+Campos 1–6: 
+se escriben al diseñar la prueba.   
+Campos 7–8: 
+se llenan al ejecutarla.   Referencia: ISO/IEC/IEEE 29119-3.
+
+## Diapositiva 5
+MAPA DE LA SESIÓN
+Tipos de pruebas que vamos a documentar
+FUNCIONALES
+¿QUÉ hace el sistema?
+1. unitarias
+2. de integración
+3. de sistema
+4. de sanidad
+5. de humo
+6. de interfaz
+7. de regresión
+8. de aceptación
+NO FUNCIONALES
+¿CÓMO lo hace? (rapidez, seguridad, facilidad de uso…)
+9. Rendimiento
+10. Carga
+11. Estrés
+12. Volumen
+13. Seguridad
+14. Compatibilidad
+15. Instalación
+16. Recuperación
+17. Confiabilidad
+18. Usabilidad
+19. Conformidad
+20. Localización
+
+## Diapositiva 6
+BLOQUE 1  ·  8 TIPOS
+Pruebas funcionales
+¿QUÉ hace el sistema?
+Verifican cada función frente a un conjunto específico de requisitos: entradas, salidas y reglas del negocio.
+
+## Diapositiva 7
+PRUEBAS FUNCIONALES  ·  1 DE 8
+Pruebas unitarias
+   Unit testing
+DEFINICIÓN
+Verifican la unidad más pequeña de código que puede aislarse lógicamente (un método, una función o una clase), de forma independiente del resto del sistema. Son las primeras en ejecutarse y las más numerosas.
+TÉCNICA / NIVEL
+Caja blanca · nivel de componente
+¿QUIÉN LA HACE?
+El desarrollador, mientras programa
+HERRAMIENTAS
+JUnit, pytest, NUnit, Jest
+CASO DE PRUEBA DOCUMENTADO  ·  CP-UNI-01
+Objetivo
+Verificar que calcularPromedio() devuelve el promedio ponderado por créditos.
+Precondiciones
+Clase CalculadoraNotas compilada; sin dependencias externas (BD simulada).
+Datos de prueba
+notas = [4.0, 3.5, 5.0] · créditos = [3, 2, 4]
+Pasos
+1. Instanciar CalculadoraNotas.
+2. Invocar calcularPromedio(notas, créditos).
+3. assertEquals(4.33, resultado, 0.01).
+Resultado esperado
+Retorna 4.33 → (4.0·3 + 3.5·2 + 5.0·4) / 9 créditos.
+Resultado obtenido
+Retorna 4.33 en 3 ms.
+Estado
+✔  PASA
+
+## Diapositiva 8
+PRUEBAS FUNCIONALES  ·  2 DE 8
+Pruebas de integración
+   Integration testing
+DEFINICIÓN
+Verifican las interfaces y la interacción entre componentes o módulos ya probados de forma unitaria: paso de datos, llamadas entre servicios, acceso a archivos, BD o sistema operativo. Pueden ser incrementales (ascendente o descendente).
+TÉCNICA / NIVEL
+Caja gris · nivel de integración
+¿QUIÉN LA HACE?
+Desarrolladores y equipo de pruebas
+HERRAMIENTAS
+JUnit + Spring Test, Postman, Testcontainers
+CASO DE PRUEBA DOCUMENTADO  ·  CP-INT-03
+Objetivo
+Verificar que Inscripción consulta a Pagos y solo confirma la matrícula si el recibo está pagado.
+Precondiciones
+Módulos Inscripción y Pagos desplegados en QA; recibo 2026-0981 en estado PAGADO.
+Datos de prueba
+Estudiante 1120456789 · 5 asignaturas (17 créditos)
+Pasos
+1. Inscribir las 5 asignaturas desde Inscripción.
+2. Inscripción invoca GET /pagos/estado/1120456789.
+3. Consultar la tabla inscripciones en BD.
+Resultado esperado
+Pagos responde PAGADO; se guardan 5 registros con estado CONFIRMADA.
+Resultado obtenido
+5 registros CONFIRMADA; respuesta de Pagos en 180 ms.
+Estado
+✔  PASA
+
+## Diapositiva 9
+PRUEBAS FUNCIONALES  ·  3 DE 8
+Pruebas de sistema
+   System testing
+DEFINICIÓN
+Evalúan el sistema completo e integrado frente a sus requisitos funcionales y no funcionales, en un entorno lo más parecido posible a producción. Se hacen desde la perspectiva del usuario, sin mirar el código.
+TÉCNICA / NIVEL
+Caja negra · nivel de sistema
+¿QUIÉN LA HACE?
+Equipo de pruebas independiente (QA)
+HERRAMIENTAS
+Selenium, Cypress, TestLink (gestión)
+CASO DE PRUEBA DOCUMENTADO  ·  CP-SIS-01
+Objetivo
+Verificar el flujo completo de matrícula de extremo a extremo (RF-01 a RF-06).
+Precondiciones
+Entorno QA espejo de producción; estudiante activo sin matrícula en 2026-2.
+Datos de prueba
+Usuario: jperez@uniguajira.edu.co · 5 asignaturas del semestre 7
+Pasos
+1. Iniciar sesión.
+2. Pagar el recibo por PSE (sandbox).
+3. Inscribir 5 asignaturas.
+4. Descargar el horario en PDF.
+Resultado esperado
+Horario PDF con 5 asignaturas y correo de confirmación recibido en ≤ 1 min.
+Resultado obtenido
+PDF correcto; el correo llegó a los 4 min.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 10
+PRUEBAS FUNCIONALES  ·  4 DE 8
+Pruebas de sanidad
+   Sanity testing
+DEFINICIÓN
+Prueba rápida, estrecha y enfocada que confirma que un defecto corregido o un cambio puntual funciona de forma razonable, antes de invertir tiempo en pruebas más profundas. Suele ser no guionizada y es un subconjunto de la regresión.
+TÉCNICA / NIVEL
+Caja negra · enfocada en el cambio
+¿QUIÉN LA HACE?
+Probador (QA) tras recibir la corrección
+HERRAMIENTAS
+Manual; lista de verificación corta
+CASO DE PRUEBA DOCUMENTADO  ·  CP-SAN-02
+Objetivo
+Confirmar la corrección del defecto DEF-245 (créditos mal calculados al retirar una asignatura).
+Precondiciones
+Build 2.3.1 con la corrección de DEF-245 desplegado en QA.
+Datos de prueba
+Estudiante con 18 créditos inscritos; retira Ética (3 créditos)
+Pasos
+1. Ir a Mis asignaturas.
+2. Retirar Ética.
+3. Verificar el total de créditos y el recibo.
+Resultado esperado
+Total pasa de 18 a 15 créditos y el recibo se recalcula.
+Resultado obtenido
+Total 15 créditos; recibo recalculado.
+Estado
+✔  PASA
+
+## Diapositiva 11
+PRUEBAS FUNCIONALES  ·  5 DE 8
+Pruebas de humo
+   Smoke testing
+DEFINICIÓN
+Verificación inicial, amplia y superficial de las funciones críticas de una nueva compilación (build) para decidir si es lo bastante estable como para seguir probándola. Si falla, el build se rechaza.
+TÉCNICA / NIVEL
+Caja negra · punto de control del build
+¿QUIÉN LA HACE?
+QA o pipeline de CI, en cada despliegue
+HERRAMIENTAS
+Selenium/Postman en CI (Jenkins)
+CASO DE PRUEBA DOCUMENTADO  ·  CP-HUM-01
+Objetivo
+Decidir si el build 2.4.0 es apto para pruebas detalladas.
+Precondiciones
+Build 2.4.0 desplegado en QA; datos de prueba base cargados.
+Datos de prueba
+Usuario de prueba estudiante01 · límite de ejecución: 15 min
+Pasos
+1. La aplicación carga.
+2. Inicio de sesión.
+3. Menú principal visible.
+4. Consultar notas.
+5. Cerrar sesión.
+Resultado esperado
+Los 5 puntos responden sin error → build ACEPTADO.
+Resultado obtenido
+El paso 4 devuelve error 500 → build RECHAZADO.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 12
+PRUEBAS FUNCIONALES  ·  6 DE 8
+Pruebas de interfaz
+   Interface testing
+DEFINICIÓN
+Verifican la comunicación entre dos sistemas de software distintos (API, servicios web, colas de mensajes): autenticación de la conexión, formato de los datos intercambiados, códigos de respuesta y manejo de errores.
+TÉCNICA / NIVEL
+Caja negra · contrato entre sistemas
+¿QUIÉN LA HACE?
+Desarrolladores backend y QA
+HERRAMIENTAS
+Postman, SoapUI, REST Assured
+CASO DE PRUEBA DOCUMENTADO  ·  CP-IFZ-04
+Objetivo
+Verificar la integración SIGA-U ↔ pasarela de pagos externa (API REST).
+Precondiciones
+Credenciales OAuth del sandbox de la pasarela; servicio disponible.
+Datos de prueba
+A) token válido · B) token vencido · monto 1.250.000 COP
+Pasos
+1. POST /api/pagos con el token A.
+2. Validar el JSON (idTransaccion, estado).
+3. Repetir con el token B.
+Resultado esperado
+A → HTTP 201 + idTransaccion. B → HTTP 401 con mensaje de error, sin crear el pago.
+Resultado obtenido
+A → 201 correcto. B → 401 correcto.
+Estado
+✔  PASA
+
+## Diapositiva 13
+PRUEBAS FUNCIONALES  ·  7 DE 8
+Pruebas de regresión
+   Regression testing
+DEFINICIÓN
+Vuelven a ejecutar pruebas ya superadas después de un cambio (corrección, mejora o nueva función) para garantizar que lo que funcionaba sigue funcionando y que no se introdujeron defectos colaterales.
+TÉCNICA / NIVEL
+Caja negra/blanca · se automatiza
+¿QUIÉN LA HACE?
+QA, idealmente de forma automática en CI
+HERRAMIENTAS
+Selenium, Cypress, JUnit + GitHub Actions
+CASO DE PRUEBA DOCUMENTADO  ·  CP-REG-v2.4
+Objetivo
+Asegurar que el nuevo módulo Homologaciones no afectó funciones existentes.
+Precondiciones
+Build 2.4.0 aprobado en humo; suite de regresión v2.3 actualizada.
+Datos de prueba
+Suite de 120 casos: inicio de sesión, inscripción, notas y pagos
+Pasos
+1. Ejecutar la suite completa en el pipeline.
+2. Comparar con la línea base v2.3.
+3. Registrar los defectos nuevos.
+Resultado esperado
+120/120 casos pasan, igual que en v2.3.
+Resultado obtenido
+118/120 pasan; falla CP-INS-07 (cruce de horario) → DEF-311.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 14
+PRUEBAS FUNCIONALES  ·  8 DE 8
+Pruebas de aceptación
+   Acceptance / UAT, alfa y beta
+DEFINICIÓN
+Las realiza el cliente o usuario final para decidir si el producto cumple los requisitos y el contrato antes de su entrega. Alfa: en el entorno del desarrollador; beta: en el entorno real del usuario.
+TÉCNICA / NIVEL
+Caja negra · validación (¿producto correcto?)
+¿QUIÉN LA HACE?
+Cliente / usuario final con apoyo de QA
+HERRAMIENTAS
+Cucumber (Gherkin), acta de aceptación
+CASO DE PRUEBA DOCUMENTADO  ·  CP-ACE-HU12
+Objetivo
+HU-12: «Como estudiante quiero que el sistema impida inscribir materias con cruce de horario».
+Precondiciones
+Registro y Control Académico participa como usuario; pago al día.
+Datos de prueba
+Ing. Software II (vie 8–10 a. m.) + Redes (vie 9–11 a. m.)
+Escenario (Gherkin)
+DADO un estudiante con pago al día
+CUANDO inscribe ambas asignaturas
+ENTONCES ve «Cruce de horario» y no se guarda la segunda
+Resultado esperado
+Mensaje de cruce y solo 1 asignatura inscrita; el usuario firma el acta.
+Resultado obtenido
+Comportamiento correcto; acta de aceptación firmada.
+Estado
+✔  PASA
+
+## Diapositiva 15
+BLOQUE 2  ·  12 TIPOS
+Pruebas no funcionales
+¿CÓMO lo hace?
+Evalúan atributos de calidad: rendimiento, seguridad, compatibilidad, confiabilidad, usabilidad y cumplimiento (ISO/IEC 25010).
+
+## Diapositiva 16
+PRUEBAS NO FUNCIONALES  ·  1 DE 12
+Pruebas de rendimiento
+   Performance testing
+DEFINICIÓN
+Evalúan la velocidad, la capacidad de respuesta y el consumo de recursos del sistema bajo una carga de trabajo esperada o definida. Es la categoría general que agrupa carga, estrés y volumen.
+TÉCNICA / NIVEL
+Mide tiempos, throughput y recursos
+¿QUIÉN LA HACE?
+Ingeniero de rendimiento / QA
+HERRAMIENTAS
+JMeter, k6, Gatling, Lighthouse
+CASO DE PRUEBA DOCUMENTADO  ·  CP-REN-01
+Objetivo
+Verificar el tiempo de respuesta de la consulta de notas en carga normal (RNF-03).
+Precondiciones
+Entorno de rendimiento con la misma infraestructura que producción.
+Datos de prueba
+200 usuarios concurrentes · 10 min · 30.000 estudiantes en BD
+Pasos
+1. Grabar el escenario «Consultar notas» en JMeter.
+2. Ejecutar con 200 hilos.
+3. Medir el percentil 95 (p95).
+Resultado esperado
+p95 ≤ 2 s y uso de CPU del servidor < 70 %.
+Resultado obtenido
+p95 = 1,6 s; CPU al 55 %.
+Estado
+✔  PASA
+
+## Diapositiva 17
+PRUEBAS NO FUNCIONALES  ·  2 DE 12
+Pruebas de carga
+   Load testing
+DEFINICIÓN
+Comprueban el comportamiento del sistema bajo la carga máxima esperada en condiciones reales (por ejemplo, un pico de usuarios), verificando que se mantienen los tiempos de respuesta y la tasa de errores acordados.
+TÉCNICA / NIVEL
+Carga esperada máxima, sostenida
+¿QUIÉN LA HACE?
+Ingeniero de rendimiento / QA
+HERRAMIENTAS
+JMeter, k6, Gatling, Locust
+CASO DE PRUEBA DOCUMENTADO  ·  CP-CAR-02
+Objetivo
+Simular el primer día de matrícula (pico histórico de usuarios).
+Precondiciones
+Oferta académica 2026-2 cargada; monitoreo de servidores activo.
+Datos de prueba
+Rampa de 0 a 2.000 usuarios en 10 min; sostener 30 min
+Pasos
+1. Configurar la rampa en k6.
+2. Ejecutar el escenario «Inscribir asignaturas».
+3. Registrar errores y p95.
+Resultado esperado
+Tasa de error < 1 % y p95 ≤ 3 s durante toda la meseta.
+Resultado obtenido
+Error = 0,4 %; p95 = 2,7 s.
+Estado
+✔  PASA
+
+## Diapositiva 18
+PRUEBAS NO FUNCIONALES  ·  3 DE 12
+Pruebas de estrés
+   Stress testing
+DEFINICIÓN
+Llevan el sistema más allá de su capacidad máxima para encontrar el punto de quiebre y comprobar que falla de forma controlada (sin pérdida de datos) y que se recupera cuando la carga baja.
+TÉCNICA / NIVEL
+Carga extrema, por encima de la esperada
+¿QUIÉN LA HACE?
+Ingeniero de rendimiento / QA
+HERRAMIENTAS
+JMeter, k6, Gatling
+CASO DE PRUEBA DOCUMENTADO  ·  CP-EST-01
+Objetivo
+Encontrar el punto de quiebre del módulo de inscripción y verificar la degradación controlada.
+Precondiciones
+Prueba de carga CP-CAR-02 superada.
+Datos de prueba
+Incremento de 2.000 a 10.000 usuarios (+500 cada 2 min)
+Pasos
+1. Aumentar la carga por escalones.
+2. Registrar dónde crecen los errores.
+3. Bajar la carga y medir la recuperación.
+Resultado esperado
+Mensaje «Intente más tarde» (HTTP 503), sin inscripciones corruptas; recuperación ≤ 5 min.
+Resultado obtenido
+Quiebre en 6.500 usuarios; 503 controlado; se recupera en 2 min.
+Estado
+✔  PASA
+
+## Diapositiva 19
+PRUEBAS NO FUNCIONALES  ·  4 DE 12
+Pruebas de volumen
+   Volume testing
+DEFINICIÓN
+Evalúan el comportamiento del software cuando procesa o almacena grandes volúmenes de datos (tablas enormes, archivos grandes), verificando tiempos, consumo de memoria e integridad de la información.
+TÉCNICA / NIVEL
+Cantidad de datos (no de usuarios)
+¿QUIÉN LA HACE?
+QA con apoyo del administrador de BD
+HERRAMIENTAS
+Scripts SQL, Faker, JMeter
+CASO DE PRUEBA DOCUMENTADO  ·  CP-VOL-01
+Objetivo
+Generar el reporte Histórico académico con 20 años de datos.
+Precondiciones
+BD de pruebas poblada con datos sintéticos (nunca datos reales).
+Datos de prueba
+500.000 registros de notas generados con Faker
+Pasos
+1. Poblar la BD con el script.
+2. Generar el reporte del programa Ing. de Sistemas.
+3. Medir el tiempo y la memoria.
+Resultado esperado
+Reporte en ≤ 10 s, paginado, sin errores de memoria.
+Resultado obtenido
+El reporte tarda 38 s; OutOfMemory al exportar a Excel.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 20
+PRUEBAS NO FUNCIONALES  ·  5 DE 12
+Pruebas de seguridad
+   Security testing
+DEFINICIÓN
+Verifican que el sistema protege la información y resiste ataques internos y externos: autenticación, autorización, confidencialidad, integridad y registro de eventos. Se apoyan en guías como OWASP Top 10.
+TÉCNICA / NIVEL
+Caja negra/blanca · pruebas de penetración
+¿QUIÉN LA HACE?
+Especialista en seguridad / pentester
+HERRAMIENTAS
+OWASP ZAP, Burp Suite, SonarQube
+CASO DE PRUEBA DOCUMENTADO  ·  CP-SEG-05
+Objetivo
+Verificar que el inicio de sesión resiste inyección SQL y fuerza bruta.
+Precondiciones
+Entorno QA autorizado para pruebas de seguridad.
+Datos de prueba
+Usuario: ' OR '1'='1' --  ·  6 contraseñas erradas seguidas
+Pasos
+1. Ingresar la cadena de inyección.
+2. Repetir 6 intentos fallidos.
+3. Revisar el log de auditoría.
+Resultado esperado
+Acceso denegado con mensaje genérico; cuenta bloqueada al 5.º intento; eventos registrados.
+Resultado obtenido
+Inyección bloqueada; la cuenta NO se bloquea tras 6 intentos.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 21
+PRUEBAS NO FUNCIONALES  ·  6 DE 12
+Pruebas de compatibilidad
+   Compatibility testing
+DEFINICIÓN
+Comprueban que la aplicación funciona y se visualiza correctamente en distintos entornos: navegadores, sistemas operativos, dispositivos, resoluciones de pantalla y versiones de otros programas.
+TÉCNICA / NIVEL
+Matriz de entornos
+¿QUIÉN LA HACE?
+QA
+HERRAMIENTAS
+BrowserStack, LambdaTest, emuladores
+CASO DE PRUEBA DOCUMENTADO  ·  CP-COM-02
+Objetivo
+Verificar el formulario de inscripción en la matriz de navegadores y dispositivos.
+Precondiciones
+Matriz definida según las estadísticas de acceso de los estudiantes.
+Datos de prueba
+Chrome, Firefox, Edge (Windows) · Safari (iOS 18) · Chrome (Android)
+Pasos
+1. Abrir el formulario en cada entorno.
+2. Inscribir 1 asignatura.
+3. Capturar la pantalla de confirmación.
+Resultado esperado
+Visualización y envío correctos en los 5 entornos.
+Resultado obtenido
+4/5 correctos; en Safari iOS el botón «Confirmar» queda oculto.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 22
+PRUEBAS NO FUNCIONALES  ·  7 DE 12
+Pruebas de instalación
+   Install testing
+DEFINICIÓN
+Verifican que el software se instala, actualiza y desinstala correctamente en el entorno destino, con sus dependencias y configuración, y que funciona como se espera después de hacerlo.
+TÉCNICA / NIVEL
+Instalar, actualizar y desinstalar
+¿QUIÉN LA HACE?
+QA y equipo de operaciones (DevOps)
+HERRAMIENTAS
+Docker, Ansible, lista de verificación
+CASO DE PRUEBA DOCUMENTADO  ·  CP-INS-01
+Objetivo
+Verificar la actualización de SIGA-U de v2.3 a v2.4 en el servidor.
+Precondiciones
+Servidor Ubuntu 24.04 con v2.3 y copia de seguridad de la BD.
+Datos de prueba
+Paquete siga-u-2.4.0 · BD con 30.000 estudiantes
+Pasos
+1. Ejecutar el script de actualización.
+2. Verificar las migraciones de BD.
+3. Iniciar el servicio y ejecutar la prueba de humo.
+Resultado esperado
+Actualización en ≤ 15 min, datos intactos, servicio activo y humo aprobado.
+Resultado obtenido
+Actualización en 9 min; los 30.000 registros intactos.
+Estado
+✔  PASA
+
+## Diapositiva 23
+PRUEBAS NO FUNCIONALES  ·  8 DE 12
+Pruebas de recuperación
+   Recovery testing
+DEFINICIÓN
+Fuerzan fallas (caída de servidor, corte de red o de energía) para verificar que el sistema se recupera en el tiempo acordado, sin pérdida ni corrupción de datos. Se mide con RTO (tiempo) y RPO (datos perdidos).
+TÉCNICA / NIVEL
+Inyección de fallas controladas
+¿QUIÉN LA HACE?
+QA y equipo de infraestructura
+HERRAMIENTAS
+Scripts de fallas, Chaos Monkey
+CASO DE PRUEBA DOCUMENTADO  ·  CP-REC-01
+Objetivo
+Verificar la recuperación ante la caída de la BD en medio de un pago.
+Precondiciones
+Réplica de BD configurada; transacción de pago en curso.
+Datos de prueba
+Pago de 1.250.000 COP · RTO objetivo 5 min · RPO objetivo 0
+Pasos
+1. Iniciar el pago.
+2. Apagar el contenedor de BD a mitad de la transacción.
+3. Medir la conmutación a la réplica y revisar el pago.
+Resultado esperado
+Rollback sin doble cobro; servicio restablecido en ≤ 5 min; 0 datos perdidos.
+Resultado obtenido
+Rollback correcto; servicio restablecido en 3 min.
+Estado
+✔  PASA
+
+## Diapositiva 24
+PRUEBAS NO FUNCIONALES  ·  9 DE 12
+Pruebas de confiabilidad
+   Reliability testing
+DEFINICIÓN
+Garantizan que el software realiza sus funciones de forma consistente, sin fallar, durante un período determinado y en condiciones específicas. Se miden con indicadores como MTBF y disponibilidad.
+TÉCNICA / NIVEL
+Ejecución prolongada (soak / endurance)
+¿QUIÉN LA HACE?
+QA / ingeniero de rendimiento
+HERRAMIENTAS
+JMeter o k6 de larga duración, Grafana
+CASO DE PRUEBA DOCUMENTADO  ·  CP-CON-01
+Objetivo
+Verificar la operación continua durante la semana de matrícula.
+Precondiciones
+Monitoreo de memoria, CPU y errores activo.
+Datos de prueba
+Uso típico: 300 usuarios constantes durante 72 h
+Pasos
+1. Ejecutar el escenario mixto (notas, inscripción, pagos).
+2. Registrar fallas e intervalos.
+3. Calcular la disponibilidad y el MTBF.
+Resultado esperado
+0 caídas, disponibilidad ≥ 99,5 % y memoria estable.
+Resultado obtenido
+Reinicio a las 51 h por fuga de memoria (RAM +40 %).
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 25
+PRUEBAS NO FUNCIONALES  ·  10 DE 12
+Pruebas de usabilidad
+   Usability testing
+DEFINICIÓN
+Evalúan qué tan fácil es usar el sistema: facilidad de aprendizaje, eficiencia, prevención de errores y satisfacción, observando a usuarios reales mientras realizan tareas concretas.
+TÉCNICA / NIVEL
+Observación de usuarios + SUS
+¿QUIÉN LA HACE?
+Diseñador UX con usuarios representativos
+HERRAMIENTAS
+Grabación de pantalla, Maze, SUS
+CASO DE PRUEBA DOCUMENTADO  ·  CP-USA-01
+Objetivo
+Evaluar si un estudiante nuevo puede matricularse sin ayuda.
+Precondiciones
+5 estudiantes de primer semestre que no han usado SIGA-U.
+Datos de prueba
+Tarea: «Inscribe 3 asignaturas y descarga tu horario»
+Pasos
+1. Dar la tarea sin instrucciones adicionales.
+2. Observar (pensar en voz alta) y cronometrar.
+3. Aplicar el cuestionario SUS.
+Resultado esperado
+Éxito ≥ 80 %, tiempo ≤ 5 min y SUS ≥ 68.
+Resultado obtenido
+4/5 completan; 3 no encuentran «Descargar horario»; SUS = 64.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 26
+PRUEBAS NO FUNCIONALES  ·  11 DE 12
+Pruebas de conformidad
+   Compliance testing
+DEFINICIÓN
+Determinan si el sistema cumple un conjunto definido de estándares, normas o leyes, internas o externas (protección de datos, accesibilidad, normas del sector), antes de su paso a producción.
+TÉCNICA / NIVEL
+Verificación contra una lista normativa
+¿QUIÉN LA HACE?
+QA con asesoría legal o de calidad
+HERRAMIENTAS
+Lista de verificación, WAVE, axe, Lighthouse
+CASO DE PRUEBA DOCUMENTADO  ·  CP-CUM-01
+Objetivo
+Verificar el cumplimiento de la Ley 1581 de 2012 (Habeas Data) y de WCAG 2.1 AA.
+Precondiciones
+Formulario de actualización de datos personales disponible.
+Datos de prueba
+Registro de un estudiante sin marcar la casilla de autorización
+Pasos
+1. Enviar el formulario sin autorizar el tratamiento de datos.
+2. Revisar el enlace a la política de privacidad.
+3. Medir el contraste con WAVE.
+Resultado esperado
+No guarda sin autorización; política visible; contraste ≥ 4,5:1.
+Resultado obtenido
+Bloquea sin autorización; política visible; contraste 4,8:1.
+Estado
+✔  PASA
+
+## Diapositiva 27
+PRUEBAS NO FUNCIONALES  ·  12 DE 12
+Pruebas de localización
+   Localization testing
+DEFINICIÓN
+Verifican que el producto se adapta a una región, idioma o cultura específica: traducciones, formatos de fecha, hora y moneda, zona horaria y convenciones locales, sin romper la interfaz.
+TÉCNICA / NIVEL
+Verificación por configuración regional
+¿QUIÉN LA HACE?
+QA con hablantes nativos o expertos locales
+HERRAMIENTAS
+Pseudolocalización, i18n-lint, revisión manual
+CASO DE PRUEBA DOCUMENTADO  ·  CP-LOC-01
+Objetivo
+Verificar la configuración regional es-CO y la versión en inglés para estudiantes de intercambio.
+Precondiciones
+Archivos de idioma es-CO y en-US cargados.
+Datos de prueba
+Fecha límite de pago: 30/09/2026 · Valor: 1.250.000 COP
+Pasos
+1. Consultar el recibo en es-CO.
+2. Cambiar el idioma a en-US.
+3. Revisar los formatos, textos y cortes.
+Resultado esperado
+es-CO: 30/09/2026 y $1.250.000. en-US: textos traducidos completos y sin cortes.
+Resultado obtenido
+La fecha aparece como 09/30/2026 en es-CO → defecto.
+Estado
+✘  FALLA — se registra un defecto
+
+## Diapositiva 28
+PARA NO CONFUNDIRLAS
+Pares de pruebas que suelen confundirse
+Par
+Diferencia clave
+Pregunta que responde
+Humo vs. sanidad
+Humo: amplia y superficial, sobre el build completo. Sanidad: estrecha y enfocada en un cambio.
+¿Arranca? / ¿Quedó bien lo corregido?
+Integración vs. interfaz
+Integración: módulos internos del mismo sistema. Interfaz: frontera con otro sistema.
+¿Se entienden mis módulos? / ¿Me entiendo con el otro sistema?
+Carga vs. estrés vs. volumen
+Carga: usuarios esperados. Estrés: más allá del límite. Volumen: muchos datos.
+¿Aguanta? / ¿Cómo se rompe? / ¿Y con millones de registros?
+Rendimiento vs. confiabilidad
+Rendimiento: rapidez en un momento dado. Confiabilidad: estabilidad a lo largo del tiempo.
+¿Qué tan rápido? / ¿Por cuánto tiempo sin fallar?
+Sistema vs. aceptación
+Sistema: la ejecuta QA contra requisitos. Aceptación: la ejecuta el usuario para decidir si recibe.
+¿Cumple lo especificado? / ¿Me sirve?
+
+## Diapositiva 29
+TALLER EN CLASE
+Documenta tu propio caso de prueba
+1
+Escojan dos tipos
+Uno funcional y uno no funcional, aplicados al sistema de su proyecto final.
+2
+Documenten el caso
+Usen la plantilla de 8 campos. El resultado esperado debe ser medible.
+3
+Intercambien
+Otro grupo revisa si el caso es reproducible solo con lo escrito.
+4
+Socialicen
+Dos grupos presentan su caso y el resto identifica el tipo de prueba.
+CHECKLIST DE CALIDAD DEL CASO
+ID único y trazable a un requisito
+Precondiciones explícitas
+Datos concretos, no «un usuario cualquiera»
+Pasos que otra persona puede repetir
+Resultado esperado medible (cifras, mensajes, estados)
+
+## Diapositiva 30
+Ideas clave
+1
+Cada tipo de prueba busca una clase distinta de defectos: ninguno reemplaza a los demás.
+2
+Las funcionales responden QUÉ hace el sistema; las no funcionales, CÓMO lo hace.
+3
+Un caso de prueba bien documentado es reproducible, medible y trazable a un requisito.
+
+## Diapositiva 31
+Referencias
+Brooke, J. (1996). SUS: A "quick and dirty" usability scale. En P. W. Jordan, B. Thomas, B. A. Weerdmeester y I. L. McClelland (Eds.), Usability evaluation in industry (pp. 189–194). Taylor & Francis.
+Congreso de Colombia. (2012, 17 de octubre). Ley Estatutaria 1581 de 2012: Por la cual se dictan disposiciones generales para la protección de datos personales. Diario Oficial No. 48.587.
+International Software Testing Qualifications Board. (2023). Certified Tester Foundation Level syllabus (v4.0). ISTQB.
+ISO/IEC/IEEE. (2021). ISO/IEC/IEEE 29119-3:2021 Software and systems engineering — Software testing — Part 3: Test documentation. ISO.
+OWASP Foundation. (2021). OWASP Top 10:2021. https://owasp.org/Top10/
+Pressman, R. S. (2010). Ingeniería del software: Un enfoque práctico (7a ed.). McGraw-Hill Interamericana.
+Sommerville, I. (2011). Ingeniería de software (9a ed.). Pearson Educación.
+World Wide Web Consortium. (2018). Web Content Accessibility Guidelines (WCAG) 2.1. https://www.w3.org/TR/WCAG21/
+
+

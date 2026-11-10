@@ -1,0 +1,235 @@
+﻿# Sesion4_Exposiciones - Sintesis-MetodoAgil.pptx
+
+Origen: C:\Users\Zoraida Velasquez\Downloads\Sesion4_Exposiciones - Sintesis-MetodoAgil.pptx
+Diapositivas: 15
+
+## Diapositiva 1
+UNIDAD 1 · CALIDAD DEL SOFTWARE · SEMANA 4
+Modelos y Estándares de
+Calidad del Software
+Exposición de grupos · Grupo B1
+Lunes, 07 de septiembre de 2026
+
+## Diapositiva 2
+RECAPITULANDO · SESIÓN 3
+Antes de empezar
+Estructura factor → criterio → métrica
+Panorama del Modelo de McCall
+Panorama de las Dimensiones de Garvin
+El dilema y el costo de la calidad
+Hoy cada grupo profundiza uno de estos modelos, y sumamos dos más: CMMI y mejora continua (PHVA/Kaizen).
+
+## Diapositiva 3
+GUÍA DE LA ACTIVIDAD
+Objetivo e instrucciones
+Objetivo
+Que los estudiantes investiguen, comprendan y expliquen a sus compañeros, de forma clara y visual, uno de los modelos o estándares que organizan la calidad del software, fortaleciendo la comprensión colectiva de la Unidad 1.
+Instrucciones generales
+✓
+Texto guía (Pressman, 2010) + una fuente adicional confiable
+✓
+Infografía o presentación breve (máx. 6 diapositivas); nada de solo texto
+✓
+Todas las fuentes citadas en formato APA 7.ª edición
+✓
+Exposición oral con participación activa de todo el grupo
+✓
+Al cerrar: entrega del material de apoyo por la plataforma
+
+## Diapositiva 4
+ORDEN DE LAS EXPOSICIONES
+Distribución de grupos y temas
+N°
+Tema asignado
+Alcance
+Integrantes
+1
+ISO/IEC 25010
+Características y subcaracterísticas de calidad del producto
+Einer Coba, Samuel Baquero, Eder Tejada
+2
+Modelo de McCall y sus factores
+11 factores agrupados en operación, revisión y transición
+Yorly Castillo, Juan Pablo Deluquez, Andrés Gámez
+3
+Dimensiones de calidad de Garvin
+8 dimensiones de David Garvin aplicadas al software
+Neizer Clemente, Ariannys Valiente, Heiber Brito, Sebastián Orozco
+4
+CMMI (madurez de procesos, TSP-PSP)
+Niveles de madurez y capacidad de procesos
+Alan Ochoa, Daniel Muñoz, Luis Tapias
+5
+Mejora continua (PHVA / Kaizen)
+Ciclo Planear-Hacer-Verificar-Actuar y filosofía Kaizen
+Yurelnis Fernández, Emmanuel Crespo, María José Díaz
+
+## Diapositiva 5
+CÓMO VAMOS A USAR EL TIEMPO
+Agenda de la sesión (1.5 h)
+1
+Apertura
+5 min
+Bienvenida y guía de la actividad
+2
+Exposiciones
+80 min
+5 grupos × 8 min (6 exp. + 2 preguntas)
+3
+Síntesis docente
+20 min
+Conexiones entre los 5 modelos
+4
+Calidad ágil
+20 min
+DoD, criterios de aceptación, CI
+5
+Cierre
+5 min
+Retroalimentación y cierre general
+Tiempos orientativos; se ajustan según el ritmo real de la clase.
+
+## Diapositiva 6
+CÓMO SE EVALÚA
+Rúbrica de evaluación (escala 0.0–5.0)
+Criterio
+Pts
+Qué se busca (nivel alto)
+Dominio conceptual del tema
+1.5
+Explica el modelo con precisión y terminología correcta; responde con seguridad.
+Fuentes y citación (APA 7)
+0.8
+Consulta el texto guía y una fuente confiable; cita correctamente.
+Calidad del material visual
+0.8
+Infografía o presentación clara, con jerarquía visual y sin errores.
+Socialización
+0.9
+Exposición coherente, con lenguaje técnico acorde a un ingeniero.
+Manejo del tiempo y cierre
+1.0
+Se ajusta al tiempo asignado y cierra con una idea o pregunta.
+Total
+5.0
+Escala 0.0–5.0, según el sistema de calificación institucional.
+
+## Diapositiva 7
+¿Un modelo que describe QUÉ debe tener el software basta,
+si el proceso que lo construye no mejora?
+Pensemos en esto mientras conectamos los 5 modelos de hoy.
+
+## Diapositiva 8
+SÍNTESIS DEL DOCENTE
+¿Cómo se conectan los 5 modelos?
+Calidad de PRODUCTO
+ISO/IEC 25010
+Modelo de McCall
+Dimensiones de Garvin
+Calidad de PROCESO
+CMMI (madurez de procesos)
+Mejora continua (PHVA / Kaizen)
++
+Ningún modelo basta por sí solo: medir el producto (qué debe tener) y mejorar el proceso (cómo se construye) son complementarios — la misma idea de la cadena QM ⊃ QA ⊃ QC ⊃ Testing vista en la Sesión 1.
+
+## Diapositiva 9
+Y EN UN EQUIPO ÁGIL...
+¿Cómo se ve la calidad, iteración a iteración?
+Los modelos de hoy suelen aplicarse en procesos formales (auditorías, certificaciones, niveles de madurez). En un equipo ágil, la calidad se garantiza de forma continua, dentro de cada iteración, con 3 prácticas concretas:
+1
+Definición de Hecho
+DoD
+2
+Criterios de aceptación
+por historia de usuario
+3
+Integración Continua
+CI
+
+## Diapositiva 10
+CALIDAD ÁGIL · 1 DE 3
+Definición de Hecho (Definition of Done)
+Acuerdo compartido por todo el equipo sobre las condiciones que una historia o incremento debe cumplir para considerarse realmente terminado — no solo “código escrito”.
+Por qué importa: evita el “casi terminado” y da una definición objetiva del mínimo aceptable de calidad, igual para todo el equipo.
+Ejemplo de checklist de DoD
+✓
+Código revisado (code review)
+✓
+Pruebas unitarias pasando
+✓
+Cumple los criterios de aceptación
+✓
+Documentación actualizada
+✓
+Desplegado en entorno de pruebas
+✓
+Sin defectos críticos abiertos
+
+## Diapositiva 11
+CALIDAD ÁGIL · 2 DE 3
+Criterios de aceptación
+Condiciones específicas que UNA historia de usuario debe cumplir para ser aceptada por el cliente o Product Owner. Se definen ANTES de desarrollar, no al final.
+Formato Gherkin (Dado / Cuando / Entonces)
+Dado  
+que un estudiante ingresó usuario y contraseña válidos
+Cuando  
+presiona “iniciar sesión”
+Entonces  
+el sistema muestra su panel de calificaciones
+DoD vs. criterios de aceptación
+DoD: 
+transversal, igual para todas las historias.
+
+Criterios de aceptación: 
+específicos de cada historia.
+
+## Diapositiva 12
+CALIDAD ÁGIL · 3 DE 3
+Integración Continua (CI)
+Práctica de integrar el código de todo el equipo a un repositorio compartido varias veces al día, con build y pruebas automáticas en cada integración.
+Commit /
+Push
+Build
+automático
+Pruebas
+automatizadas
+Feedback
+al equipo
+Beneficio para la calidad: detecta defectos temprano (feedback rápido) y reduce su costo de corrección — el mismo costo de la calidad visto en la Sesión 3 — evitando el “big bang” de integración al final del proyecto.
+
+## Diapositiva 13
+DISCUSIÓN ABIERTA
+Retroalimentación general de la actividad
+Para guiar la retroalimentación en vivo
+✓
+¿Qué grupo explicó con más claridad la estructura interna de su modelo?
+✓
+¿Qué conexiones con la Sesión 1 (calidad de producto/proceso) se mencionaron, y cuáles faltaron?
+✓
+¿Las fuentes citadas fueron adecuadas (Pressman + una fuente confiable, en APA 7)?
+Pregunta abierta para el curso
+Cada grupo deja una idea clave y una pregunta abierta sobre su modelo — las retomamos aquí antes del cierre.
+
+## Diapositiva 14
+Cierre de la sesión
+1
+La calidad de producto y la calidad de proceso se complementan.
+2
+La calidad no es un evento final: se integra en cada iteración (DoD, criterios de aceptación, CI).
+3
+Medir sin mejorar el proceso no basta — de ahí CMMI y PHVA/Kaizen.
+Próxima sesión
+Viernes 11 de septiembre de 2026 — Primer Parcial (presentación de modelos de calidad, 30%)
+
+## Diapositiva 15
+FUENTES DE ESTA SESIÓN
+Referencias (APA 7)
+ISO 25000. (s.f.). ISO 25010. Recuperado el 14 de agosto de 2026, de https://iso25000.com/index.php/normas-iso-25000/iso-25010
+Castro Bermúdez, Y. V., Solarte Martínez, G. R., y Muñoz Guerrero, L. E. (2019). Planificación, gestión y control de la calidad del software. Scientia et Technica, 24(4), 611-617.
+Pressman, R. S. (2010). Ingeniería del software: Un enfoque práctico (7a ed.). McGraw-Hill Interamericana.
+McCall, J. A., Richards, P. K., & Walters, G. F. (1977). Factors in software quality (RADC-TR-77-369). General Electric.
+Garvin, D. A. (1987). Competing on the eight dimensions of quality. Harvard Business Review, 65(6), 101-109.
+Cohn, M. (2004). User stories applied: For agile software development. Addison-Wesley.
+Duvall, P. M., Matyas, S., & Glover, A. (2007). Continuous integration: Improving software quality and reducing risk. Addison-Wesley.
+
+

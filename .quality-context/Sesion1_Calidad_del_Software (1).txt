@@ -1,0 +1,165 @@
+﻿# Sesion1_Calidad_del_Software (1).pptx
+
+Origen: C:\Users\Zoraida Velasquez\Downloads\Sesion1_Calidad_del_Software (1).pptx
+Diapositivas: 14
+
+## Diapositiva 1
+UNIDAD 1
+Calidad del Software
+Sesión 1 · Producto y proceso
+Ingeniería de Sistemas  ·  B2  ·  14 de agosto de 2026
+
+## Diapositiva 2
+RUTA DE LA SESIÓN
+¿Qué vamos a 
+trabajar
+ hoy?
+OBJETIVO
+Diferenciar la calidad del producto y la calidad del proceso de software.
+100
+min
+Duración estimada
+1
+¿Qué es la calidad?
+2
+Calidad del software
+3
+Producto vs. proceso
+4
+QM → QA → QC → Testing
+5
+¿Por qué gestionarla?
+6
+Panorama y próxima clase
+
+## Diapositiva 3
+ANTES DE EMPEZAR…
+¿Qué significa
+“calidad” para ti?
+Piensa en una app de excelente calidad… y en otra de mala calidad.
+¿Es el producto en sí… o cómo fue construido?
+
+## Diapositiva 4
+MARCO GENERAL
+¿Qué es la calidad?
+“El grado en el que un conjunto de características inherentes cumple con los requisitos.”
+— Norma ISO 9000:2005
+No es “lujo”
+Ni perfección
+absoluta
+Se mide siempre
+contra algo
+i
+CONCEPTO DE CALIDAD
+Evolución del concepto calidad
+Línea de tiempo: de la inspección artesanal a la norma ISO 9000.
+Ver infografía →
+Barrera, M. (2016). ISO 9001:2015.
+
+## Diapositiva 5
+¿Qué es la calidad del software?
+
+## Diapositiva 6
+Calidad del producto vs. calidad del proceso
+“Un proceso eficaz aumenta la probabilidad de un producto de calidad.” — Pressman, R. S. (2010, p. 340).
+
+## Diapositiva 7
+DENTRO DEL PRODUCTO
+Dos formas de mirar el producto
+CALIDAD DEL DISEÑO
+¿El diseño cumple lo que pide el cliente?
+Ej.: ¿la arquitectura cubre todos los casos de uso?
+CALIDAD DE LA CONFORMIDAD
+¿Lo construido respeta el diseño?
+Ej.: ¿el código respeta la arquitectura diseñada?
+Fuente: Pressman, R. S. (2010, p. 339).
+
+## Diapositiva 8
+¿QUÉ IMPORTA MÁS?
+La satisfacción del usuario
+“La calidad de un producto está en función de cuánto cambia al mundo para bien.” — DeMarco (1998)
+
+## Diapositiva 9
+CALIDAD DEL PROCESO
+La cadena de valor de la calidad
+
+## Diapositiva 10
+EL VALOR DE LA CALIDAD
+¿Por qué gestionarla en cada proyecto?
+Quien la produce
+Menos mantenimiento
+Menos errores
+Más tiempo para crear
+Quien la usa
+Software confiable
+Procesos más ágiles
+El resultado
+Mayores utilidades
+Mejor información
+Fuente: Pressman, R. S. (2010, pp. 340-341).
+
+## Diapositiva 11
+Modelos
+ de 
+calidad
+8 CARACTERÍSTICAS DEL PRODUCTO
+Funcionalidad
+Eficiencia
+Compatibilidad
+Usabilidad
+Confiabilidad
+Seguridad
+Mantenibilidad
+Portabilidad
+
+## Diapositiva 12
+LECTURA COMPLEMENTARIA
+Gestión y control de la calidad
+ST
+Base del diagrama
+QM–QA–QC–Testing
+Cómo se planifica, gestiona y controla la calidad en un proyecto de software.
+Castro Bermúdez, Solarte Martínez y Muñoz Guerrero (2019).
+Siguiente
+
+presentación
+Scientia et Technica, 24(4), 611-617.
+EL CICLO DEL ARTÍCULO
+1
+Planificar
+Definir metas y
+criterios de calidad.
+2
+Gestionar
+Asegurar el proceso
+mientras se ejecuta.
+3
+Controlar
+Verificar y corregir
+desvíos.
+
+## Diapositiva 13
+ANTES DE IRNOS…
+Tres ideas para hoy
+01
+Calidad del software
+Proceso eficaz + producto útil + valor medible.
+02
+Producto y proceso
+Dos caras de la misma moneda.
+03
+La calidad, en capas
+QM ⊃ QA ⊃ QC ⊃ Testing.
+Próxima clase · 21 de agosto
+Modelos y estándares de calidad — trabajo en grupos expositivos.
+Distribución de grupos, temas y rúbrica en la guía de actividad.
+
+## Diapositiva 14
+REFERENCIAS
+Referencias
+Barrera, M. (2016, 13 de septiembre). Desarrollo y evolución del concepto calidad. ISO 9001:2015. https://www.nueva-iso-9001-2015.com/2016/09/desarrollo-concepto-calidad/
+Castro Bermúdez, Y. V., Solarte Martínez, G. R., y Muñoz Guerrero, L. E. (2019). Planificación, gestión y control de la calidad del software. Scientia et Technica, 24(4), 611-617. https://www.redalyc.org/journal/849/84961238009/html/
+ISO 25000. (s.f.). ISO 25010. Recuperado el 14 de agosto de 2026, de https://iso25000.com/index.php/normas-iso-25000/iso-25010
+Pressman, R. S. (2010). Ingeniería del software: Un enfoque práctico (7a ed.). McGraw-Hill Interamericana.
+
+

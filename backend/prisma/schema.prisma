@@ -1,0 +1,173 @@
+// Prisma schema para PostgreSQL
+// Sistema de Administración de Inventario y Alquiler de Implementos de Construcción
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  EMPLEADO
+}
+
+enum EstadoImplemento {
+  DISPONIBLE
+  ALQUILADO
+  MANTENIMIENTO
+  FUERA_DE_SERVICIO
+}
+
+enum EstadoAlquiler {
+  ACTIVO
+  FINALIZADO
+  VENCIDO
+}
+
+enum EstadoEntrega {
+  DISPONIBLE
+  MANTENIMIENTO
+  FUERA_DE_SERVICIO
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  nombre       String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(160)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  rol          Rol      @default(EMPLEADO)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  alquileres   Alquiler[]
+  devoluciones Devolucion[]
+
+  @@index([rol, activo])
+  @@map("usuarios")
+}
+
+model Cliente {
+  id                  Int      @id @default(autoincrement())
+  documentoIdentidad  String   @unique @map("documento_identidad") @db.VarChar(30)
+  nombres             String   @db.VarChar(100)
+  apellidos           String   @db.VarChar(100)
+  telefono            String   @db.VarChar(30)
+  correo              String?  @db.VarChar(160)
+  direccion           String?  @db.VarChar(220)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  alquileres Alquiler[]
+
+  @@index([apellidos, nombres])
+  @@index([telefono])
+  @@map("clientes")
+}
+
+model Categoria {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(100)
+  descripcion String?  @db.VarChar(250)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  implementos Implemento[]
+
+  @@map("categorias")
+}
+
+model Implemento {
+  id                   Int              @id @default(autoincrement())
+  codigoSerie          String           @unique @map("codigo_serie") @db.VarChar(50)
+  nombre               String           @db.VarChar(140)
+  categoriaId          Int              @map("categoria_id")
+  descripcion          String?          @db.VarChar(300)
+  precioAlquilerDiario Decimal          @map("precio_alquiler_diario") @db.Decimal(12, 2)
+  estado               EstadoImplemento @default(DISPONIBLE)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  categoria      Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  detalles       DetalleAlquiler[]
+  devoluciones   DetalleDevolucion[]
+
+  @@index([estado])
+  @@index([categoriaId])
+  @@index([nombre])
+  @@map("implementos")
+}
+
+model Alquiler {
+  id                     Int            @id @default(autoincrement())
+  codigoAlquiler         String         @unique @map("codigo_alquiler") @db.VarChar(40)
+  clienteId              Int            @map("cliente_id")
+  usuarioId              Int            @map("usuario_id")
+  fechaAlquiler          DateTime       @default(now()) @map("fecha_alquiler") @db.Timestamptz(6)
+  fechaPactadaDevolucion DateTime       @map("fecha_pactada_devolucion") @db.Timestamptz(6)
+  estado                 EstadoAlquiler @default(ACTIVO)
+  observaciones          String?        @db.Text
+  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  cliente    Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  usuario    Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles   DetalleAlquiler[]
+  devolucion Devolucion?
+
+  @@index([estado, fechaPactadaDevolucion])
+  @@index([clienteId])
+  @@index([usuarioId])
+  @@index([fechaAlquiler])
+  @@map("alquileres")
+}
+
+model DetalleAlquiler {
+  id             Int      @id @default(autoincrement())
+  alquilerId     Int      @map("alquiler_id")
+  implementoId   Int      @map("implemento_id")
+  precioUnitario Decimal  @map("precio_unitario") @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  alquiler   Alquiler   @relation(fields: [alquilerId], references: [id], onDelete: Cascade)
+  implemento Implemento @relation(fields: [implementoId], references: [id], onDelete: Restrict)
+
+  @@unique([alquilerId, implementoId])
+  @@index([implementoId])
+  @@map("detalle_alquileres")
+}
+
+model Devolucion {
+  id                        Int      @id @default(autoincrement())
+  alquilerId                Int      @unique @map("alquiler_id")
+  fechaDevolucion           DateTime @default(now()) @map("fecha_devolucion") @db.Timestamptz(6)
+  usuarioId                 Int      @map("usuario_id")
+  estadoEntregaImplementos  String   @map("estado_entrega_implementos") @db.VarChar(100)
+  observaciones             String?  @db.Text
+  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  alquiler Alquiler          @relation(fields: [alquilerId], references: [id], onDelete: Restrict)
+  usuario  Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles DetalleDevolucion[]
+
+  @@index([fechaDevolucion])
+  @@index([usuarioId])
+  @@map("devoluciones")
+}
+
+model DetalleDevolucion {
+  id            Int           @id @default(autoincrement())
+  devolucionId  Int           @map("devolucion_id")
+  implementoId  Int           @map("implemento_id")
+  estadoFinal   EstadoEntrega @map("estado_final")
+  observaciones String?       @db.VarChar(300)
+
+  devolucion Devolucion @relation(fields: [devolucionId], references: [id], onDelete: Cascade)
+  implemento Implemento @relation(fields: [implementoId], references: [id], onDelete: Restrict)
+
+  @@unique([devolucionId, implementoId])
+  @@index([implementoId])
+  @@map("detalle_devoluciones")
+}

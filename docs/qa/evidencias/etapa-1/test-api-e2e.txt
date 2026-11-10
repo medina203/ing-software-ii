@@ -1,0 +1,13 @@
+
+> backend@1.0.0 test:e2e
+> jest --config ./test/jest-e2e.json --runInBand
+
+PASS test/health.e2e-spec.ts (26.642 s)
+  Health (e2e)
+    √ GET /health responde con estado ok (172 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        27.559 s, estimated 34 s
+Ran all test suites.

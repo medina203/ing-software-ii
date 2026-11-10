@@ -1,0 +1,412 @@
+﻿# Sesion6_B1_Verificacion_Validacion.pptx
+
+Origen: C:\Users\Zoraida Velasquez\Downloads\Sesion6_B1_Verificacion_Validacion.pptx
+Diapositivas: 27
+
+## Diapositiva 1
+INGENIERÍA DE SOFTWARE II  ·  UNIDAD 2
+Verificación y Validación del Software
+Niveles y tipos de prueba · Técnicas de revisión para la calidad
+Grupo B1  
+·  Sesión presencial  ·  Lunes 21 de septiembre de 2026
+
+## Diapositiva 2
+DÓNDE ESTAMOS
+De la calidad como concepto a la calidad como práctica
+Unidad 1 — lo que ya vimos
+Calidad de producto y de proceso. Modelos: ISO/IEC 25010, McCall, Garvin, CMMI, PHVA. Gestión, planificación y aseguramiento (SQA). Definición de Hecho y criterios de aceptación.
+Unidad 2 — lo que empieza hoy
+Verificación y validación. Niveles y tipos de prueba. Técnicas de revisión. Planificación y diseño de pruebas. Gestión de defectos y trazabilidad.
+
+## Diapositiva 3
+PARA EMPEZAR
+¿Puede un software no tener un solo error de programación y aun así ser un fracaso?
+Y al revés: ¿puede estar lleno de defectos internos y aun así el cliente declararlo aceptado?
+
+## Diapositiva 4
+CONCEPTO CENTRAL
+Verificación y validación: dos preguntas distintas
+VERIFICACIÓN
+“¿Estamos construyendo bien el producto?”
+Comprueba que cada producto de trabajo cumple las especificaciones acordadas. No ejecuta el software: examina documentos, modelos y código.
+Técnica principal: la revisión.
+VALIDACIÓN
+“¿Estamos construyendo el producto correcto?”
+Comprueba que el software satisface las expectativas reales del usuario. Ejecuta el sistema y contrasta el resultado real contra el esperado.
+Técnica principal: la prueba.
+Un sistema puede pasar toda la verificación —cumple la especificación al pie de la letra— y fallar la validación, porque la especificación estaba equivocada.
+
+## Diapositiva 5
+MAPA DE TÉCNICAS
+Estáticas y dinámicas: dos formas de encontrar defectos
+TÉCNICAS ESTÁTICAS  ·  no ejecutan el software
+TÉCNICAS DINÁMICAS  ·  ejecutan el software
+Verificación de escritorio
+Un colega revisa el trabajo
+Revisión informal
+Reunión casual en grupo
+Recorrido
+Agenda y roles básicos
+Inspección / RTF
+Formal, con acta y seguimiento
+Prueba de unidad
+Componente aislado
+Prueba de integración
+Interacción entre módulos
+Prueba de sistema
+Sistema completo
+Prueba de aceptación
+Expectativa del usuario
+Las estáticas encuentran el defecto donde nació. Las dinámicas lo encuentran donde se manifiesta, que casi siempre es más tarde y más caro.
+
+## Diapositiva 6
+POR QUÉ REVISAR ANTES DE PROBAR
+El modelo de amplificación del defecto
+
+## Diapositiva 7
+LECTURA DEL MODELO
+Tres conclusiones que cambian cómo se planifica
+1
+El error no se queda quieto
+Un error de diseño no detectado se convierte en varios errores de implementación derivados. Ese es el factor de amplificación.
+2
+La revisión es un filtro, no un trámite
+Su eficacia depende de la profundidad: la verificación de escritorio filtra poco; la inspección formal, mucho. La formalidad se elige según el riesgo.
+3
+Revisar sale más barato
+Enlaza con el costo de la calidad de la Unidad 1: la falla externa cuesta un orden de magnitud más que la prevención.
+
+## Diapositiva 8
+ESTRATEGIA DE PRUEBA
+Los cuatro niveles de prueba
+
+## Diapositiva 9
+ESTRATEGIA DE PRUEBA
+Nivel por nivel: qué cambia en cada uno
+Nivel
+Qué se prueba
+Quién
+Defectos típicos que detecta
+Unidad
+Un componente o clase aislado, con dobles de prueba para sus dependencias.
+Desarrollador
+Lógica interna, condiciones mal evaluadas, valores límite.
+Integración
+La interacción entre componentes ya probados individualmente.
+Desarrollador / tester
+Interfaces incompatibles, datos que se pierden al pasar de un módulo a otro.
+Sistema
+El sistema completo integrado, desde la perspectiva externa del usuario.
+Equipo de pruebas
+Incumplimiento de requisitos, fallas de flujo extremo a extremo.
+Aceptación
+Que el sistema satisface la necesidad real que originó el proyecto.
+Usuario / cliente
+Requisitos mal entendidos; funcionalidad correcta pero inútil en su contexto.
+
+## Diapositiva 10
+TIPOS DE PRUEBA
+Funcionales y no funcionales
+Pruebas funcionales
+Se centran en el resultado del procesamiento, no en su mecánica: ¿hace lo que dijo que haría?
+Son de caja negra: no requieren conocer el código.
+Ejemplos: humo, regresión, aceptación de usuario.
+Pruebas no funcionales
+Investigan calidad, seguridad y rendimiento. Miden velocidad, escalabilidad y fiabilidad bajo condiciones diversas.
+Un sistema correcto pero lento es un sistema que nadie usa.
+Ejemplos: carga, estrés, seguridad, usabilidad.
+Las dos son necesarias. Las funcionales aseguran que la característica opera; las no funcionales, que opera de forma utilizable.
+
+## Diapositiva 11
+PUENTE CON LA UNIDAD 1
+Cada prueba no funcional verifica una característica de la ISO/IEC 25010
+Prueba de carga y estrés
+Eficiencia de desempeño
+Prueba de seguridad
+Seguridad
+Prueba de usabilidad
+Usabilidad
+Prueba de compatibilidad
+Compatibilidad
+Prueba de recuperación
+Fiabilidad
+Prueba de portabilidad
+Portabilidad
+Prueba de mantenibilidad
+Mantenibilidad
+Prueba de exactitud
+Adecuación funcional
+Un requisito no funcional sin criterio medible no se puede probar. “El sistema debe ser rápido” no es un requisito: “responde en ≤ 3 s con 200 usuarios concurrentes” sí lo es.
+
+## Diapositiva 12
+CÓMO SE CONSTRUYE UNA PRUEBA
+Los seis pasos del plan de pruebas funcionales
+En el taller de hoy recorreremos los pasos 1 a 4. La ejecución y la gestión de defectos las trabajaremos en la Sesión 7.
+
+## Diapositiva 13
+DISTINCIÓN QUE CUESTA
+Escenario de prueba no es lo mismo que caso de prueba
+Escenario
+Describe UNA FORMA de usar la funcionalidad. No tiene datos concretos ni resultado verificable.
+“Un docente intenta reservar un espacio con menos de dos horas de anticipación.”
+Caso de prueba
+Concreta el escenario con datos, pasos reproducibles y un resultado esperado unívoco.
+“Con la hora del sistema en 10:00, reservar el Lab-201 para las 11:30 → el sistema rechaza la reserva y muestra el mensaje de anticipación mínima.”
+De un solo escenario suelen salir varios casos: el que está justo en el límite, el que lo cruza y el que se queda dentro.
+
+## Diapositiva 14
+PLANTILLA DE TRABAJO
+Anatomía de un caso de prueba
+Identificador
+Único y con formato consistente
+Requisito asociado
+La trazabilidad: qué verifica
+Título
+Qué se prueba, no solo qué función
+Nivel y tipo
+Unidad/integración/sistema; funcional o no
+Precondiciones
+Estado del sistema antes de empezar
+Datos de entrada
+Válidos e inválidos, siempre ficticios
+Pasos
+Reproducibles por alguien ajeno al equipo
+Resultado esperado
+Observable y sin ambigüedad
+Resultado obtenido
+Se diligencia al ejecutar
+Estado
+Aprobado / Fallido / Bloqueado
+Severidad
+Si falla: mayor o menor
+Observaciones
+Contexto que el ejecutor necesita
+Los dos campos que más se descuidan son el requisito asociado y el resultado esperado. Sin el primero no hay trazabilidad; sin el segundo, el caso no prueba nada.
+
+## Diapositiva 15
+EJEMPLO
+Un caso de prueba completo
+Campo
+Contenido
+Identificador
+CP-RF01-03
+Requisito asociado
+RF-01 Autenticación de usuario — regla de bloqueo por intentos fallidos
+Título
+Bloqueo de la cuenta al tercer intento fallido consecutivo
+Nivel / Tipo
+Integración / Funcional negativa (valor límite: tercer intento)
+Precondiciones
+Cuenta ficticia activa, contador de intentos fallidos en cero, servicio de correo de pruebas operativo.
+Pasos
+1. Abrir el inicio de sesión.  2. Ingresar con contraseña incorrecta.  3. Repetir.  4. Repetir por tercera vez.  5. Intentar con la contraseña correcta.
+Resultado esperado
+Intentos 1 y 2: mensaje de credenciales inválidas. Intento 3: mensaje de cuenta bloqueada por 15 minutos y correo de notificación. Paso 5: acceso denegado pese a la contraseña correcta.
+Severidad si falla
+Mayor — la ausencia de bloqueo habilita ataques de fuerza bruta.
+
+## Diapositiva 16
+ERROR MÁS FRECUENTE
+Un resultado esperado que no se puede verificar
+Así NO
+“El sistema debe procesar la reserva correctamente y mostrar la información adecuada al usuario.”
+¿Qué es correcta? ¿Qué información es adecuada? Dos personas ejecutan este caso y llegan a veredictos distintos.
+Así SÍ
+“El sistema crea la reserva con estado Confirmada, la muestra en Mis reservas con el código generado, y el espacio deja de aparecer como disponible en esa franja.”
+Tres condiciones observables.
+Regla práctica: si el resultado esperado no se puede responder con un sí o un no mirando la pantalla, hay que reescribirlo.
+
+## Diapositiva 17
+TÉCNICAS DE REVISIÓN
+El espectro de formalidad
+
+## Diapositiva 18
+REVISIÓN TÉCNICA FORMAL
+Roles y reglas de la reunión
+Moderador
+Conduce, hace cumplir la agenda y el tiempo, corta las discusiones que intentan resolver en lugar de enunciar.
+Lector
+Recorre el producto parafraseándolo en voz alta. Al reformular es cuando aparecen las ambigüedades.
+Secretario
+Registra cada hallazgo en el momento en que se enuncia, con su clasificación en mayor o menor.
+Revisores
+Aplican la lista de verificación, enuncian los hallazgos y sustentan la clasificación.
+3 a 5 personas
+Menos no contrasta; más no se gobierna
+Preparación previa
+No más de dos horas por persona
+Reunión acotada
+Con agenda y duración definida
+
+## Diapositiva 19
+REVISIÓN TÉCNICA FORMAL
+Al cerrar: tres decisiones posibles y dos registros
+Aceptar
+El producto se acepta sin modificaciones.
+Aceptar provisionalmente
+Hay errores menores que deben corregirse, pero no se requiere otra revisión.
+Rechazar
+Hay errores graves. Una vez corregidos, se realiza una segunda revisión.
+Y se producen dos documentos:
+Reporte técnico de la revisión
+Una página: ¿qué se revisó?, ¿quién lo revisó?, ¿cuáles fueron los hallazgos y conclusiones? Pasa al registro histórico del proyecto.
+Lista de pendientes
+Identifica las áreas problemáticas y guía al autor como lista de verificación mientras hace las correcciones.
+
+## Diapositiva 20
+CÓMO SE CONDUCE
+Lineamientos de la revisión
+✓
+Revise el producto, no al productor. El hallazgo se enuncia sobre el trabajo, nunca sobre quien lo hizo.
+✓
+Establezca una agenda y sígala. La deriva es la forma más común de perder una revisión.
+✓
+Enuncie las áreas de problema, pero no intente resolver cada una en la reunión.
+✓
+Limite el debate y las contestaciones. Lo controvertido se registra como pendiente y se sigue.
+✓
+Tome notas por escrito. Un hallazgo que no queda registrado, no existe.
+✓
+Limite el número de participantes e insista en la preparación previa.
+✓
+Desarrolle una lista de verificación para cada tipo de producto que se revise.
+El primer lineamiento es el que más se incumple y el único que, si falla, hace fracasar toda la práctica: la gente deja de someter su trabajo a revisión.
+
+## Diapositiva 21
+MEDIR LA REVISIÓN
+Métricas y densidad del error
+Símbolo
+Métrica
+Unidad
+Ep
+Esfuerzo de preparación: revisar el producto antes de la reunión.
+horas-hombre
+Ea
+Esfuerzo de evaluación: la reunión de revisión propiamente dicha.
+horas-hombre
+Er
+Esfuerzo de repetición: corregir los errores descubiertos.
+horas-hombre
+TPT
+Tamaño del producto de trabajo revisado.
+páginas, modelos, LOC o casos
+Errmenores / Errmayores
+Errores detectados según el esfuerzo que exige corregirlos.
+hallazgos
+E revisión  =  Ep + Ea + Er
+Densidad del error  =  Err tot / TPT
+
+## Diapositiva 22
+TALLER · PARTE A  ·  40 MINUTOS
+De los requisitos a los casos de prueba
+Sistema SIRA — reserva de aulas y laboratorios. Cada equipo trabaja el requisito que le fue asignado.
+1
+Objetivos de prueba
+Entre dos y tres. Qué se quiere demostrar, no cómo.
+2
+Escenarios
+Mínimo cuatro: uno principal, dos de frontera y uno de error.
+3
+Datos de prueba
+Válidos e inválidos, con el resultado que debe producir cada conjunto.
+4
+Casos de prueba
+Mínimo seis, en la plantilla del Anexo A. Uno de valor límite y uno negativo.
+5
+Clasificación
+Nivel y tipo en cada caso, coherentes con lo que el caso ejecuta.
+Designen ahora relator y secretario. El secretario será quien registre durante la Parte B.
+
+## Diapositiva 23
+TALLER · CASO DE ESTUDIO
+SIRA — extracto de requisitos
+ID
+Requisito
+Reglas que deben probarse
+Equipo
+RF-01
+Autenticación de usuario
+Solo dominio institucional. Bloqueo de 15 min al tercer intento fallido.
+E1
+RF-02
+Consulta de disponibilidad
+Solo espacios libres en toda la franja. Filtros por fecha, sede, tipo y capacidad.
+E2
+RF-03
+Registro de reserva
+Duración de 1 a 4 h. Anticipación mínima de 2 h. Máximo 2 reservas activas. Sin solapamiento.
+E3
+RF-04
+Cancelación de reserva
+Hasta 1 h antes del inicio. Libera el espacio y notifica por correo.
+E4
+RF-05
+Reporte de uso
+Por espacio y rango de fechas, máximo 90 días. Exportable a CSV.
+E5
+RNF-01 a 03
+Desempeño, seguridad y usabilidad
+≤ 3 s con 200 usuarios. Hash y sal, sesión de 20 min. Reserva en ≤ 3 min sin capacitación.
+E1, E2, E5
+El extracto completo está en el documento del taller. Si algo no está escrito allí, no se supone: esa ausencia es en sí misma un hallazgo.
+
+## Diapositiva 24
+TALLER · PARTE B  ·  30 MINUTOS
+Revisión técnica formal cruzada
+El producto que se revisa son los casos de prueba del otro equipo, no el sistema SIRA.
+1
+Roles
+Moderador, lector, secretario y revisores.
+2
+Preparación
+8 min en silencio con la lista de verificación. Ese tiempo es Ep.
+3
+Reunión
+15 min. El lector recorre, los revisores enuncian, el secretario registra. Es Ea.
+4
+Decisión y registro
+Aceptar, aceptar con reservas o rechazar. Lista de pendientes y reporte firmado.
+Anillo de revisión:   E1 → E2 → E3 → E4 → E5 → E6 → E1
+Recuerden el primer lineamiento: se revisa el producto, no al productor.
+
+## Diapositiva 25
+PUESTA EN COMÚN  ·  15 MINUTOS
+Lo que cada relator debe traer preparado
+✓
+¿Cuál fue el hallazgo mayor más frecuente en la suite que revisaron y por qué creen que se produjo?
+✓
+¿Cuál fue la densidad del error obtenida y qué les dice sobre la calidad del producto revisado?
+✓
+¿Qué defecto detectó la revisión que la ejecución de las pruebas no habría detectado nunca?
+✓
+Con el doble de tiempo, ¿escribirían más casos o revisarían mejor los que ya tienen?
+La tercera pregunta es el centro de la sesión: hay defectos —ambigüedad, cobertura faltante, trazabilidad rota— que ninguna ejecución puede revelar.
+
+## Diapositiva 26
+PARA LLEVARSE
+Cuatro ideas y dos fechas
+1
+Verificar y validar no compiten: se encadenan.
+2
+Un caso de prueba mal escrito es un defecto real.
+3
+Un resultado esperado que no se responde con sí o no, no prueba nada.
+4
+Se revisa el producto, nunca al productor.
+Entregable del taller y bitácora: 
+miércoles 23 de septiembre, 11:59 p. m.
+
+Sesión 7 (25 sep): 
+caja negra y blanca, cobertura, gestión de defectos y trazabilidad.
+
+## Diapositiva 27
+FUENTES
+Referencias
+IEEE. (2017). IEEE Std 1028-2008 — IEEE Standard for Software Reviews and Audits. Institute of Electrical and Electronics Engineers.
+International Software Testing Qualifications Board. (2018). Certified tester foundation level syllabus (versión 2018). ISTQB.
+ISO/IEC/IEEE. (2022). ISO/IEC/IEEE 29119-1:2022 — Software and systems engineering. Software testing. Part 1: General concepts. ISO.
+ISO 25000. (s. f.). ISO/IEC 25010. https://iso25000.com/index.php/normas-iso-25000/iso-25010
+Myers, G. J., Sandler, C., & Badgett, T. (2011). The art of software testing (3.ª ed.). John Wiley & Sons.
+Pressman, R. S. (2010). Ingeniería del software: Un enfoque práctico (7.ª ed.). McGraw-Hill Interamericana.
+
+

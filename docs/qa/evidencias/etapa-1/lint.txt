@@ -1,0 +1,4 @@
+
+> inventario-alquiler-implementos@1.0.0 lint
+> eslint backend/src frontend/src
+
