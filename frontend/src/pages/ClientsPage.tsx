@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   Mail,
   Pencil,
@@ -54,9 +54,12 @@ export function ClientsPage() {
   const isAdmin = usuario?.rol === 'ADMIN';
 
   const [clients, setClients] = useState<Client[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const requestIdRef = useRef(0);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -66,36 +69,38 @@ export function ClientsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [search]);
+
   const loadClients = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setLoadError('');
     try {
-      const response = await api.get<ListResponse<Client>>('/clients');
+      const response = await api.get<ListResponse<Client>>('/clients', {
+        params: debouncedSearch ? { search: debouncedSearch } : {},
+      });
+      if (requestId !== requestIdRef.current) return;
       setClients(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       setLoadError(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     void loadClients();
   }, [loadClients]);
-
-  const filteredClients = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return clients;
-    return clients.filter((client) =>
-      [
-        client.documentoIdentidad,
-        client.nombres,
-        client.apellidos,
-        client.telefono,
-        client.correo ?? '',
-      ].some((value) => value.toLowerCase().includes(term)),
-    );
-  }, [clients, search]);
 
   const openCreate = () => {
     setEditingClient(null);
@@ -212,8 +217,9 @@ export function ClientsPage() {
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <Users className="h-4 w-4" />
             <span>
-              <strong className="text-slate-800">{filteredClients.length}</strong>{' '}
-              de {clients.length} clientes
+              <strong className="text-slate-800">{total}</strong>{' '}
+              {total === 1 ? 'cliente' : 'clientes'}
+              {debouncedSearch ? ' · búsqueda en servidor' : ''}
             </span>
           </div>
         </div>
@@ -223,23 +229,23 @@ export function ClientsPage() {
 
       {loading ? (
         <LoadingBlock message="Cargando clientes…" />
-      ) : filteredClients.length === 0 ? (
+      ) : clients.length === 0 ? (
         <EmptyState
           icon={UserRound}
-          title={clients.length === 0 ? 'Aún no hay clientes' : 'Sin resultados'}
+          title={debouncedSearch ? 'Sin resultados' : 'Aún no hay clientes'}
           description={
-            clients.length === 0
-              ? 'Registra el primer cliente para poder crear alquileres.'
-              : 'No encontramos clientes con el término de búsqueda ingresado.'
+            debouncedSearch
+              ? 'No encontramos clientes con el término de búsqueda ingresado.'
+              : 'Registra el primer cliente para poder crear alquileres.'
           }
           action={
-            clients.length === 0 ? (
-              <Button icon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-                Registrar cliente
-              </Button>
-            ) : (
+            debouncedSearch ? (
               <Button variant="secondary" onClick={() => setSearch('')}>
                 Limpiar búsqueda
+              </Button>
+            ) : (
+              <Button icon={<Plus className="h-4 w-4" />} onClick={openCreate}>
+                Registrar cliente
               </Button>
             )
           }
@@ -259,7 +265,7 @@ export function ClientsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredClients.map((client) => (
+                {clients.map((client) => (
                   <tr key={client.id} className="hover:bg-slate-50/60">
                     <td className="table-td">
                       <div className="flex items-center gap-3">
@@ -271,9 +277,7 @@ export function ClientsPage() {
                           <p className="font-semibold text-slate-800">
                             {client.nombres} {client.apellidos}
                           </p>
-                          <p className="text-xs text-slate-400">
-                            Cliente #{client.id}
-                          </p>
+                          <p className="text-xs text-slate-400">Cliente #{client.id}</p>
                         </div>
                       </div>
                     </td>
@@ -377,9 +381,7 @@ export function ClientsPage() {
                 id="telefono"
                 type="tel"
                 value={form.telefono}
-                onChange={(event) =>
-                  updateField('telefono', event.target.value)
-                }
+                onChange={(event) => updateField('telefono', event.target.value)}
                 required
                 minLength={7}
                 maxLength={30}
@@ -400,9 +402,7 @@ export function ClientsPage() {
               <TextInput
                 id="apellidos"
                 value={form.apellidos}
-                onChange={(event) =>
-                  updateField('apellidos', event.target.value)
-                }
+                onChange={(event) => updateField('apellidos', event.target.value)}
                 required
                 maxLength={100}
                 placeholder="Gómez Ruiz"
@@ -423,9 +423,7 @@ export function ClientsPage() {
             <TextArea
               id="direccion"
               value={form.direccion}
-              onChange={(event) =>
-                updateField('direccion', event.target.value)
-              }
+              onChange={(event) => updateField('direccion', event.target.value)}
               maxLength={220}
               rows={2}
               placeholder="Calle, número, ciudad…"

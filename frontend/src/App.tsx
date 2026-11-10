@@ -1,9 +1,4 @@
-import {
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-} from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
@@ -16,6 +11,7 @@ import { LoginPage } from './pages/LoginPage';
 import { NewRentalPage } from './pages/NewRentalPage';
 import { NewReturnPage } from './pages/NewReturnPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { RentalDetailPage } from './pages/RentalDetailPage';
 import { RentalsPage } from './pages/RentalsPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -52,12 +48,10 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
           <Route index element={<HomeRedirect />} />
-          <Route
-            path="panel"
-            element={<Navigate to="/" replace />}
-          />
+          <Route path="panel" element={<Navigate to="/" replace />} />
           <Route path="inventario" element={<InventoryPage />} />
           <Route path="clientes" element={<ClientsPage />} />
+          <Route path="perfil" element={<ProfilePage />} />
           <Route path="alquileres" element={<RentalsPage />} />
           <Route path="alquileres/nuevo" element={<NewRentalPage />} />
           <Route path="alquileres/:id" element={<RentalDetailPage />} />

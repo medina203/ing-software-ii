@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EstadoImplemento, Prisma } from '@prisma/client';
+import { normalizeSearchTerm } from '../common/utils/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
@@ -21,7 +22,7 @@ export class ItemsService {
   async findAll(query: ListItemsQueryDto) {
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 50);
-    const term = query.search?.trim();
+    const term = normalizeSearchTerm(query.search);
 
     const where: Prisma.ImplementoWhereInput = {
       ...(query.estado ? { estado: query.estado } : {}),

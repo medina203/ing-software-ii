@@ -8,7 +8,6 @@ import {
   PackageOpen,
   Plus,
   RefreshCw,
-  UserRound,
   X,
 } from 'lucide-react';
 import {
@@ -26,6 +25,7 @@ import {
   PageHeader,
   SectionCard,
 } from '../components/ui/Feedback';
+import { ClientSearchSelect } from '../components/ClientSearchSelect';
 import { ItemStatusBadge } from '../components/ui/Badges';
 import { useToast } from '../components/Toast';
 import api, { getErrorMessage } from '../lib/api';
@@ -51,14 +51,13 @@ export function NewRentalPage() {
   const navigate = useNavigate();
   const { success } = useToast();
 
-  const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [availableItems, setAvailableItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const [clientId, setClientId] = useState('');
   const [dueDate, setDueDate] = useState(defaultDueDate());
   const [observations, setObservations] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -69,16 +68,10 @@ export function NewRentalPage() {
     setLoading(true);
     setLoadError('');
     try {
-      const [clientsResponse, itemsResponse] = await Promise.all([
-        api.get<ListResponse<Client>>('/clients'),
-        api.get<ListResponse<Item>>('/items/available'),
-      ]);
-      setClients(clientsResponse.data.data);
+      const itemsResponse = await api.get<ListResponse<Item>>('/items/available');
       setAvailableItems(itemsResponse.data.data);
       setSelectedIds((current) => {
-        const availableIds = new Set(
-          itemsResponse.data.data.map((item) => item.id),
-        );
+        const availableIds = new Set(itemsResponse.data.data.map((item) => item.id));
         return new Set([...current].filter((id) => availableIds.has(id)));
       });
     } catch (error) {
@@ -94,9 +87,7 @@ export function NewRentalPage() {
 
   const categories = useMemo(() => {
     const map = new Map<number, string>();
-    availableItems.forEach((item) =>
-      map.set(item.categoria.id, item.categoria.nombre),
-    );
+    availableItems.forEach((item) => map.set(item.categoria.id, item.categoria.nombre));
     return [...map.entries()].map(([id, nombre]) => ({ id, nombre }));
   }, [availableItems]);
 
@@ -108,18 +99,12 @@ export function NewRentalPage() {
         item.nombre.toLowerCase().includes(term) ||
         item.codigoSerie.toLowerCase().includes(term);
       const matchesCategory =
-        categoryFilter === 'TODAS' ||
-        item.categoria.id === Number(categoryFilter);
+        categoryFilter === 'TODAS' || item.categoria.id === Number(categoryFilter);
       return matchesTerm && matchesCategory;
     });
   }, [availableItems, itemSearch, categoryFilter]);
 
-  const selectedItems = availableItems.filter((item) =>
-    selectedIds.has(item.id),
-  );
-  const selectedClient = clients.find(
-    (client) => client.id === Number(clientId),
-  );
+  const selectedItems = availableItems.filter((item) => selectedIds.has(item.id));
   const dailyTotal = selectedItems.reduce(
     (sum, item) => sum + Number(item.precioAlquilerDiario),
     0,
@@ -138,7 +123,7 @@ export function NewRentalPage() {
     event.preventDefault();
     setSubmitError('');
 
-    if (!clientId) {
+    if (!selectedClient) {
       setSubmitError('Seleccione un cliente para el alquiler.');
       return;
     }
@@ -150,7 +135,7 @@ export function NewRentalPage() {
     setSubmitting(true);
     try {
       const response = await api.post<{ id: number }>('/rentals', {
-        clienteId: Number(clientId),
+        clienteId: selectedClient.id,
         fechaPactadaDevolucion: dueDate,
         observaciones: observations.trim() || undefined,
         implementos: selectedItems.map((item) => ({
@@ -187,22 +172,14 @@ export function NewRentalPage() {
         description="Selecciona el cliente, la fecha de devolución y los implementos disponibles. El inventario se bloqueará de forma atómica al confirmar."
         actions={
           <Link to="/alquileres">
-            <Button
-              variant="secondary"
-              icon={<ArrowLeft className="h-4 w-4" />}
-            >
+            <Button variant="secondary" icon={<ArrowLeft className="h-4 w-4" />}>
               Volver al historial
             </Button>
           </Link>
         }
       />
 
-      {loadError && (
-        <ErrorAlert
-          message={loadError}
-          onRetry={() => void loadData()}
-        />
-      )}
+      {loadError && <ErrorAlert message={loadError} onRetry={() => void loadData()} />}
 
       <form
         onSubmit={handleSubmit}
@@ -220,31 +197,12 @@ export function NewRentalPage() {
                 required
                 hint="El alquiler quedará asociado a este cliente."
               >
-                <Select
+                <ClientSearchSelect
                   id="cliente"
-                  value={clientId}
-                  onChange={(event) => setClientId(event.target.value)}
+                  value={selectedClient}
+                  onChange={setSelectedClient}
                   required
-                >
-                  <option value="">Seleccione un cliente</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.nombres} {client.apellidos} ·{' '}
-                      {client.documentoIdentidad}
-                    </option>
-                  ))}
-                </Select>
-                {clients.length === 0 && (
-                  <p className="mt-1 text-xs text-amber-600">
-                    No hay clientes registrados.{' '}
-                    <Link
-                      to="/clientes"
-                      className="font-semibold underline"
-                    >
-                      Registrar cliente
-                    </Link>
-                  </p>
-                )}
+                />
               </Field>
 
               <Field
@@ -262,26 +220,6 @@ export function NewRentalPage() {
                   required
                 />
               </Field>
-
-              {selectedClient && (
-                <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 sm:col-span-2">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-                    <UserRound className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      {selectedClient.nombres} {selectedClient.apellidos}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      {selectedClient.documentoIdentidad} ·{' '}
-                      {selectedClient.telefono}
-                      {selectedClient.correo
-                        ? ` · ${selectedClient.correo}`
-                        : ''}
-                    </p>
-                  </div>
-                </div>
-              )}
 
               <Field
                 label="Observaciones"
@@ -346,10 +284,7 @@ export function NewRentalPage() {
                 title="No hay implementos disponibles"
                 description="Todos los implementos están alquilados, en mantenimiento o fuera de servicio. Actualiza la lista más tarde."
                 action={
-                  <Button
-                    variant="secondary"
-                    onClick={() => void loadData()}
-                  >
+                  <Button variant="secondary" onClick={() => void loadData()}>
                     Actualizar disponibilidad
                   </Button>
                 }
@@ -448,9 +383,7 @@ export function NewRentalPage() {
               <div className="flex items-start gap-2.5 text-sm">
                 <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="font-medium text-slate-700">
-                    Devolución pactada
-                  </p>
+                  <p className="font-medium text-slate-700">Devolución pactada</p>
                   <p className="text-xs text-slate-500">
                     {dueDate || 'Seleccione una fecha'}
                   </p>
@@ -482,8 +415,7 @@ export function NewRentalPage() {
                             {item.nombre}
                           </p>
                           <p className="text-[10px] text-slate-500">
-                            {item.codigoSerie} ·{' '}
-                            {formatMoney(item.precioAlquilerDiario)}
+                            {item.codigoSerie} · {formatMoney(item.precioAlquilerDiario)}
                           </p>
                         </div>
                         <button
@@ -521,9 +453,7 @@ export function NewRentalPage() {
                 className="w-full"
                 size="lg"
                 loading={submitting}
-                disabled={
-                  clients.length === 0 || availableItems.length === 0
-                }
+                disabled={!selectedClient || availableItems.length === 0}
                 icon={<Plus className="h-4 w-4" />}
               >
                 Confirmar alquiler

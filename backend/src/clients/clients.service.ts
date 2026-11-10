@@ -1,19 +1,17 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { normalizeSearchTerm } from '../common/utils/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
+import { ListClientsQueryDto } from './dto/list-clients-query.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
 @Injectable()
 export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(search?: string) {
-    const term = search?.trim();
+  async findAll(query: ListClientsQueryDto = {}) {
+    const term = normalizeSearchTerm(query.search);
     const where: Prisma.ClienteWhereInput = term
       ? {
           OR: [
@@ -26,15 +24,19 @@ export class ClientsService {
         }
       : {};
 
-    const data = await this.prisma.cliente.findMany({
-      where,
-      include: {
-        _count: { select: { alquileres: true } },
-      },
-      orderBy: [{ apellidos: 'asc' }, { nombres: 'asc' }],
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.cliente.findMany({
+        where,
+        include: {
+          _count: { select: { alquileres: true } },
+        },
+        orderBy: [{ apellidos: 'asc' }, { nombres: 'asc' }],
+        ...(query.limit ? { take: query.limit } : {}),
+      }),
+      this.prisma.cliente.count({ where }),
+    ]);
 
-    return { data, total: data.length };
+    return { data, total };
   }
 
   async findOne(id: number) {

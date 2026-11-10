@@ -33,26 +33,26 @@ Quedan fuera de esta versión:
 
 ## 3. Definiciones
 
-| Término | Definición |
-| --- | --- |
-| Implemento | Unidad física inventariable que puede alquilarse. Puede tener un serial único. |
-| Categoría | Agrupación lógica de implementos. Tendrá un prefijo para generar seriales. |
-| Serial | Código único de un implemento. Formato propuesto: `PREFIJO-###`. |
-| Alquiler | Registro de entrega de uno o más implementos a un cliente. |
+| Término             | Definición                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| Implemento          | Unidad física inventariable que puede alquilarse. Puede tener un serial único.               |
+| Categoría           | Agrupación lógica de implementos. Tendrá un prefijo para generar seriales.                   |
+| Serial              | Código único de un implemento. Formato propuesto: `PREFIJO-###`.                             |
+| Alquiler            | Registro de entrega de uno o más implementos a un cliente.                                   |
 | Detalle de alquiler | Relación entre un alquiler y un implemento, con el precio congelado al momento del registro. |
-| Devolución | Registro de recepción de los implementos de un alquiler y del estado en que se reciben. |
-| Factura pendiente | Factura emitida con saldo mayor que cero o vencida. |
-| Autorización | Acción de un ADMIN que permite continuar una operación excepcional. |
-| Excepción | Operación permitida a pesar de una alerta, con motivo y trazabilidad. |
+| Devolución          | Registro de recepción de los implementos de un alquiler y del estado en que se reciben.      |
+| Factura pendiente   | Factura emitida con saldo mayor que cero o vencida.                                          |
+| Autorización        | Acción de un ADMIN que permite continuar una operación excepcional.                          |
+| Excepción           | Operación permitida a pesar de una alerta, con motivo y trazabilidad.                        |
 
 ## 4. Actores
 
-| Actor | Descripción |
-| --- | --- |
-| ADMIN | Usuario con permisos completos. Autoriza excepciones y consulta reportes. |
-| EMPLEADO | Usuario operativo. Registra clientes, alquileres y devoluciones. |
-| Cliente | Persona que solicita el alquiler. No accede directamente al sistema. |
-| Auditor / Evaluador | Revisa requisitos, pruebas y evidencias de calidad. |
+| Actor               | Descripción                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| ADMIN               | Usuario con permisos completos. Autoriza excepciones y consulta reportes. |
+| EMPLEADO            | Usuario operativo. Registra clientes, alquileres y devoluciones.          |
+| Cliente             | Persona que solicita el alquiler. No accede directamente al sistema.      |
+| Auditor / Evaluador | Revisa requisitos, pruebas y evidencias de calidad.                       |
 
 ## 5. Supuestos y dependencias
 
@@ -67,48 +67,48 @@ Quedan fuera de esta versión:
 
 ## 6. Requisitos funcionales
 
-| ID | Requisito | Descripción | Estado actual | Prioridad | Etapa |
-| --- | --- | --- | --- | :---: | :---: |
-| **RF-01** | Autenticación | El sistema permite iniciar sesión con correo y contraseña, y devuelve un token JWT. | Implementado | Alta | — |
-| **RF-02** | Autorización por roles | El backend y el frontend restringen las acciones según el rol `ADMIN` o `EMPLEADO`. | Implementado | Alta | — |
-| **RF-03** | Gestión de usuarios | El ADMIN puede listar, crear, editar, activar y desactivar usuarios. | Implementado | Alta | — |
-| **RF-04** | Cambio de contraseña | Un usuario autenticado puede cambiar su propia contraseña desde la interfaz. | Parcial: endpoint sin UI | Alta | 2 |
-| **RF-05** | Gestión de clientes | El sistema permite crear, consultar, editar y eliminar clientes sin alquileres. | Implementado | Alta | — |
-| **RF-06** | Búsqueda de clientes | El sistema busca clientes por documento, nombres o apellidos y permite seleccionarlos en el flujo de alquiler sin un desplegable masivo. | Parcial: backend con `search`; UI de alquiler usa `<Select>` | Alta | 2 |
-| **RF-07** | Gestión de categorías | El ADMIN puede crear, consultar, editar y eliminar categorías sin implementos. | Implementado | Alta | — |
-| **RF-08** | Prefijo de categoría | Cada categoría tiene un prefijo único que se usa para generar los seriales de sus implementos. | Pendiente | Alta | 3 |
-| **RF-09** | Gestión de inventario | El ADMIN puede crear, consultar, editar y eliminar implementos sin historial de alquileres. | Implementado | Alta | — |
-| **RF-10** | Serial automático | Al crear un implemento, el backend genera su serial con el prefijo de la categoría y un consecutivo, sin permitir editarlo en la UI. | Pendiente | Alta | 3 |
-| **RF-11** | Disponibilidad e integridad | Solo se alquilan implementos `DISPONIBLE`; el cambio a `ALQUILADO` ocurre en una transacción atómica. | Implementado | Crítica | — |
-| **RF-12** | Registro de alquiler | El sistema registra un alquiler con cliente, fecha pactada, implementos y precio congelado. | Implementado | Alta | — |
-| **RF-13** | Selector de cantidad | El usuario puede indicar una cantidad de unidades del mismo tipo y el sistema selecciona esa cantidad de implementos disponibles. | Pendiente | Alta | 3 |
-| **RF-14** | Registro de devolución | El sistema registra la devolución completa de un alquiler y actualiza el estado de cada implemento. | Implementado | Alta | — |
-| **RF-15** | Alerta de factura pendiente en devolución | Al registrar una devolución, el sistema muestra una alerta si el cliente tiene facturas pendientes, sin bloquear la devolución. | Pendiente: requiere modelo de facturación | Alta | 4 |
-| **RF-16** | Autorización de nuevo alquiler con factura pendiente | Si el cliente tiene factura pendiente, un EMPLEADO puede iniciar el alquiler pero requiere autorización de un ADMIN o una excepción registrada, según la política aprobada. | Pendiente | Alta | 4 |
-| **RF-17** | Gestión de facturas y pagos | El sistema registra facturas, pagos, saldo pendiente y estado de cartera por cliente. | Pendiente | Alta | 4 |
-| **RF-18** | Reportes y dashboard | El ADMIN consulta KPIs, inventario, alquileres activos e implementos más alquilados. | Implementado | Media | — |
-| **RF-19** | Ingresos diarios y mensuales | El ADMIN consulta ingresos por día y por mes, calculados con la tarifa congelada y los días del período. | Implementado | Media | — |
-| **RF-20** | Paginación y filtros | Los listados grandes se paginan y filtran en el servidor, sin truncar registros en el navegador. | Parcial: inventario con límite fijo de 200; clientes y usuarios sin paginación | Media | 2 |
-| **RF-21** | Auditoría de excepciones | Toda autorización o excepción de factura pendiente registra usuario, fecha, cliente, factura, saldo y motivo. | Pendiente | Alta | 4 |
+| ID        | Requisito                                            | Descripción                                                                                                                                                                 | Estado actual                                                                  | Prioridad | Etapa |
+| --------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | :-------: | :---: |
+| **RF-01** | Autenticación                                        | El sistema permite iniciar sesión con correo y contraseña, y devuelve un token JWT.                                                                                         | Implementado                                                                   |   Alta    |   —   |
+| **RF-02** | Autorización por roles                               | El backend y el frontend restringen las acciones según el rol `ADMIN` o `EMPLEADO`.                                                                                         | Implementado                                                                   |   Alta    |   —   |
+| **RF-03** | Gestión de usuarios                                  | El ADMIN puede listar, crear, editar, activar y desactivar usuarios.                                                                                                        | Implementado                                                                   |   Alta    |   —   |
+| **RF-04** | Cambio de contraseña                                 | Un usuario autenticado puede cambiar su propia contraseña desde la interfaz.                                                                                                | Parcial: endpoint sin UI                                                       |   Alta    |   2   |
+| **RF-05** | Gestión de clientes                                  | El sistema permite crear, consultar, editar y eliminar clientes sin alquileres.                                                                                             | Implementado                                                                   |   Alta    |   —   |
+| **RF-06** | Búsqueda de clientes                                 | El sistema busca clientes por documento, nombres o apellidos y permite seleccionarlos en el flujo de alquiler sin un desplegable masivo.                                    | Parcial: backend con `search`; UI de alquiler usa `<Select>`                   |   Alta    |   2   |
+| **RF-07** | Gestión de categorías                                | El ADMIN puede crear, consultar, editar y eliminar categorías sin implementos.                                                                                              | Implementado                                                                   |   Alta    |   —   |
+| **RF-08** | Prefijo de categoría                                 | Cada categoría tiene un prefijo único que se usa para generar los seriales de sus implementos.                                                                              | Pendiente                                                                      |   Alta    |   3   |
+| **RF-09** | Gestión de inventario                                | El ADMIN puede crear, consultar, editar y eliminar implementos sin historial de alquileres.                                                                                 | Implementado                                                                   |   Alta    |   —   |
+| **RF-10** | Serial automático                                    | Al crear un implemento, el backend genera su serial con el prefijo de la categoría y un consecutivo, sin permitir editarlo en la UI.                                        | Pendiente                                                                      |   Alta    |   3   |
+| **RF-11** | Disponibilidad e integridad                          | Solo se alquilan implementos `DISPONIBLE`; el cambio a `ALQUILADO` ocurre en una transacción atómica.                                                                       | Implementado                                                                   |  Crítica  |   —   |
+| **RF-12** | Registro de alquiler                                 | El sistema registra un alquiler con cliente, fecha pactada, implementos y precio congelado.                                                                                 | Implementado                                                                   |   Alta    |   —   |
+| **RF-13** | Selector de cantidad                                 | El usuario puede indicar una cantidad de unidades del mismo tipo y el sistema selecciona esa cantidad de implementos disponibles.                                           | Pendiente                                                                      |   Alta    |   3   |
+| **RF-14** | Registro de devolución                               | El sistema registra la devolución completa de un alquiler y actualiza el estado de cada implemento.                                                                         | Implementado                                                                   |   Alta    |   —   |
+| **RF-15** | Alerta de factura pendiente en devolución            | Al registrar una devolución, el sistema muestra una alerta si el cliente tiene facturas pendientes, sin bloquear la devolución.                                             | Pendiente: requiere modelo de facturación                                      |   Alta    |   4   |
+| **RF-16** | Autorización de nuevo alquiler con factura pendiente | Si el cliente tiene factura pendiente, un EMPLEADO puede iniciar el alquiler pero requiere autorización de un ADMIN o una excepción registrada, según la política aprobada. | Pendiente                                                                      |   Alta    |   4   |
+| **RF-17** | Gestión de facturas y pagos                          | El sistema registra facturas, pagos, saldo pendiente y estado de cartera por cliente.                                                                                       | Pendiente                                                                      |   Alta    |   4   |
+| **RF-18** | Reportes y dashboard                                 | El ADMIN consulta KPIs, inventario, alquileres activos e implementos más alquilados.                                                                                        | Implementado                                                                   |   Media   |   —   |
+| **RF-19** | Ingresos diarios y mensuales                         | El ADMIN consulta ingresos por día y por mes, calculados con la tarifa congelada y los días del período.                                                                    | Implementado                                                                   |   Media   |   —   |
+| **RF-20** | Paginación y filtros                                 | Los listados grandes se paginan y filtran en el servidor, sin truncar registros en el navegador.                                                                            | Parcial: inventario con límite fijo de 200; clientes y usuarios sin paginación |   Media   |   2   |
+| **RF-21** | Auditoría de excepciones                             | Toda autorización o excepción de factura pendiente registra usuario, fecha, cliente, factura, saldo y motivo.                                                               | Pendiente                                                                      |   Alta    |   4   |
 
 ---
 
 ## 7. Requisitos no funcionales
 
-| ID | Requisito | Criterio verificable | Estado actual | Etapa |
-| --- | --- | --- | --- | :---: |
-| **RNF-01** | Seguridad de autenticación | Tras 5 intentos fallidos consecutivos, el login responde `429` o bloquea temporalmente. Contraseñas con bcrypt. | Parcial: falta rate limiting | 5 |
-| **RNF-02** | Control de acceso | El 100% de las rutas protegidas valida JWT y rol; un EMPLEADO recibe `403` en rutas de ADMIN. | Implementado | — |
-| **RNF-03** | Integridad transaccional | Un fallo a mitad de un alquiler o devolución no deja estados parciales. | Implementado con `Serializable` | — |
-| **RNF-04** | Rendimiento y escalabilidad | Los listados paginados responden en menos de 2 segundos en entorno local con hasta 200 registros y no truncan datos. | Parcial | 2 y 5 |
-| **RNF-05** | Usabilidad | Los flujos principales se completan sin manual; búsqueda de clientes con teclado y resultados claros; mensajes de error en español. | Parcial | 2 |
-| **RNF-06** | Portabilidad e instalación | Un entorno limpio puede instalarse siguiendo el README con los `.env.example`. | Parcial: archivos existen; falta prueba limpia formal | 1 |
-| **RNF-07** | Facilidad de prueba | Existen pruebas unitarias, de integración y E2E ejecutables con `npm test` y `npm run test:e2e`. | Pendiente: línea base sin pruebas | 1 a 6 |
-| **RNF-08** | Disponibilidad y recuperación | `/api/health` responde `503` si PostgreSQL no está disponible; la UI muestra un `ErrorBoundary` ante fallos de render. | Parcial | 5 |
-| **RNF-09** | Compatibilidad | La interfaz opera en Chrome, Edge y Firefox de escritorio y en vista móvil de 375 × 812. | Pendiente de evidencia | 6 |
-| **RNF-10** | Trazabilidad | Cada requisito tiene al menos un caso de prueba y una evidencia asociada. | Pendiente | 1 a 6 |
-| **RNF-11** | Accesibilidad | Los controles principales tienen etiquetas, foco visible y contraste mínimo 4.5:1 en texto informativo. | Parcial | 2 y 6 |
-| **RNF-12** | Gestión de secretos | Ningún secreto real se versiona; los `.env.example` contienen valores de desarrollo. | Implementado | — |
+| ID         | Requisito                     | Criterio verificable                                                                                                                | Estado actual                                         | Etapa |
+| ---------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | :---: |
+| **RNF-01** | Seguridad de autenticación    | Tras 5 intentos fallidos consecutivos, el login responde `429` o bloquea temporalmente. Contraseñas con bcrypt.                     | Parcial: falta rate limiting                          |   5   |
+| **RNF-02** | Control de acceso             | El 100% de las rutas protegidas valida JWT y rol; un EMPLEADO recibe `403` en rutas de ADMIN.                                       | Implementado                                          |   —   |
+| **RNF-03** | Integridad transaccional      | Un fallo a mitad de un alquiler o devolución no deja estados parciales.                                                             | Implementado con `Serializable`                       |   —   |
+| **RNF-04** | Rendimiento y escalabilidad   | Los listados paginados responden en menos de 2 segundos en entorno local con hasta 200 registros y no truncan datos.                | Parcial                                               | 2 y 5 |
+| **RNF-05** | Usabilidad                    | Los flujos principales se completan sin manual; búsqueda de clientes con teclado y resultados claros; mensajes de error en español. | Parcial                                               |   2   |
+| **RNF-06** | Portabilidad e instalación    | Un entorno limpio puede instalarse siguiendo el README con los `.env.example`.                                                      | Parcial: archivos existen; falta prueba limpia formal |   1   |
+| **RNF-07** | Facilidad de prueba           | Existen pruebas unitarias, de integración y E2E ejecutables con `npm test` y `npm run test:e2e`.                                    | Pendiente: línea base sin pruebas                     | 1 a 6 |
+| **RNF-08** | Disponibilidad y recuperación | `/api/health` responde `503` si PostgreSQL no está disponible; la UI muestra un `ErrorBoundary` ante fallos de render.              | Parcial                                               |   5   |
+| **RNF-09** | Compatibilidad                | La interfaz opera en Chrome, Edge y Firefox de escritorio y en vista móvil de 375 × 812.                                            | Pendiente de evidencia                                |   6   |
+| **RNF-10** | Trazabilidad                  | Cada requisito tiene al menos un caso de prueba y una evidencia asociada.                                                           | Pendiente                                             | 1 a 6 |
+| **RNF-11** | Accesibilidad                 | Los controles principales tienen etiquetas, foco visible y contraste mínimo 4.5:1 en texto informativo.                             | Parcial                                               | 2 y 6 |
+| **RNF-12** | Gestión de secretos           | Ningún secreto real se versiona; los `.env.example` contienen valores de desarrollo.                                                | Implementado                                          |   —   |
 
 ---
 
@@ -297,21 +297,21 @@ Característica: Cambio de contraseña
 
 ---
 
-## 10. Decisiones pendientes de aprobación
+## 10. Decisiones aprobadas el 2026-11-09
 
-| Decisión | Opciones | Recomendación |
-| --- | --- | --- |
-| Modelo de cantidad | Unidades serializadas vs. stock por tipo | Seleccionar N unidades disponibles y conservar el serial de cada una. |
-| Modelo de facturación | Factura por alquiler vs. cuenta por cliente | Factura por alquiler con pagos asociados y saldo calculado. |
-| Autorización de cartera | ADMIN obligatorio vs. excepción de EMPLEADO | Devolución permitida al EMPLEADO; nuevo alquiler con saldo pendiente requiere ADMIN con motivo registrado. |
-| Formato de serial | Prefijo y longitud | `PREFIJO-###` con prefijo único por categoría y consecutivo no reutilizable. |
-| Migración de seriales existentes | Conservar vs. renumerar | Conservar los seriales actuales y usar el nuevo formato solo para registros nuevos. |
-| Alcance de Git/CI | Local vs. GitHub + pipeline | Git local en Etapa 1; pipeline mínimo en Etapa 6. |
+| Decisión                         | Opciones                                    | Decisión aprobada                                                                                          |
+| -------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Modelo de cantidad               | Unidades serializadas vs. stock por tipo    | Seleccionar N unidades disponibles y conservar el serial de cada una.                                      |
+| Modelo de facturación            | Factura por alquiler vs. cuenta por cliente | Factura por alquiler con pagos asociados y saldo calculado.                                                |
+| Autorización de cartera          | ADMIN obligatorio vs. excepción de EMPLEADO | Devolución permitida al EMPLEADO; nuevo alquiler con saldo pendiente requiere ADMIN con motivo registrado. |
+| Formato de serial                | Prefijo y longitud                          | `PREFIJO-###` con prefijo único por categoría y consecutivo no reutilizable.                               |
+| Migración de seriales existentes | Conservar vs. renumerar                     | Conservar los seriales actuales y usar el nuevo formato solo para registros nuevos.                        |
+| Alcance de Git/CI                | Local vs. GitHub + pipeline                 | Git local en Etapa 1; pipeline mínimo en Etapa 6.                                                          |
 
 ---
 
 ## 11. Control de cambios
 
-| Versión | Fecha | Cambio |
-| --- | --- | --- |
-| 1.0 | 2026-11-09 | Creación inicial para la Etapa 1. Incluye requisitos existentes y mejoras pendientes. |
+| Versión | Fecha      | Cambio                                                                                |
+| ------- | ---------- | ------------------------------------------------------------------------------------- |
+| 1.0     | 2026-11-09 | Creación inicial para la Etapa 1. Incluye requisitos existentes y mejoras pendientes. |

@@ -69,7 +69,7 @@ Establecer la base documental y técnica para que las etapas siguientes tengan r
 - Configurar linter/formatter.
 - Crear la carpeta `docs/qa/evidencias/`.
 
-### Decisiones que deben cerrarse en esta etapa
+### Decisiones aprobadas el 2026-11-09
 
 1. **Modelo de cantidad:** ¿la cantidad selecciona N unidades serializadas o se agrega stock por tipo?
    - Recomendación: seleccionar N implementos disponibles del mismo nombre/categoría, conservando el serial de cada unidad.
@@ -79,6 +79,8 @@ Establecer la base documental y técnica para que las etapas siguientes tengan r
    - Recomendación: devolución permitida al EMPLEADO; nuevo alquiler con saldo pendiente requiere autorización de ADMIN con motivo registrado.
 4. **Formato de serial:** prefijo por categoría, longitud del consecutivo y tratamiento de los registros existentes.
 5. **Alcance de Git/CI:** repositorio local, GitHub y pipeline mínimo.
+
+**Resultado:** las cinco recomendaciones fueron aprobadas por el usuario. Se implementarán en las etapas 3, 4 y 6.
 
 ### Entregables
 
@@ -107,6 +109,8 @@ Establecer la base documental y técnica para que las etapas siguientes tengan r
 ---
 
 ## 5. Etapa 2 — Usabilidad y quick wins
+
+**Estado:** Cumplida técnicamente el 2026-11-09; aprobación del gate y Etapa 3 pospuestas por decisión del usuario. Evidencia en `docs/qa/evidencias/etapa-2/`.
 
 ### Objetivo
 

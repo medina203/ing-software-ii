@@ -14,8 +14,10 @@ El repositorio es un monorepo con dos aplicaciones:
 - Autenticación con correo y contraseña, hash bcrypt y token JWT.
 - Roles `ADMIN` y `EMPLEADO` con permisos diferenciados en API y frontend.
 - Dashboard administrativo con indicadores de inventario, alquileres, vencidos, clientes y devoluciones del mes.
-- Inventario de implementos con búsqueda, filtros por estado y categoría, y CRUD para administradores.
-- Gestión de clientes con búsqueda por documento, nombre, teléfono o correo.
+- Inventario de implementos paginado, con búsqueda y filtros de servidor por estado y categoría, y CRUD para administradores.
+- Gestión de clientes con búsqueda en servidor por documento, nombre, teléfono o correo.
+- Combobox de clientes con búsqueda por cédula, nombres o apellidos y navegación por teclado en el registro de alquileres.
+- Cambio de contraseña del usuario autenticado desde la sección “Mi cuenta”.
 - Registro de alquileres con múltiples implementos, validación de disponibilidad y transacción atómica.
 - Devoluciones con inspección individual por implemento y asignación de estado final:
   - `DISPONIBLE`
@@ -31,12 +33,12 @@ El repositorio es un monorepo con dos aplicaciones:
 
 ## 2. Stack
 
-| Capa | Tecnologías |
-| --- | --- |
-| Backend | NestJS 11, Prisma 6.19.3, PostgreSQL 16, JWT, bcryptjs, class-validator, Helmet |
-| Frontend | React 19, Vite 7, TypeScript, React Router 7, Tailwind CSS 3, Axios, date-fns, lucide-react |
-| Infraestructura | Docker Compose, PostgreSQL 16 Alpine |
-| Herramientas | npm workspaces, Prisma CLI, tsx, concurrently |
+| Capa            | Tecnologías                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------- |
+| Backend         | NestJS 11, Prisma 6.19.3, PostgreSQL 16, JWT, bcryptjs, class-validator, Helmet             |
+| Frontend        | React 19, Vite 7, TypeScript, React Router 7, Tailwind CSS 3, Axios, date-fns, lucide-react |
+| Infraestructura | Docker Compose, PostgreSQL 16 Alpine                                                        |
+| Herramientas    | npm workspaces, Prisma CLI, tsx, concurrently                                               |
 
 ---
 
@@ -118,19 +120,19 @@ npm run dev
 
 Servicios disponibles:
 
-| Servicio | URL |
-| --- | --- |
-| Frontend | http://localhost:5173 |
-| API | http://localhost:4000/api |
-| Health check | http://localhost:4000/api/health |
-| Prisma Studio | `npm run db:studio` |
+| Servicio      | URL                              |
+| ------------- | -------------------------------- |
+| Frontend      | http://localhost:5173            |
+| API           | http://localhost:4000/api        |
+| Health check  | http://localhost:4000/api/health |
+| Prisma Studio | `npm run db:studio`              |
 
 ### Credenciales demo
 
-| Rol | Correo | Contraseña |
-| --- | --- | --- |
-| Administrador | `admin@obragest.local` | `Admin123*` |
-| Empleado | `empleado@obragest.local` | `Empleado123*` |
+| Rol           | Correo                    | Contraseña     |
+| ------------- | ------------------------- | -------------- |
+| Administrador | `admin@obragest.local`    | `Admin123*`    |
+| Empleado      | `empleado@obragest.local` | `Empleado123*` |
 
 > Cambie estas credenciales y el `JWT_SECRET` antes de cualquier despliegue real.
 
@@ -142,25 +144,25 @@ Servicios disponibles:
 
 Se crea a partir de `.env.example`. Es opcional porque `docker-compose.yml` define valores por defecto.
 
-| Variable | Valor por defecto | Descripción |
-| --- | --- | --- |
-| `POSTGRES_USER` | `inventario` | Usuario de PostgreSQL |
-| `POSTGRES_PASSWORD` | `inventario123` | Contraseña de PostgreSQL |
-| `POSTGRES_DB` | `inventario_db` | Nombre de la base de datos |
-| `POSTGRES_PORT` | `5432` | Puerto publicado en el host |
-| `TZ` | `America/Bogota` | Zona horaria del contenedor |
+| Variable            | Valor por defecto | Descripción                 |
+| ------------------- | ----------------- | --------------------------- |
+| `POSTGRES_USER`     | `inventario`      | Usuario de PostgreSQL       |
+| `POSTGRES_PASSWORD` | `inventario123`   | Contraseña de PostgreSQL    |
+| `POSTGRES_DB`       | `inventario_db`   | Nombre de la base de datos  |
+| `POSTGRES_PORT`     | `5432`            | Puerto publicado en el host |
+| `TZ`                | `America/Bogota`  | Zona horaria del contenedor |
 
 ### 6.2 Backend `backend/.env`
 
 Se crea a partir de `backend/.env.example`.
 
-| Variable | Ejemplo | Descripción |
-| --- | --- | --- |
-| `DATABASE_URL` | `postgresql://inventario:inventario123@localhost:5432/inventario_db?schema=public` | Cadena de conexión usada por Prisma |
-| `JWT_SECRET` | Cadena larga y aleatoria | Firma de los tokens JWT |
-| `JWT_EXPIRES_IN_SECONDS` | `28800` | Vigencia del token en segundos (8 horas por defecto) |
-| `PORT` | `4000` | Puerto de la API |
-| `FRONTEND_URL` | `http://localhost:5173` | Origen(es) permitidos por CORS, separados por coma |
+| Variable                 | Ejemplo                                                                            | Descripción                                          |
+| ------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`           | `postgresql://inventario:inventario123@localhost:5432/inventario_db?schema=public` | Cadena de conexión usada por Prisma                  |
+| `JWT_SECRET`             | Cadena larga y aleatoria                                                           | Firma de los tokens JWT                              |
+| `JWT_EXPIRES_IN_SECONDS` | `28800`                                                                            | Vigencia del token en segundos (8 horas por defecto) |
+| `PORT`                   | `4000`                                                                             | Puerto de la API                                     |
+| `FRONTEND_URL`           | `http://localhost:5173`                                                            | Origen(es) permitidos por CORS, separados por coma   |
 
 > Si cambia `POSTGRES_PORT` en el `.env` raíz, actualice también el puerto de `DATABASE_URL` en `backend/.env`.
 
@@ -168,8 +170,8 @@ Se crea a partir de `backend/.env.example`.
 
 Es opcional en desarrollo. Se crea a partir de `frontend/.env.example`.
 
-| Variable | Valor por defecto | Descripción |
-| --- | --- | --- |
+| Variable       | Valor por defecto           | Descripción                            |
+| -------------- | --------------------------- | -------------------------------------- |
 | `VITE_API_URL` | `http://localhost:4000/api` | URL base de la API consumida por Axios |
 
 Vite incorpora esta variable en tiempo de compilación. Si compila para producción con otra URL, defínala antes de `npm run build`.
@@ -180,27 +182,27 @@ Vite incorpora esta variable en tiempo de compilación. Si compila para producci
 
 Ejecute todos desde la raíz del repositorio.
 
-| Script | Acción |
-| --- | --- |
-| `npm run dev` | Inicia API en modo watch y frontend Vite en paralelo |
-| `npm run dev:backend` | Inicia solo la API |
-| `npm run dev:frontend` | Inicia solo el frontend |
-| `npm run build` | Compila backend y frontend para producción |
-| `npm run db:up` | Levanta PostgreSQL con Docker Compose y espera el health check |
-| `npm run db:down` | Detiene los contenedores sin borrar el volumen |
-| `npm run db:reset` | **Borra la base**, la recrea, genera Prisma, migra y siembra |
-| `npm run db:setup` | Genera Prisma, aplica migraciones y ejecuta el seed |
-| `npm run db:deploy` | Aplica migraciones existentes sin generar nuevas |
-| `npm run db:migrate` | Crea/aplica una migración de desarrollo con Prisma Migrate |
-| `npm run db:seed` | Carga o actualiza los datos demo |
-| `npm run db:studio` | Abre Prisma Studio |
-| `npm run prisma:generate` | Regenera el cliente Prisma |
-| `npm test` | Ejecuta las pruebas unitarias de backend y frontend |
-| `npm run test:backend` | Ejecuta solo las pruebas unitarias del backend |
-| `npm run test:frontend` | Ejecuta solo las pruebas unitarias del frontend |
-| `npm run test:e2e` | Ejecuta las pruebas E2E de humo con Playwright |
-| `npm run lint` | Ejecuta ESLint sobre backend y frontend |
-| `npm run check:env` | Verifica que las plantillas `.env.example` existan y tengan las claves requeridas |
+| Script                    | Acción                                                                            |
+| ------------------------- | --------------------------------------------------------------------------------- |
+| `npm run dev`             | Inicia API en modo watch y frontend Vite en paralelo                              |
+| `npm run dev:backend`     | Inicia solo la API                                                                |
+| `npm run dev:frontend`    | Inicia solo el frontend                                                           |
+| `npm run build`           | Compila backend y frontend para producción                                        |
+| `npm run db:up`           | Levanta PostgreSQL con Docker Compose y espera el health check                    |
+| `npm run db:down`         | Detiene los contenedores sin borrar el volumen                                    |
+| `npm run db:reset`        | **Borra la base**, la recrea, genera Prisma, migra y siembra                      |
+| `npm run db:setup`        | Genera Prisma, aplica migraciones y ejecuta el seed                               |
+| `npm run db:deploy`       | Aplica migraciones existentes sin generar nuevas                                  |
+| `npm run db:migrate`      | Crea/aplica una migración de desarrollo con Prisma Migrate                        |
+| `npm run db:seed`         | Carga o actualiza los datos demo                                                  |
+| `npm run db:studio`       | Abre Prisma Studio                                                                |
+| `npm run prisma:generate` | Regenera el cliente Prisma                                                        |
+| `npm test`                | Ejecuta las pruebas unitarias de backend y frontend                               |
+| `npm run test:backend`    | Ejecuta solo las pruebas unitarias del backend                                    |
+| `npm run test:frontend`   | Ejecuta solo las pruebas unitarias del frontend                                   |
+| `npm run test:e2e`        | Ejecuta las pruebas E2E de humo con Playwright                                    |
+| `npm run lint`            | Ejecuta ESLint sobre backend y frontend                                           |
+| `npm run check:env`       | Verifica que las plantillas `.env.example` existan y tengan las claves requeridas |
 
 > `npm run db:reset` es destructivo: elimina el volumen de PostgreSQL y todos los datos.
 
@@ -293,12 +295,12 @@ erDiagram
 
 ### Estados
 
-| Entidad | Valores |
-| --- | --- |
-| `Usuario.rol` | `ADMIN`, `EMPLEADO` |
-| `Implemento.estado` | `DISPONIBLE`, `ALQUILADO`, `MANTENIMIENTO`, `FUERA_DE_SERVICIO` |
-| `Alquiler.estado` | `ACTIVO`, `FINALIZADO`, `VENCIDO` |
-| `DetalleDevolucion.estadoFinal` | `DISPONIBLE`, `MANTENIMIENTO`, `FUERA_DE_SERVICIO` |
+| Entidad                         | Valores                                                         |
+| ------------------------------- | --------------------------------------------------------------- |
+| `Usuario.rol`                   | `ADMIN`, `EMPLEADO`                                             |
+| `Implemento.estado`             | `DISPONIBLE`, `ALQUILADO`, `MANTENIMIENTO`, `FUERA_DE_SERVICIO` |
+| `Alquiler.estado`               | `ACTIVO`, `FINALIZADO`, `VENCIDO`                               |
+| `DetalleDevolucion.estadoFinal` | `DISPONIBLE`, `MANTENIMIENTO`, `FUERA_DE_SERVICIO`              |
 
 ### Reglas de negocio
 
@@ -317,17 +319,17 @@ erDiagram
 
 ## 9. Roles y permisos
 
-| Recurso / acción | `ADMIN` | `EMPLEADO` |
-| --- | :---: | :---: |
-| Dashboard y reportes | ✅ | ❌ |
-| Consultar inventario y disponibilidad | ✅ | ✅ |
-| Crear, editar y eliminar implementos | ✅ | ❌ |
-| Consultar y gestionar clientes | ✅ | ✅ |
-| Eliminar clientes | ✅ | ❌ |
-| Crear y consultar alquileres | ✅ | ✅ |
-| Registrar y consultar devoluciones | ✅ | ✅ |
-| Gestionar categorías | ✅ | ❌ |
-| Gestionar usuarios | ✅ | ❌ |
+| Recurso / acción                      | `ADMIN` | `EMPLEADO` |
+| ------------------------------------- | :-----: | :--------: |
+| Dashboard y reportes                  |   ✅    |     ❌     |
+| Consultar inventario y disponibilidad |   ✅    |     ✅     |
+| Crear, editar y eliminar implementos  |   ✅    |     ❌     |
+| Consultar y gestionar clientes        |   ✅    |     ✅     |
+| Eliminar clientes                     |   ✅    |     ❌     |
+| Crear y consultar alquileres          |   ✅    |     ✅     |
+| Registrar y consultar devoluciones    |   ✅    |     ✅     |
+| Gestionar categorías                  |   ✅    |     ❌     |
+| Gestionar usuarios                    |   ✅    |     ❌     |
 
 El frontend oculta las secciones no permitidas y el backend aplica `JwtAuthGuard` y `RolesGuard` de forma global.
 
@@ -387,45 +389,45 @@ npm run dev
 
 ### 11.1 Endpoints
 
-| Método | Ruta | Rol | Descripción |
-| --- | --- | --- | --- |
-| `GET` | `/health` | Público | Estado del servicio |
-| `POST` | `/auth/login` | Público | Inicio de sesión |
-| `GET` | `/auth/me` | Autenticado | Perfil del usuario actual |
-| `PATCH` | `/auth/password` | Autenticado | Cambio de contraseña |
-| `GET` | `/users` | `ADMIN` | Listar usuarios |
-| `GET` | `/users/:id` | `ADMIN` | Consultar usuario |
-| `POST` | `/users` | `ADMIN` | Crear usuario |
-| `PATCH` | `/users/:id` | `ADMIN` | Editar rol, estado, datos o contraseña |
-| `GET` | `/clients?search=` | Autenticado | Buscar/listar clientes |
-| `GET` | `/clients/:id` | Autenticado | Consultar cliente |
-| `POST` | `/clients` | Autenticado | Crear cliente |
-| `PATCH` | `/clients/:id` | Autenticado | Editar cliente |
-| `DELETE` | `/clients/:id` | `ADMIN` | Eliminar cliente sin alquileres |
-| `GET` | `/categories` | Autenticado | Listar categorías |
-| `GET` | `/categories/:id` | Autenticado | Consultar categoría |
-| `POST` | `/categories` | `ADMIN` | Crear categoría |
-| `PATCH` | `/categories/:id` | `ADMIN` | Editar categoría |
-| `DELETE` | `/categories/:id` | `ADMIN` | Eliminar categoría sin implementos |
-| `GET` | `/items?search=&estado=&categoriaId=&page=&pageSize=` | Autenticado | Listar/filtrar inventario |
-| `GET` | `/items/available` | Autenticado | Implementos disponibles |
-| `GET` | `/items/:id` | Autenticado | Consultar implemento |
-| `POST` | `/items` | `ADMIN` | Crear implemento |
-| `PATCH` | `/items/:id` | `ADMIN` | Editar implemento |
-| `DELETE` | `/items/:id` | `ADMIN` | Eliminar implemento sin historial |
-| `GET` | `/rentals?search=&estado=&page=&pageSize=` | Autenticado | Listar alquileres |
-| `GET` | `/rentals/:id` | Autenticado | Detalle de alquiler y devolución |
-| `POST` | `/rentals` | Autenticado | Registrar alquiler |
-| `GET` | `/returns/pending` | Autenticado | Alquileres pendientes de devolución |
-| `GET` | `/returns?search=&page=&pageSize=` | Autenticado | Historial de devoluciones |
-| `GET` | `/returns/:id` | Autenticado | Detalle de devolución |
-| `POST` | `/returns` | Autenticado | Registrar devolución |
-| `GET` | `/reports/dashboard` | `ADMIN` | KPIs del panel |
-| `GET` | `/reports/inventory-summary` | `ADMIN` | Inventario agrupado por estado |
-| `GET` | `/reports/top-items?limit=10` | `ADMIN` | Implementos más alquilados |
-| `GET` | `/reports/active-rentals` | `ADMIN` | Alquileres activos y vencidos |
-| `GET` | `/reports/revenue/daily?days=14` | `ADMIN` | Ingresos diarios de los últimos días |
-| `GET` | `/reports/revenue/monthly?year=2026` | `ADMIN` | Ingresos totales agrupados por mes |
+| Método   | Ruta                                                  | Rol         | Descripción                            |
+| -------- | ----------------------------------------------------- | ----------- | -------------------------------------- |
+| `GET`    | `/health`                                             | Público     | Estado del servicio                    |
+| `POST`   | `/auth/login`                                         | Público     | Inicio de sesión                       |
+| `GET`    | `/auth/me`                                            | Autenticado | Perfil del usuario actual              |
+| `PATCH`  | `/auth/password`                                      | Autenticado | Cambio de contraseña                   |
+| `GET`    | `/users`                                              | `ADMIN`     | Listar usuarios                        |
+| `GET`    | `/users/:id`                                          | `ADMIN`     | Consultar usuario                      |
+| `POST`   | `/users`                                              | `ADMIN`     | Crear usuario                          |
+| `PATCH`  | `/users/:id`                                          | `ADMIN`     | Editar rol, estado, datos o contraseña |
+| `GET`    | `/clients?search=`                                    | Autenticado | Buscar/listar clientes                 |
+| `GET`    | `/clients/:id`                                        | Autenticado | Consultar cliente                      |
+| `POST`   | `/clients`                                            | Autenticado | Crear cliente                          |
+| `PATCH`  | `/clients/:id`                                        | Autenticado | Editar cliente                         |
+| `DELETE` | `/clients/:id`                                        | `ADMIN`     | Eliminar cliente sin alquileres        |
+| `GET`    | `/categories`                                         | Autenticado | Listar categorías                      |
+| `GET`    | `/categories/:id`                                     | Autenticado | Consultar categoría                    |
+| `POST`   | `/categories`                                         | `ADMIN`     | Crear categoría                        |
+| `PATCH`  | `/categories/:id`                                     | `ADMIN`     | Editar categoría                       |
+| `DELETE` | `/categories/:id`                                     | `ADMIN`     | Eliminar categoría sin implementos     |
+| `GET`    | `/items?search=&estado=&categoriaId=&page=&pageSize=` | Autenticado | Listar/filtrar inventario              |
+| `GET`    | `/items/available`                                    | Autenticado | Implementos disponibles                |
+| `GET`    | `/items/:id`                                          | Autenticado | Consultar implemento                   |
+| `POST`   | `/items`                                              | `ADMIN`     | Crear implemento                       |
+| `PATCH`  | `/items/:id`                                          | `ADMIN`     | Editar implemento                      |
+| `DELETE` | `/items/:id`                                          | `ADMIN`     | Eliminar implemento sin historial      |
+| `GET`    | `/rentals?search=&estado=&page=&pageSize=`            | Autenticado | Listar alquileres                      |
+| `GET`    | `/rentals/:id`                                        | Autenticado | Detalle de alquiler y devolución       |
+| `POST`   | `/rentals`                                            | Autenticado | Registrar alquiler                     |
+| `GET`    | `/returns/pending`                                    | Autenticado | Alquileres pendientes de devolución    |
+| `GET`    | `/returns?search=&page=&pageSize=`                    | Autenticado | Historial de devoluciones              |
+| `GET`    | `/returns/:id`                                        | Autenticado | Detalle de devolución                  |
+| `POST`   | `/returns`                                            | Autenticado | Registrar devolución                   |
+| `GET`    | `/reports/dashboard`                                  | `ADMIN`     | KPIs del panel                         |
+| `GET`    | `/reports/inventory-summary`                          | `ADMIN`     | Inventario agrupado por estado         |
+| `GET`    | `/reports/top-items?limit=10`                         | `ADMIN`     | Implementos más alquilados             |
+| `GET`    | `/reports/active-rentals`                             | `ADMIN`     | Alquileres activos y vencidos          |
+| `GET`    | `/reports/revenue/daily?days=14`                      | `ADMIN`     | Ingresos diarios de los últimos días   |
+| `GET`    | `/reports/revenue/monthly?year=2026`                  | `ADMIN`     | Ingresos totales agrupados por mes     |
 
 > Los ingresos se calculan con la tarifa diaria congelada en cada alquiler y los días del período. Para alquileres finalizados se usa la fecha real de devolución; para los que siguen en curso se calcula hasta el día actual.
 

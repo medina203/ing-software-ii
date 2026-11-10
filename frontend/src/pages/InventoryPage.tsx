@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowLeft,
+  ArrowRight,
   CircleDollarSign,
   Package,
   PackageSearch,
@@ -58,11 +60,8 @@ const emptyForm: ItemFormState = {
   estado: 'DISPONIBLE',
 };
 
-const MANUAL_STATES: ItemStatus[] = [
-  'DISPONIBLE',
-  'MANTENIMIENTO',
-  'FUERA_DE_SERVICIO',
-];
+const MANUAL_STATES: ItemStatus[] = ['DISPONIBLE', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO'];
+const PAGE_SIZE = 9;
 
 export function InventoryPage() {
   const { usuario } = useAuth();
@@ -71,11 +70,16 @@ export function InventoryPage() {
 
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
   const [categoryFilter, setCategoryFilter] = useState('TODAS');
+  const requestIdRef = useRef(0);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -85,45 +89,55 @@ export function InventoryPage() {
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [search]);
+
   const loadData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setLoadError('');
     try {
       const [itemsResponse, categoriesResponse] = await Promise.all([
         api.get<PaginatedResponse<Item>>('/items', {
-          params: { page: 1, pageSize: 200 },
+          params: {
+            page,
+            pageSize: PAGE_SIZE,
+            ...(debouncedSearch ? { search: debouncedSearch } : {}),
+            ...(statusFilter !== 'TODOS' ? { estado: statusFilter } : {}),
+            ...(categoryFilter !== 'TODAS'
+              ? { categoriaId: Number(categoryFilter) }
+              : {}),
+          },
         }),
         api.get<ListResponse<Category>>('/categories'),
       ]);
+      if (requestId !== requestIdRef.current) return;
       setItems(itemsResponse.data.data);
+      setTotal(itemsResponse.data.total);
+      setTotalPages(Math.max(1, itemsResponse.data.totalPages));
       setCategories(categoriesResponse.data.data);
+
+      if (page > Math.max(1, itemsResponse.data.totalPages)) {
+        setPage(Math.max(1, itemsResponse.data.totalPages));
+      }
     } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       setLoadError(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [categoryFilter, debouncedSearch, page, statusFilter]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
-
-  const filteredItems = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return items.filter((item) => {
-      const matchesSearch =
-        !term ||
-        item.nombre.toLowerCase().includes(term) ||
-        item.codigoSerie.toLowerCase().includes(term) ||
-        item.categoria.nombre.toLowerCase().includes(term);
-      const matchesStatus =
-        statusFilter === 'TODOS' || item.estado === statusFilter;
-      const matchesCategory =
-        categoryFilter === 'TODAS' ||
-        item.categoriaId === Number(categoryFilter);
-      return matchesSearch && matchesStatus && matchesCategory;
-    });
-  }, [items, search, statusFilter, categoryFilter]);
 
   const openCreate = () => {
     setEditingItem(null);
@@ -221,8 +235,10 @@ export function InventoryPage() {
 
   const clearFilters = () => {
     setSearch('');
+    setDebouncedSearch('');
     setStatusFilter('TODOS');
     setCategoryFilter('TODAS');
+    setPage(1);
   };
 
   const hasFilters =
@@ -244,10 +260,7 @@ export function InventoryPage() {
               variant="secondary"
             />
             {isAdmin && (
-              <Button
-                icon={<Plus className="h-4 w-4" />}
-                onClick={openCreate}
-              >
+              <Button icon={<Plus className="h-4 w-4" />} onClick={openCreate}>
                 Nuevo implemento
               </Button>
             )}
@@ -259,7 +272,10 @@ export function InventoryPage() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <SearchInput
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
             placeholder="Buscar por nombre, código o categoría…"
             className="flex-1"
             aria-label="Buscar implementos"
@@ -269,7 +285,10 @@ export function InventoryPage() {
               <SlidersHorizontal className="hidden h-4 w-4 text-slate-400 sm:block" />
               <Select
                 value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value);
+                  setPage(1);
+                }}
                 aria-label="Filtrar por estado"
                 className="sm:w-48"
               >
@@ -283,7 +302,10 @@ export function InventoryPage() {
             </div>
             <Select
               value={categoryFilter}
-              onChange={(event) => setCategoryFilter(event.target.value)}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value);
+                setPage(1);
+              }}
               aria-label="Filtrar por categoría"
               className="sm:w-52"
             >
@@ -298,8 +320,8 @@ export function InventoryPage() {
         </div>
         <div className="mt-3 flex items-center justify-between">
           <p className="text-xs text-slate-500">
-            Mostrando <span className="font-semibold">{filteredItems.length}</span>{' '}
-            de {items.length} implementos
+            Mostrando <span className="font-semibold">{items.length}</span> de {total}{' '}
+            implementos
           </p>
           {hasFilters && (
             <button
@@ -317,19 +339,19 @@ export function InventoryPage() {
 
       {loading ? (
         <LoadingBlock message="Cargando inventario…" />
-      ) : filteredItems.length === 0 ? (
+      ) : items.length === 0 ? (
         <EmptyState
           icon={PackageSearch}
-          title={items.length === 0 ? 'Aún no hay implementos' : 'Sin resultados'}
+          title={total === 0 && !hasFilters ? 'Aún no hay implementos' : 'Sin resultados'}
           description={
-            items.length === 0
+            total === 0 && !hasFilters
               ? isAdmin
                 ? 'Registra el primer implemento para comenzar a gestionar el inventario.'
                 : 'El administrador aún no ha registrado implementos.'
               : 'Prueba con otros filtros o limpia la búsqueda para ver todo el inventario.'
           }
           action={
-            items.length === 0 && isAdmin ? (
+            total === 0 && !hasFilters && isAdmin ? (
               <Button icon={<Plus className="h-4 w-4" />} onClick={openCreate}>
                 Registrar implemento
               </Button>
@@ -342,7 +364,7 @@ export function InventoryPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredItems.map((item) => (
+          {items.map((item) => (
             <article
               key={item.id}
               className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-pop"
@@ -397,11 +419,39 @@ export function InventoryPage() {
         </div>
       )}
 
+      {!loading && items.length > 0 && (
+        <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <p className="text-xs text-slate-500">
+            Página {page} de {totalPages} · {total} registros
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              icon={<ArrowLeft className="h-4 w-4" />}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page >= totalPages || loading}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            >
+              Siguiente
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {!isAdmin && (
         <p className="flex items-center gap-2 text-xs text-slate-500">
           <CircleDollarSign className="h-4 w-4 text-slate-400" />
-          Como empleado puedes consultar el inventario y su disponibilidad. La
-          gestión de implementos está reservada al administrador.
+          Como empleado puedes consultar el inventario y su disponibilidad. La gestión de
+          implementos está reservada al administrador.
         </p>
       )}
 
@@ -443,9 +493,7 @@ export function InventoryPage() {
               <TextInput
                 id="codigoSerie"
                 value={form.codigoSerie}
-                onChange={(event) =>
-                  updateField('codigoSerie', event.target.value)
-                }
+                onChange={(event) => updateField('codigoSerie', event.target.value)}
                 required
                 maxLength={50}
                 placeholder="HERR-004"
@@ -465,9 +513,7 @@ export function InventoryPage() {
               <Select
                 id="categoriaId"
                 value={form.categoriaId}
-                onChange={(event) =>
-                  updateField('categoriaId', event.target.value)
-                }
+                onChange={(event) => updateField('categoriaId', event.target.value)}
                 required
               >
                 <option value="">Seleccione una categoría</option>
@@ -540,9 +586,7 @@ export function InventoryPage() {
             <TextArea
               id="descripcion"
               value={form.descripcion}
-              onChange={(event) =>
-                updateField('descripcion', event.target.value)
-              }
+              onChange={(event) => updateField('descripcion', event.target.value)}
               maxLength={300}
               rows={3}
               placeholder="Accesorios incluidos, características o condición del equipo…"

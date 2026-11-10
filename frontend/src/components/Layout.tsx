@@ -3,6 +3,7 @@ import {
   BarChart3,
   Boxes,
   ClipboardList,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -152,6 +153,15 @@ export function Layout() {
             </div>
             <button
               type="button"
+              onClick={() => navigate('/perfil')}
+              title="Mi cuenta"
+              aria-label="Mi cuenta"
+              className="rounded-lg p-2 text-slate-500 transition hover:bg-white/5 hover:text-brand-400"
+            >
+              <KeyRound className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               onClick={handleLogout}
               title="Cerrar sesión"
               aria-label="Cerrar sesión"
@@ -180,9 +190,7 @@ export function Layout() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-black text-ink-900">
               OG
             </div>
-            <span className="font-bold tracking-tight text-slate-900">
-              ObraGest
-            </span>
+            <span className="font-bold tracking-tight text-slate-900">ObraGest</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
             {usuario ? initials(usuario.nombre) : 'US'}

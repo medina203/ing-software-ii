@@ -13,6 +13,7 @@ import { Rol } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
+import { ListClientsQueryDto } from './dto/list-clients-query.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
 @Controller('clients')
@@ -20,8 +21,8 @@ export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @Get()
-  findAll(@Query('search') search?: string) {
-    return this.clientsService.findAll(search);
+  findAll(@Query() query: ListClientsQueryDto) {
+    return this.clientsService.findAll(query);
   }
 
   @Get(':id')
@@ -35,10 +36,7 @@ export class ClientsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateClientDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClientDto) {
     return this.clientsService.update(id, dto);
   }
 

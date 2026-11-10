@@ -1,7 +1,7 @@
 # Gate de salida — Etapa 1
 
 **Fecha:** 9 de noviembre de 2026  
-**Estado:** Aprobado con decisiones pendientes de confirmación
+**Estado:** Aprobado
 
 ## Checklist
 
@@ -25,14 +25,14 @@
 | Pruebas E2E de interfaz                                | Cumplido | `test-ui-e2e.txt`                                      |
 | Evidencias guardadas                                   | Cumplido | `docs/qa/evidencias/etapa-1/`                          |
 
-## Decisiones pendientes antes de la Etapa 3
+## Decisiones aprobadas el 2026-11-09
 
-1. Modelo de cantidad: unidades serializadas vs. stock por tipo.
-2. Modelo de facturación: factura por alquiler vs. cuenta por cliente.
-3. Política de autorización de nuevo alquiler con factura pendiente.
-4. Formato y migración de seriales existentes.
-5. Alcance de Git/CI para la Etapa 6.
+1. **Modelo de cantidad:** N unidades serializadas del mismo tipo, conservando el serial de cada unidad.
+2. **Modelo de facturación:** una factura por alquiler, con pagos asociados y saldo calculado.
+3. **Política de autorización:** devolución permitida al EMPLEADO; nuevo alquiler con saldo pendiente requiere ADMIN con motivo registrado.
+4. **Formato de serial:** `PREFIJO-###`, prefijo único por categoría, consecutivo no reutilizable y seriales existentes conservados.
+5. **Alcance de Git/CI:** Git local en Etapa 1; pipeline mínimo en Etapa 6.
 
 ## Resultado
 
-La Etapa 1 cumple el gate técnico. Las decisiones de negocio se resolverán antes de implementar las etapas 3 y 4.
+La Etapa 1 cumple el gate técnico y las decisiones de negocio quedaron aprobadas. Se autoriza el avance a la Etapa 2.
