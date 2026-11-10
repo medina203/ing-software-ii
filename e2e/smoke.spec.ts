@@ -18,7 +18,5 @@ test('login de administrador y acceso al resumen operativo', async ({ page }) =>
   await page.getByRole('button', { name: 'Ingresar al sistema' }).click();
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(
-    page.getByRole('heading', { name: 'Resumen operativo' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Resumen operativo' })).toBeVisible();
 });

@@ -1,10 +1,10 @@
 # Plan de mejoras y correcciones por etapas — ObraGest
 
 **Fecha:** 9 de noviembre de 2026  
-**Estado:** Etapa 1 en ejecución  
+**Estado:** Etapa 1 cerrada; Etapa 2 pendiente de inicio  
 **Objetivo:** Ordenar las mejoras y correcciones en etapas verificables, con pruebas y criterio de salida al final de cada una.
 
-> **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 está creando la base documental y el entorno de pruebas.
+> **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 quedó cerrada con SRS, Gherkin, matriz de trazabilidad, entorno de pruebas, linter, Git y evidencias en `docs/qa/evidencias/etapa-1/`.
 
 ---
 
@@ -31,14 +31,14 @@ Una etapa se considera terminada cuando:
 
 ## 3. Resumen de etapas
 
-| Etapa | Nombre | Enfoque principal | Hallazgos / mejoras cubiertas |
-| :---: | :--- | :--- | :--- |
-| **1** | Base de calidad y requisitos | SRS, criterios Gherkin, infraestructura de pruebas, `.env.example`, Git/linter | H-01, H-02, H-03, H-08 (parte) |
-| **2** | Usabilidad y quick wins | Búsqueda de clientes, cambio de contraseña, paginación de inventario | Hallazgo manual de búsqueda, H-05, H-06 (paginación) |
-| **3** | Inventario y alquiler | Serial automático por categoría y selector de cantidad | Hallazgos manuales de serial y cantidad |
-| **4** | Facturación y cartera | Facturas, saldo pendiente, alerta y autorización | Hallazgo manual de factura pendiente |
-| **5** | Seguridad y confiabilidad | Rate limiting, health check, ErrorBoundary, `GET` que muta BD, selectores | H-04, H-06 (mutación), H-07, H-08 (selectores) |
-| **6** | Cierre de calidad y evidencias | Regresión completa, UAT, RTF, casos ISO 29119-3, dossier | H-01 y H-02 (cierre final) |
+| Etapa | Nombre                         | Enfoque principal                                                              | Hallazgos / mejoras cubiertas                        |
+| :---: | :----------------------------- | :----------------------------------------------------------------------------- | :--------------------------------------------------- |
+| **1** | Base de calidad y requisitos   | SRS, criterios Gherkin, infraestructura de pruebas, `.env.example`, Git/linter | H-01, H-02, H-03, H-08 (parte)                       |
+| **2** | Usabilidad y quick wins        | Búsqueda de clientes, cambio de contraseña, paginación de inventario           | Hallazgo manual de búsqueda, H-05, H-06 (paginación) |
+| **3** | Inventario y alquiler          | Serial automático por categoría y selector de cantidad                         | Hallazgos manuales de serial y cantidad              |
+| **4** | Facturación y cartera          | Facturas, saldo pendiente, alerta y autorización                               | Hallazgo manual de factura pendiente                 |
+| **5** | Seguridad y confiabilidad      | Rate limiting, health check, ErrorBoundary, `GET` que muta BD, selectores      | H-04, H-06 (mutación), H-07, H-08 (selectores)       |
+| **6** | Cierre de calidad y evidencias | Regresión completa, UAT, RTF, casos ISO 29119-3, dossier                       | H-01 y H-02 (cierre final)                           |
 
 ---
 
@@ -47,6 +47,8 @@ Una etapa se considera terminada cuando:
 ### Objetivo
 
 Establecer la base documental y técnica para que las etapas siguientes tengan requisitos claros, pruebas ejecutables y evidencia verificable.
+
+**Estado:** Cerrada el 2026-11-09. Evidencia en `docs/qa/evidencias/etapa-1/`.
 
 ### Alcance
 
@@ -291,21 +293,21 @@ Consolidar la evidencia de calidad y dejar el sistema listo para la revisión de
 
 ## 10. Matriz de hallazgos y mejoras → etapa
 
-| Hallazgo / mejora | Etapa |
-| :--- | :---: |
-| H-01: pruebas automatizadas y artefactos | 1 (base) + todas + 6 (cierre) |
-| H-02: SRS, Gherkin y trazabilidad | 1 + actualización en cada etapa + 6 |
-| H-03: `.env.example` | 1 |
-| H-04: rate limiting en login | 5 |
-| H-05: UI de cambio de contraseña | 2 |
-| H-06: inventario truncado a 200 | 2 |
-| H-06: `GET` que muta la base de datos | 5 |
-| H-07: health check real y ErrorBoundary | 5 |
-| H-08: Git/linter y selectores duplicados | 1 (Git/linter) + 5 (selectores) |
-| Búsqueda de clientes por cédula/nombre | 2 |
-| Serial automático por categoría | 3 |
-| Selector de cantidad | 3 |
-| Alerta de factura pendiente y autorización | 4 |
+| Hallazgo / mejora                          |                Etapa                |
+| :----------------------------------------- | :---------------------------------: |
+| H-01: pruebas automatizadas y artefactos   |    1 (base) + todas + 6 (cierre)    |
+| H-02: SRS, Gherkin y trazabilidad          | 1 + actualización en cada etapa + 6 |
+| H-03: `.env.example`                       |                  1                  |
+| H-04: rate limiting en login               |                  5                  |
+| H-05: UI de cambio de contraseña           |                  2                  |
+| H-06: inventario truncado a 200            |                  2                  |
+| H-06: `GET` que muta la base de datos      |                  5                  |
+| H-07: health check real y ErrorBoundary    |                  5                  |
+| H-08: Git/linter y selectores duplicados   |   1 (Git/linter) + 5 (selectores)   |
+| Búsqueda de clientes por cédula/nombre     |                  2                  |
+| Serial automático por categoría            |                  3                  |
+| Selector de cantidad                       |                  3                  |
+| Alerta de factura pendiente y autorización |                  4                  |
 
 ---
 

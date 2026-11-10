@@ -5,7 +5,7 @@
 
 Running 2 tests using 1 worker
 
-  ✓  1 e2e\smoke.spec.ts:3:1 › el endpoint de salud responde ok (55ms)
-  ✓  2 e2e\smoke.spec.ts:13:1 › login de administrador y acceso al resumen operativo (2.6s)
+  ✓  1 e2e\smoke.spec.ts:3:1 › el endpoint de salud responde ok (110ms)
+  ✓  2 e2e\smoke.spec.ts:13:1 › login de administrador y acceso al resumen operativo (3.6s)
 
-  2 passed (5.0s)
+  2 passed (7.0s)
