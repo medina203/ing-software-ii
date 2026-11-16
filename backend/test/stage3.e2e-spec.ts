@@ -212,6 +212,60 @@ describe('Etapa 3 — seriales automáticos y cantidad (e2e)', () => {
     expect(persisted.ultimoConsecutivo).toBe(2);
   });
 
+  it('crea varias unidades en una sola operación con seriales consecutivos', async () => {
+    const prefix = `QA${stamp}F`;
+    const category = await createCategory('F', prefix);
+
+    const response = await request(app.getHttpServer())
+      .post('/api/items/batch')
+      .set(auth(adminToken))
+      .send({
+        nombre: `Andamio lote QA ${stamp}`,
+        categoriaId: category.id,
+        descripcion: 'Lote temporal de la Etapa 3.',
+        precioAlquilerDiario: 1000,
+        cantidad: 3,
+      })
+      .expect(201);
+
+    const body = response.body as {
+      items: Array<{ id: number; codigoSerie: string }>;
+      total: number;
+    };
+
+    expect(body.total).toBe(3);
+    expect(body.items.map((item) => item.codigoSerie)).toEqual([
+      `${prefix}-001`,
+      `${prefix}-002`,
+      `${prefix}-003`,
+    ]);
+
+    const persisted = await prisma.categoria.findUniqueOrThrow({
+      where: { id: category.id },
+      select: { ultimoConsecutivo: true },
+    });
+    expect(persisted.ultimoConsecutivo).toBe(3);
+
+    const created = await prisma.implemento.findMany({
+      where: { categoriaId: category.id },
+      select: { id: true },
+    });
+    itemIds.push(...created.map((item) => item.id));
+
+    for (const cantidad of [0, 101]) {
+      await request(app.getHttpServer())
+        .post('/api/items/batch')
+        .set(auth(adminToken))
+        .send({
+          nombre: `Lote inválido QA ${stamp}`,
+          categoriaId: category.id,
+          precioAlquilerDiario: 1000,
+          cantidad,
+        })
+        .expect(400);
+    }
+  });
+
   it('genera seriales únicos bajo creación concurrente', async () => {
     const prefix = `QA${stamp}C`;
     const category = await createCategory('C', prefix);

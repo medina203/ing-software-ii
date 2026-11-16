@@ -1,11 +1,11 @@
 ﻿Comando: node .tmp-db-check.cjs
-Fecha: 2026-11-15T21:27:02.7207873-05:00
-◇ injected env (5) from backend\.env // tip: ◈ secrets for agents [www.dotenvx.com]
+Fecha: 2026-11-15T23:02:40.3151294-05:00
+Ôùç injected env (0) from backend\.env // tip: Ôîÿ enable debugging { debug: true }
 {
   "categorias": [
     {
       "id": 1,
-      "nombre": "Herramientas eléctricas",
+      "nombre": "Herramientas el├®ctricas",
       "prefijo": "HERR",
       "ultimoConsecutivo": 3,
       "implementos": 5
@@ -26,7 +26,7 @@ Fecha: 2026-11-15T21:27:02.7207873-05:00
     },
     {
       "id": 4,
-      "nombre": "Equipos de medición",
+      "nombre": "Equipos de medici├│n",
       "prefijo": "MED",
       "ultimoConsecutivo": 2,
       "implementos": 2
@@ -60,8 +60,10 @@ Fecha: 2026-11-15T21:27:02.7207873-05:00
     "implementosQA": 0,
     "alquileresEtapa3": 0
   },
-  "migracionEtapa3": {
-    "migration_name": "20261115100000_stage3_category_prefix",
-    "finished_at": "2026-11-16T01:23:09.340Z"
-  }
+  "migracionEtapa3": [
+    {
+      "migration_name": "20261115100000_stage3_category_prefix",
+      "finished_at": "2026-11-16T01:23:09.340Z"
+    }
+  ]
 }

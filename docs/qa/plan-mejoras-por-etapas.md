@@ -148,7 +148,7 @@ Resolver las mejoras de usabilidad de bajo riesgo y mayor impacto percibido, sin
 
 ## 6. Etapa 3 — Inventario y alquiler
 
-**Estado:** Cerrada el 2026-11-15. Evidencia en `docs/qa/evidencias/etapa-3/`.
+**Estado:** Cerrada el 2026-11-15. Evidencia en `docs/qa/evidencias/etapa-3/`. Incluye la mejora posterior de alta por cantidad aprobada el mismo día.
 
 ### Objetivo
 
@@ -161,6 +161,8 @@ Mejorar la integridad y la operación del inventario con seriales automáticos y
 - Los seriales existentes se conservan. El contador de cada categoría se inicializa con el mayor consecutivo encontrado.
 - El prefijo no se puede cambiar si la categoría tiene implementos. Si un implemento se mueve de categoría, el contador destino se eleva cuando el serial coincide con su prefijo.
 - La cantidad N selecciona N unidades disponibles y conserva el serial de cada una; el resumen muestra cantidad, seriales y subtotal.
+- El inventario permite crear entre 1 y 100 unidades iguales en una sola transacción; cada una recibe un serial consecutivo.
+- La acción "Agregar unidades" reutiliza los datos de una tarjeta existente y crea nuevas unidades sin modificar las anteriores.
 
 ### Alcance
 
@@ -173,6 +175,7 @@ Mejorar la integridad y la operación del inventario con seriales automáticos y
   - Recomendación: seleccionar N unidades disponibles y agregarlas como N detalles de alquiler, conservando el serial de cada una.
   - Validar disponibilidad y evitar seleccionar la misma unidad dos veces.
 - Ajustar el resumen del alquiler para mostrar cantidad y unidades.
+- Agregar el alta por lote en inventario y la acción "Agregar unidades" desde una tarjeta existente.
 
 ### Pruebas de cierre
 
@@ -183,6 +186,7 @@ Mejorar la integridad y la operación del inventario con seriales automáticos y
   - Crear categoría con prefijo, crear implemento y verificar serial automático.
   - Alquilar 5 andamios y verificar que se descuentan las 5 unidades correctas.
   - Intentar alquilar una unidad no disponible y verificar el rechazo.
+  - Registrar varias unidades en lote y agregar unidades desde una tarjeta existente.
 - Regresión: alquileres y devoluciones existentes.
 
 ### Gate de salida
@@ -190,6 +194,7 @@ Mejorar la integridad y la operación del inventario con seriales automáticos y
 - No se generan seriales duplicados en concurrencia.
 - El serial no es editable en la UI.
 - La cantidad funciona con unidades serializadas.
+- El alta por lote es atómica: si falla una unidad, no se crea ninguna.
 - Los registros existentes siguen operando.
 - Todas las pruebas y la regresión pasan.
 

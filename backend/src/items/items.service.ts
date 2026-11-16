@@ -12,6 +12,7 @@ import {
   isValidSerialPrefix,
 } from '../common/utils/serial';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateItemBatchDto } from './dto/create-item-batch.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -19,6 +20,8 @@ import { UpdateItemDto } from './dto/update-item.dto';
 const itemInclude = {
   categoria: true,
 } satisfies Prisma.ImplementoInclude;
+
+type ItemWithCategory = Prisma.ImplementoGetPayload<{ include: typeof itemInclude }>;
 
 const MAX_SERIAL_ATTEMPTS = 10_000;
 
@@ -88,6 +91,11 @@ export class ItemsService {
   }
 
   async create(dto: CreateItemDto) {
+    const { items } = await this.createBatch({ ...dto, cantidad: 1 });
+    return items[0];
+  }
+
+  async createBatch(dto: CreateItemBatchDto) {
     this.assertManualState(dto.estado);
 
     return this.prisma.$transaction(
@@ -107,21 +115,33 @@ export class ItemsService {
           );
         }
 
-        const codigoSerie = await this.reserveSerial(tx, categoria.id, categoria.prefijo);
+        const items: ItemWithCategory[] = [];
 
-        return tx.implemento.create({
-          data: {
-            codigoSerie,
-            nombre: dto.nombre.trim(),
-            categoriaId: categoria.id,
-            descripcion: dto.descripcion?.trim() || null,
-            precioAlquilerDiario: dto.precioAlquilerDiario,
-            estado: dto.estado ?? EstadoImplemento.DISPONIBLE,
-          },
-          include: itemInclude,
-        });
+        for (let index = 0; index < dto.cantidad; index += 1) {
+          const codigoSerie = await this.reserveSerial(
+            tx,
+            categoria.id,
+            categoria.prefijo,
+          );
+
+          const item = await tx.implemento.create({
+            data: {
+              codigoSerie,
+              nombre: dto.nombre.trim(),
+              categoriaId: categoria.id,
+              descripcion: dto.descripcion?.trim() || null,
+              precioAlquilerDiario: dto.precioAlquilerDiario,
+              estado: dto.estado ?? EstadoImplemento.DISPONIBLE,
+            },
+            include: itemInclude,
+          });
+
+          items.push(item);
+        }
+
+        return { items, total: items.length };
       },
-      { timeout: 15000 },
+      { timeout: 30000 },
     );
   }
 

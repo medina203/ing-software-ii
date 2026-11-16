@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { Rol } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
+import { CreateItemBatchDto } from './dto/create-item-batch.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -39,6 +40,12 @@ export class ItemsController {
   @Post()
   create(@Body() dto: CreateItemDto) {
     return this.itemsService.create(dto);
+  }
+
+  @Roles(Rol.ADMIN)
+  @Post('batch')
+  createBatch(@Body() dto: CreateItemBatchDto) {
+    return this.itemsService.createBatch(dto);
   }
 
   @Roles(Rol.ADMIN)

@@ -1,5 +1,3 @@
-﻿Comando: npm run build
-Fecha: 2026-11-15T21:18:12.0030476-05:00
 
 > inventario-alquiler-implementos@1.0.0 build
 > npm run build --workspace backend && npm run build --workspace frontend
@@ -12,12 +10,17 @@ Fecha: 2026-11-15T21:18:12.0030476-05:00
 > frontend@1.0.0 build
 > tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build
 
-[36mvite v7.3.7 [32mbuilding client environment for production...[36m[39m
+vite v7.3.7 building client environment for production...
 transforming...
-[32mÔ£ô[39m 2620 modules transformed.
+✓ 2620 modules transformed.
 rendering chunks...
 computing gzip size...
-[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.63 kB[22m[1m[22m[2m Ôöé gzip:   0.38 kB[22m
-[2mdist/[22m[35massets/index-1bMyAjLB.css  [39m[1m[2m 37.10 kB[22m[1m[22m[2m Ôöé gzip:   6.82 kB[22m
-[2mdist/[22m[36massets/index-BG4QZryD.js   [39m[1m[2m499.64 kB[22m[1m[22m[2m Ôöé gzip: 148.01 kB[22m
-[32mÔ£ô built in 6.86s[39m
+dist/index.html                   0.63 kB │ gzip:   0.38 kB
+dist/assets/index-1bMyAjLB.css   37.10 kB │ gzip:   6.82 kB
+dist/assets/index-BgZ3b9Gl.js   500.95 kB │ gzip: 148.42 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.11s

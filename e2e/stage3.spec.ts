@@ -267,6 +267,65 @@ test('rechaza el alquiler cuando una unidad deja de estar disponible', async ({
   );
 });
 
+test('registra varias unidades en lote y agrega unidades a un implemento existente', async ({
+  page,
+}) => {
+  const prefix = uniquePrefix('L');
+  const categoryName = `Categoría lote E2E ${stamp}`;
+  const itemName = `Taladro lote E2E ${stamp}`;
+  createdCategoryNames.push(categoryName);
+
+  await login(page);
+  await page.goto('/categorias');
+
+  await page.getByRole('button', { name: 'Nueva categoría' }).click();
+  await page.locator('#nombreCategoria').fill(categoryName);
+  await page.locator('#prefijoCategoria').fill(prefix);
+  await page.getByRole('button', { name: 'Crear categoría' }).click();
+  await expect(page.getByText('Categoría creada correctamente.').first()).toBeVisible();
+
+  await page.goto('/inventario');
+  await page.getByRole('button', { name: 'Nuevo implemento' }).click();
+  await page.locator('#nombre').fill(itemName);
+  await page.locator('#categoriaId').selectOption({ label: categoryName });
+  await page.locator('#precio').fill('45000');
+  await page.locator('#cantidad').fill('3');
+
+  await expect(page.locator('#codigoSerie')).toHaveValue(`${prefix}-001`);
+  await expect(
+    page.getByText(`Se generarán 3 seriales consecutivos desde ${prefix}-001.`),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Registrar implemento' }).click();
+  await expect(
+    page.getByText('3 implementos registrados correctamente.').first(),
+  ).toBeVisible();
+
+  const search = page.getByRole('textbox', { name: 'Buscar implementos' });
+  await search.fill(itemName);
+
+  for (const serial of [`${prefix}-001`, `${prefix}-002`, `${prefix}-003`]) {
+    await expect(page.getByText(serial).first()).toBeVisible();
+  }
+
+  await page
+    .getByRole('button', { name: `Agregar unidades de ${itemName}` })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Agregar unidades' })).toBeVisible();
+  await page.locator('#cantidad').fill('2');
+  await page.getByRole('button', { name: 'Agregar unidades', exact: true }).click();
+  await expect(
+    page.getByText('2 unidades agregadas correctamente.').first(),
+  ).toBeVisible();
+
+  await search.fill(itemName);
+
+  for (const serial of [`${prefix}-004`, `${prefix}-005`]) {
+    await expect(page.getByText(serial).first()).toBeVisible();
+  }
+});
+
 test('muestra la disponibilidad real cuando la cantidad solicitada la supera', async ({
   page,
 }) => {

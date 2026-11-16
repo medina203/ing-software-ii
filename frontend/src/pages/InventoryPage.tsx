@@ -48,6 +48,7 @@ interface ItemFormState {
   descripcion: string;
   precio: string;
   estado: ItemStatus;
+  cantidad: string;
 }
 
 const emptyForm: ItemFormState = {
@@ -56,6 +57,7 @@ const emptyForm: ItemFormState = {
   descripcion: '',
   precio: '',
   estado: 'DISPONIBLE',
+  cantidad: '1',
 };
 
 const MANUAL_STATES: ItemStatus[] = ['DISPONIBLE', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO'];
@@ -81,6 +83,7 @@ export function InventoryPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [addUnitsFrom, setAddUnitsFrom] = useState<Item | null>(null);
   const [form, setForm] = useState<ItemFormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -139,6 +142,7 @@ export function InventoryPage() {
 
   const openCreate = () => {
     setEditingItem(null);
+    setAddUnitsFrom(null);
     setForm(emptyForm);
     setFormError('');
     setModalOpen(true);
@@ -146,12 +150,29 @@ export function InventoryPage() {
 
   const openEdit = (item: Item) => {
     setEditingItem(item);
+    setAddUnitsFrom(null);
     setForm({
       nombre: item.nombre,
       categoriaId: String(item.categoriaId),
       descripcion: item.descripcion ?? '',
       precio: item.precioAlquilerDiario,
       estado: item.estado,
+      cantidad: '1',
+    });
+    setFormError('');
+    setModalOpen(true);
+  };
+
+  const openAddUnits = (item: Item) => {
+    setEditingItem(null);
+    setAddUnitsFrom(item);
+    setForm({
+      nombre: item.nombre,
+      categoriaId: String(item.categoriaId),
+      descripcion: item.descripcion ?? '',
+      precio: item.precioAlquilerDiario,
+      estado: 'DISPONIBLE',
+      cantidad: '1',
     });
     setFormError('');
     setModalOpen(true);
@@ -161,6 +182,7 @@ export function InventoryPage() {
     if (saving) return;
     setModalOpen(false);
     setEditingItem(null);
+    setAddUnitsFrom(null);
   };
 
   const updateField = <K extends keyof ItemFormState>(
@@ -185,6 +207,12 @@ export function InventoryPage() {
       return;
     }
 
+    const quantity = Number(form.cantidad);
+    if (!editingItem && (!Number.isInteger(quantity) || quantity < 1 || quantity > 100)) {
+      setFormError('Ingrese una cantidad entre 1 y 100 unidades.');
+      return;
+    }
+
     const isEditingRented = editingItem?.estado === 'ALQUILADO';
     const payload = {
       nombre: form.nombre.trim(),
@@ -200,11 +228,32 @@ export function InventoryPage() {
         await api.patch(`/items/${editingItem.id}`, payload);
         success('Implemento actualizado correctamente.');
       } else {
-        await api.post('/items', payload);
-        success('Implemento registrado correctamente.');
+        const response = await api.post<{ items: Item[]; total: number }>(
+          '/items/batch',
+          {
+            ...payload,
+            cantidad: quantity,
+          },
+        );
+        const created = response.data.total;
+
+        if (addUnitsFrom) {
+          success(
+            created === 1
+              ? 'Unidad agregada correctamente.'
+              : `${created} unidades agregadas correctamente.`,
+          );
+        } else {
+          success(
+            created === 1
+              ? 'Implemento registrado correctamente.'
+              : `${created} implementos registrados correctamente.`,
+          );
+        }
       }
       setModalOpen(false);
       setEditingItem(null);
+      setAddUnitsFrom(null);
       await loadData();
     } catch (error) {
       setFormError(getErrorMessage(error));
@@ -240,6 +289,7 @@ export function InventoryPage() {
   const hasFilters =
     Boolean(search) || statusFilter !== 'TODOS' || categoryFilter !== 'TODAS';
   const rented = editingItem?.estado === 'ALQUILADO';
+  const quantity = Math.max(1, Math.trunc(Number(form.cantidad) || 1));
   const selectedCategory = categories.find(
     (category) => category.id === Number(form.categoriaId),
   );
@@ -406,6 +456,11 @@ export function InventoryPage() {
                   {isAdmin && (
                     <div className="flex items-center gap-1">
                       <IconButton
+                        icon={Plus}
+                        label={`Agregar unidades de ${item.nombre}`}
+                        onClick={() => openAddUnits(item)}
+                      />
+                      <IconButton
                         icon={Pencil}
                         label="Editar implemento"
                         onClick={() => openEdit(item)}
@@ -464,11 +519,19 @@ export function InventoryPage() {
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingItem ? 'Editar implemento' : 'Nuevo implemento'}
+        title={
+          editingItem
+            ? 'Editar implemento'
+            : addUnitsFrom
+              ? 'Agregar unidades'
+              : 'Nuevo implemento'
+        }
         description={
           editingItem
             ? 'Actualiza los datos del equipo. Los cambios de tarifa aplican a los próximos alquileres.'
-            : 'Registra un equipo con su código único, categoría y tarifa diaria.'
+            : addUnitsFrom
+              ? `Crea nuevas unidades de "${addUnitsFrom.nombre}" con seriales consecutivos.`
+              : 'Registra uno o varios equipos con su código único, categoría y tarifa diaria.'
         }
         size="lg"
         footer={
@@ -480,9 +543,19 @@ export function InventoryPage() {
               type="submit"
               form="item-form"
               loading={saving}
-              icon={<Package className="h-4 w-4" />}
+              icon={
+                addUnitsFrom ? (
+                  <Plus className="h-4 w-4" />
+                ) : (
+                  <Package className="h-4 w-4" />
+                )
+              }
             >
-              {editingItem ? 'Guardar cambios' : 'Registrar implemento'}
+              {editingItem
+                ? 'Guardar cambios'
+                : addUnitsFrom
+                  ? 'Agregar unidades'
+                  : 'Registrar implemento'}
             </Button>
           </>
         }
@@ -496,7 +569,9 @@ export function InventoryPage() {
               hint={
                 editingItem
                   ? 'El serial es de solo lectura y se conserva aunque cambien los demás datos.'
-                  : 'Vista previa. El serial definitivo se genera automáticamente al guardar.'
+                  : selectedCategory && quantity > 1
+                    ? `Se generarán ${quantity} seriales consecutivos desde ${serialPreview}.`
+                    : 'Vista previa. El serial definitivo se genera automáticamente al guardar.'
               }
             >
               <TextInput
@@ -564,6 +639,30 @@ export function InventoryPage() {
               />
             </Field>
           </div>
+
+          {!editingItem && (
+            <Field
+              label="Cantidad de unidades"
+              htmlFor="cantidad"
+              required
+              hint={
+                quantity > 1
+                  ? `Se crearán ${quantity} unidades con seriales consecutivos.`
+                  : 'Puedes registrar varias unidades iguales en una sola operación.'
+              }
+            >
+              <TextInput
+                id="cantidad"
+                type="number"
+                min="1"
+                max="100"
+                step="1"
+                value={form.cantidad}
+                onChange={(event) => updateField('cantidad', event.target.value)}
+                required
+              />
+            </Field>
+          )}
 
           <Field label="Estado operativo" htmlFor="estado">
             <Select

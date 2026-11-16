@@ -129,6 +129,51 @@ describe('ItemsService.create', () => {
   });
 });
 
+describe('ItemsService.createBatch', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    transaction.mockImplementation((callback: (client: typeof tx) => Promise<unknown>) =>
+      callback(tx),
+    );
+    tx.categoria.findUnique.mockResolvedValue({
+      id: 1,
+      prefijo: 'HERR',
+    });
+    tx.categoria.update
+      .mockResolvedValueOnce({ ultimoConsecutivo: 1 })
+      .mockResolvedValueOnce({ ultimoConsecutivo: 2 })
+      .mockResolvedValueOnce({ ultimoConsecutivo: 3 });
+    tx.implemento.findUnique.mockResolvedValue(null);
+    tx.implemento.create.mockImplementation(
+      ({ data }: { data: { codigoSerie: string; nombre: string } }) =>
+        Promise.resolve({
+          ...baseItem,
+          id: Number(data.codigoSerie.slice(-3)),
+          codigoSerie: data.codigoSerie,
+          nombre: data.nombre,
+        }),
+    );
+  });
+
+  it('crea varias unidades con seriales consecutivos en una sola transacción', async () => {
+    const result = await service.createBatch({
+      nombre: 'Andamio',
+      categoriaId: 1,
+      precioAlquilerDiario: 45000,
+      cantidad: 3,
+    });
+
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(tx.implemento.create).toHaveBeenCalledTimes(3);
+    expect(result.total).toBe(3);
+    expect(result.items.map((item) => item.codigoSerie)).toEqual([
+      'HERR-001',
+      'HERR-002',
+      'HERR-003',
+    ]);
+  });
+});
+
 describe('ItemsService.update', () => {
   beforeEach(() => {
     jest.clearAllMocks();

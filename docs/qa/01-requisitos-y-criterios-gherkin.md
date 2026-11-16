@@ -78,7 +78,7 @@ Quedan fuera de esta versión:
 | **RF-06** | Búsqueda de clientes                                 | El sistema busca clientes por documento, nombres o apellidos y permite seleccionarlos en el flujo de alquiler sin un desplegable masivo.                                    | Implementado: búsqueda remota y combobox accesible                      |   Alta    |   2   |
 | **RF-07** | Gestión de categorías                                | El ADMIN puede crear, consultar, editar y eliminar categorías sin implementos.                                                                                              | Implementado: CRUD y prefijo único                                      |   Alta    |   3   |
 | **RF-08** | Prefijo de categoría                                 | Cada categoría tiene un prefijo único que se usa para generar los seriales de sus implementos.                                                                              | Implementado: prefijo único y bloqueo de cambio con implementos         |   Alta    |   3   |
-| **RF-09** | Gestión de inventario                                | El ADMIN puede crear, consultar, editar y eliminar implementos sin historial de alquileres.                                                                                 | Implementado                                                            |   Alta    |   —   |
+| **RF-09** | Gestión de inventario                                | El ADMIN puede crear, consultar, editar y eliminar implementos sin historial de alquileres, y registrar varias unidades iguales en una sola operación.                      | Implementado: CRUD y alta por cantidad                                  |   Alta    | 2 y 3 |
 | **RF-10** | Serial automático                                    | Al crear un implemento, el backend genera su serial con el prefijo de la categoría y un consecutivo, sin permitir editarlo en la UI.                                        | Implementado: generación atómica, concurrencia y serial de solo lectura |   Alta    |   3   |
 | **RF-11** | Disponibilidad e integridad                          | Solo se alquilan implementos `DISPONIBLE`; el cambio a `ALQUILADO` ocurre en una transacción atómica.                                                                       | Implementado: validación y transacción atómica                          |  Crítica  | 1 y 3 |
 | **RF-12** | Registro de alquiler                                 | El sistema registra un alquiler con cliente, fecha pactada, implementos y precio congelado.                                                                                 | Implementado                                                            |   Alta    |   —   |
@@ -195,6 +195,33 @@ Característica: Prefijo único de categoría
     Cuando intento cambiar su prefijo
     Entonces el sistema rechaza el cambio
     Y conserva el prefijo original
+```
+
+### RF-09 — Alta de varias unidades de inventario
+
+```gherkin
+Característica: Alta de varias unidades de un implemento
+  Como ADMIN
+  Quiero registrar varias unidades iguales en una sola operación
+  Para no crear el mismo implemento una y otra vez
+
+  Escenario: Registrar tres unidades nuevas
+    Dada la categoría "Herramientas eléctricas" con prefijo "HERR"
+    Y el último serial generado para esa categoría es "HERR-003"
+    Cuando registro tres unidades del mismo implemento
+    Entonces el sistema crea las unidades "HERR-004", "HERR-005" y "HERR-006"
+    Y cada unidad conserva su propio serial
+
+  Escenario: Agregar unidades a un implemento existente
+    Dado un implemento registrado en el inventario
+    Cuando uso la acción "Agregar unidades"
+    Entonces el formulario reutiliza sus datos
+    Y las nuevas unidades reciben seriales consecutivos
+
+  Escenario: Cantidad inválida
+    Cuando indico una cantidad menor que 1 o mayor que 100
+    Entonces el sistema rechaza la operación
+    Y no crea ninguna unidad
 ```
 
 ### RF-10 — Serial automático por categoría
@@ -337,6 +364,8 @@ Característica: Cambio de contraseña
 | Alcance de Git/CI                | Local vs. GitHub + pipeline                 | Git local en Etapa 1; pipeline mínimo en Etapa 6.                                                          |
 
 > **Implementación de Etapa 3 (2026-11-15):** el prefijo se valida con 2 a 10 caracteres alfanuméricos y letra inicial; no se puede cambiar si la categoría tiene implementos. El generador de seriales salta colisiones y eleva el consecutivo de forma atómica. Los seriales anteriores se conservan.
+>
+> **Mejora de inventario (2026-11-15):** el alta admite entre 1 y 100 unidades iguales en una sola transacción. Cada unidad recibe un serial consecutivo; la acción "Agregar unidades" reutiliza los datos de una tarjeta existente y crea nuevas unidades sin modificar las anteriores.
 
 ---
 
@@ -346,3 +375,4 @@ Característica: Cambio de contraseña
 | ------- | ---------- | ------------------------------------------------------------------------------------- |
 | 1.0     | 2026-11-09 | Creación inicial para la Etapa 1. Incluye requisitos existentes y mejoras pendientes. |
 | 1.1     | 2026-11-15 | Cierre de Etapas 2 y 3: búsqueda, contraseña, prefijo, serial y cantidad.             |
+| 1.2     | 2026-11-15 | Alta por cantidad en inventario y acción "Agregar unidades" sobre implementos.        |
