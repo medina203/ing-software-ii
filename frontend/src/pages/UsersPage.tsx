@@ -21,10 +21,7 @@ import {
   Select,
   TextInput,
 } from '../components/ui/Button';
-import {
-  ActiveBadge,
-  RoleBadge,
-} from '../components/ui/Badges';
+import { ActiveBadge, RoleBadge } from '../components/ui/Badges';
 import {
   ConfirmDialog,
   EmptyState,
@@ -192,9 +189,7 @@ export function UsersPage() {
     }
   };
 
-  const activeAdmins = users.filter(
-    (user) => user.rol === 'ADMIN' && user.activo,
-  ).length;
+  const activeAdmins = users.filter((user) => user.rol === 'ADMIN' && user.activo).length;
 
   return (
     <div className="space-y-6 page-enter">
@@ -326,9 +321,7 @@ export function UsersPage() {
                                 </span>
                               )}
                             </p>
-                            <p className="text-xs text-slate-500">
-                              {user.email}
-                            </p>
+                            <p className="text-xs text-slate-500">{user.email}</p>
                           </div>
                         </div>
                       </td>
@@ -339,9 +332,7 @@ export function UsersPage() {
                         <ActiveBadge active={user.activo} />
                       </td>
                       <td className="table-td">
-                        {user.createdAt
-                          ? formatDate(user.createdAt)
-                          : '—'}
+                        {user.createdAt ? formatDate(user.createdAt) : '—'}
                       </td>
                       <td className="table-td">
                         <div className="flex items-center justify-end gap-1">
@@ -352,11 +343,7 @@ export function UsersPage() {
                           />
                           <IconButton
                             icon={user.activo ? UserX : UserCheck}
-                            label={
-                              user.activo
-                                ? 'Desactivar usuario'
-                                : 'Activar usuario'
-                            }
+                            label={user.activo ? 'Desactivar usuario' : 'Activar usuario'}
                             variant={user.activo ? 'danger' : 'secondary'}
                             disabled={isSelf && user.activo}
                             onClick={() => setToggleTarget(user)}
@@ -375,9 +362,9 @@ export function UsersPage() {
       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-500">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
         <p>
-          Las cuentas se desactivan en lugar de eliminarse para preservar la
-          trazabilidad de los alquileres y devoluciones. Debe existir siempre al
-          menos un administrador activo.
+          Las cuentas se desactivan en lugar de eliminarse para preservar la trazabilidad
+          de los alquileres y devoluciones. Debe existir siempre al menos un administrador
+          activo.
         </p>
       </div>
 
@@ -489,9 +476,7 @@ export function UsersPage() {
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:text-slate-700"
-                  aria-label={
-                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                  }
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -507,9 +492,7 @@ export function UsersPage() {
             <div className="flex items-center gap-2.5">
               <KeyRound className="h-4 w-4 text-slate-400" />
               <div>
-                <p className="text-sm font-medium text-slate-700">
-                  Acceso al sistema
-                </p>
+                <p className="text-sm font-medium text-slate-700">Acceso al sistema</p>
                 <p className="text-xs text-slate-500">
                   Desactiva la cuenta para impedir nuevos inicios de sesión.
                 </p>
@@ -544,9 +527,7 @@ export function UsersPage() {
         open={Boolean(toggleTarget)}
         onClose={() => setToggleTarget(null)}
         onConfirm={() => void handleToggle()}
-        title={
-          toggleTarget?.activo ? 'Desactivar usuario' : 'Activar usuario'
-        }
+        title={toggleTarget?.activo ? 'Desactivar usuario' : 'Activar usuario'}
         description={
           toggleTarget?.activo
             ? `¿Confirma que desea desactivar la cuenta de ${toggleTarget?.nombre ?? ''}? No podrá iniciar sesión hasta que se reactive.`

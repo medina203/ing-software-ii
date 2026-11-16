@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
 import { CreateRentalDto } from './dto/create-rental.dto';
@@ -28,10 +20,7 @@ export class RentalsController {
   }
 
   @Post()
-  create(
-    @Body() dto: CreateRentalDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  create(@Body() dto: CreateRentalDto, @CurrentUser() user: AuthenticatedUser) {
     return this.rentalsService.create(dto, user.id);
   }
 }

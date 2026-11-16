@@ -1,19 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import {
-  Boxes,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Tags,
-  Trash2,
-} from 'lucide-react';
-import {
-  Button,
-  Field,
-  IconButton,
-  TextArea,
-  TextInput,
-} from '../components/ui/Button';
+import { Boxes, Pencil, Plus, RefreshCw, Tags, Trash2 } from 'lucide-react';
+import { Button, Field, IconButton, TextArea, TextInput } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badges';
 import {
   ConfirmDialog,
@@ -29,10 +16,21 @@ import type { Category, ListResponse } from '../types';
 
 interface CategoryFormState {
   nombre: string;
+  prefijo: string;
   descripcion: string;
 }
 
-const emptyForm: CategoryFormState = { nombre: '', descripcion: '' };
+const emptyForm: CategoryFormState = {
+  nombre: '',
+  prefijo: '',
+  descripcion: '',
+};
+
+const SERIAL_PREFIX_PATTERN = /^[A-Z][A-Z0-9]{1,9}$/;
+
+function nextSerial(category: Category): string {
+  return `${category.prefijo}-${String(category.ultimoConsecutivo + 1).padStart(3, '0')}`;
+}
 
 export function CategoriesPage() {
   const { success, error: showError } = useToast();
@@ -75,6 +73,7 @@ export function CategoriesPage() {
     setEditingCategory(category);
     setForm({
       nombre: category.nombre,
+      prefijo: category.prefijo,
       descripcion: category.descripcion ?? '',
     });
     setFormError('');
@@ -90,8 +89,18 @@ export function CategoriesPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setFormError('');
+
+    const prefijo = form.prefijo.trim().toUpperCase();
+    if (!SERIAL_PREFIX_PATTERN.test(prefijo)) {
+      setFormError(
+        'Ingrese un prefijo de 2 a 10 caracteres que inicie con una letra y use solo letras o números.',
+      );
+      return;
+    }
+
     const payload = {
       nombre: form.nombre.trim(),
+      prefijo,
       descripcion: form.descripcion.trim(),
     };
     setSaving(true);
@@ -132,6 +141,9 @@ export function CategoriesPage() {
   const totalItems = categories.reduce(
     (sum, category) => sum + (category._count?.implementos ?? 0),
     0,
+  );
+  const prefixLocked = Boolean(
+    editingCategory && (editingCategory._count?.implementos ?? 0) > 0,
   );
 
   return (
@@ -178,9 +190,7 @@ export function CategoriesPage() {
                 <Tags className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {categories.length}
-                </p>
+                <p className="text-2xl font-bold text-slate-900">{categories.length}</p>
                 <p className="text-sm text-slate-500">Categorías activas</p>
               </div>
             </div>
@@ -190,9 +200,7 @@ export function CategoriesPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{totalItems}</p>
-                <p className="text-sm text-slate-500">
-                  Implementos clasificados
-                </p>
+                <p className="text-sm text-slate-500">Implementos clasificados</p>
               </div>
             </div>
           </div>
@@ -214,7 +222,11 @@ export function CategoriesPage() {
                 <h2 className="mt-4 text-base font-bold text-slate-900">
                   {category.nombre}
                 </h2>
-                <p className="mt-1.5 min-h-10 text-sm leading-5 text-slate-500">
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge tone="sky">Prefijo {category.prefijo}</Badge>
+                  <Badge tone="slate">Próximo serial {nextSerial(category)}</Badge>
+                </div>
+                <p className="mt-2 min-h-10 text-sm leading-5 text-slate-500">
                   {category.descripcion || 'Sin descripción.'}
                 </p>
                 <div className="mt-4 flex items-center justify-end gap-1 border-t border-slate-100 pt-3">
@@ -277,6 +289,33 @@ export function CategoriesPage() {
               required
               maxLength={100}
               placeholder="Categoría"
+            />
+          </Field>
+          <Field
+            label="Prefijo de serial"
+            htmlFor="prefijoCategoria"
+            required
+            hint={
+              prefixLocked
+                ? 'El prefijo no se puede cambiar porque la categoría ya tiene implementos. Los seriales existentes se conservan.'
+                : 'Ej.: HERR. Se usa para generar seriales como HERR-001, HERR-002…'
+            }
+          >
+            <TextInput
+              id="prefijoCategoria"
+              value={form.prefijo}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  prefijo: event.target.value.toUpperCase(),
+                }))
+              }
+              required
+              maxLength={10}
+              disabled={prefixLocked}
+              className="font-mono uppercase"
+              placeholder="HERR"
+              autoComplete="off"
             />
           </Field>
           <Field label="Descripción" htmlFor="descripcionCategoria">

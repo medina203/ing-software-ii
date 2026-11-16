@@ -6,6 +6,11 @@ import {
 } from '@nestjs/common';
 import { EstadoImplemento, Prisma } from '@prisma/client';
 import { normalizeSearchTerm } from '../common/utils/search';
+import {
+  extractSerialConsecutive,
+  formatSerial,
+  isValidSerialPrefix,
+} from '../common/utils/serial';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
@@ -14,6 +19,8 @@ import { UpdateItemDto } from './dto/update-item.dto';
 const itemInclude = {
   categoria: true,
 } satisfies Prisma.ImplementoInclude;
+
+const MAX_SERIAL_ATTEMPTS = 10_000;
 
 @Injectable()
 export class ItemsService {
@@ -81,28 +88,45 @@ export class ItemsService {
   }
 
   async create(dto: CreateItemDto) {
-    await this.assertCategoryExists(dto.categoriaId);
     this.assertManualState(dto.estado);
 
-    return this.prisma.implemento.create({
-      data: {
-        codigoSerie: dto.codigoSerie.trim().toUpperCase(),
-        nombre: dto.nombre.trim(),
-        categoriaId: dto.categoriaId,
-        descripcion: dto.descripcion?.trim() || null,
-        precioAlquilerDiario: dto.precioAlquilerDiario,
-        estado: dto.estado ?? EstadoImplemento.DISPONIBLE,
+    return this.prisma.$transaction(
+      async (tx) => {
+        const categoria = await tx.categoria.findUnique({
+          where: { id: dto.categoriaId },
+          select: { id: true, prefijo: true },
+        });
+
+        if (!categoria) {
+          throw new BadRequestException('La categoría seleccionada no existe.');
+        }
+
+        if (!isValidSerialPrefix(categoria.prefijo)) {
+          throw new BadRequestException(
+            'La categoría no tiene un prefijo de serial válido. Actualice la categoría antes de crear implementos.',
+          );
+        }
+
+        const codigoSerie = await this.reserveSerial(tx, categoria.id, categoria.prefijo);
+
+        return tx.implemento.create({
+          data: {
+            codigoSerie,
+            nombre: dto.nombre.trim(),
+            categoriaId: categoria.id,
+            descripcion: dto.descripcion?.trim() || null,
+            precioAlquilerDiario: dto.precioAlquilerDiario,
+            estado: dto.estado ?? EstadoImplemento.DISPONIBLE,
+          },
+          include: itemInclude,
+        });
       },
-      include: itemInclude,
-    });
+      { timeout: 15000 },
+    );
   }
 
   async update(id: number, dto: UpdateItemDto) {
     const implemento = await this.findOne(id);
-
-    if (dto.categoriaId !== undefined) {
-      await this.assertCategoryExists(dto.categoriaId);
-    }
 
     this.assertManualState(dto.estado);
 
@@ -117,13 +141,7 @@ export class ItemsService {
     }
 
     const data: Prisma.ImplementoUpdateInput = {};
-    if (dto.codigoSerie !== undefined) {
-      data.codigoSerie = dto.codigoSerie.trim().toUpperCase();
-    }
     if (dto.nombre !== undefined) data.nombre = dto.nombre.trim();
-    if (dto.categoriaId !== undefined) {
-      data.categoria = { connect: { id: dto.categoriaId } };
-    }
     if (dto.descripcion !== undefined) {
       data.descripcion = dto.descripcion.trim() || null;
     }
@@ -132,11 +150,58 @@ export class ItemsService {
     }
     if (dto.estado !== undefined) data.estado = dto.estado;
 
-    return this.prisma.implemento.update({
-      where: { id },
-      data,
-      include: itemInclude,
-    });
+    if (dto.categoriaId === undefined || dto.categoriaId === implemento.categoriaId) {
+      return this.prisma.implemento.update({
+        where: { id },
+        data,
+        include: itemInclude,
+      });
+    }
+
+    const targetCategoryId = dto.categoriaId;
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        const target = await tx.categoria.findUnique({
+          where: { id: targetCategoryId },
+          select: {
+            id: true,
+            prefijo: true,
+            ultimoConsecutivo: true,
+          },
+        });
+
+        if (!target) {
+          throw new BadRequestException('La categoría seleccionada no existe.');
+        }
+
+        // Si el implemento conserva un serial que ya pertenece al prefijo de
+        // la categoría destino, el consecutivo no puede quedar por debajo.
+        const serialConsecutive = extractSerialConsecutive(
+          implemento.codigoSerie,
+          target.prefijo,
+        );
+
+        if (serialConsecutive !== null && serialConsecutive > target.ultimoConsecutivo) {
+          await tx.categoria.updateMany({
+            where: {
+              id: target.id,
+              ultimoConsecutivo: { lt: serialConsecutive },
+            },
+            data: { ultimoConsecutivo: serialConsecutive },
+          });
+        }
+
+        data.categoria = { connect: { id: target.id } };
+
+        return tx.implemento.update({
+          where: { id },
+          data,
+          include: itemInclude,
+        });
+      },
+      { timeout: 15000 },
+    );
   }
 
   async remove(id: number) {
@@ -162,15 +227,32 @@ export class ItemsService {
     return { message: 'Implemento eliminado correctamente.' };
   }
 
-  private async assertCategoryExists(categoriaId: number): Promise<void> {
-    const exists = await this.prisma.categoria.findUnique({
-      where: { id: categoriaId },
-      select: { id: true },
-    });
+  private async reserveSerial(
+    tx: Prisma.TransactionClient,
+    categoriaId: number,
+    prefijo: string,
+  ): Promise<string> {
+    for (let attempt = 0; attempt < MAX_SERIAL_ATTEMPTS; attempt += 1) {
+      const categoria = await tx.categoria.update({
+        where: { id: categoriaId },
+        data: { ultimoConsecutivo: { increment: 1 } },
+        select: { ultimoConsecutivo: true },
+      });
 
-    if (!exists) {
-      throw new BadRequestException('La categoría seleccionada no existe.');
+      const codigoSerie = formatSerial(prefijo, categoria.ultimoConsecutivo);
+      const existing = await tx.implemento.findUnique({
+        where: { codigoSerie },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        return codigoSerie;
+      }
     }
+
+    throw new ConflictException(
+      'No fue posible generar un serial único para la categoría. Verifique los consecutivos existentes.',
+    );
   }
 
   private assertManualState(estado?: EstadoImplemento): void {

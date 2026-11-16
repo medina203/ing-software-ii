@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
 import { CreateReturnDto } from './dto/create-return.dto';
@@ -33,10 +25,7 @@ export class ReturnsController {
   }
 
   @Post()
-  create(
-    @Body() dto: CreateReturnDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  create(@Body() dto: CreateReturnDto, @CurrentUser() user: AuthenticatedUser) {
     return this.returnsService.create(dto, user.id);
   }
 }

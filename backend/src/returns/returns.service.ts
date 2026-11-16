@@ -4,12 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  EstadoAlquiler,
-  EstadoEntrega,
-  EstadoImplemento,
-  Prisma,
-} from '@prisma/client';
+import { EstadoAlquiler, EstadoEntrega, EstadoImplemento, Prisma } from '@prisma/client';
 import { markOverdueRentals } from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReturnDto } from './dto/create-return.dto';
@@ -68,12 +63,14 @@ const pendingRentalInclude = {
   },
 } satisfies Prisma.AlquilerInclude;
 
-const finalStateMap: Record<'DISPONIBLE' | 'MANTENIMIENTO' | 'FUERA_DE_SERVICIO', EstadoEntrega> =
-  {
-    DISPONIBLE: EstadoEntrega.DISPONIBLE,
-    MANTENIMIENTO: EstadoEntrega.MANTENIMIENTO,
-    FUERA_DE_SERVICIO: EstadoEntrega.FUERA_DE_SERVICIO,
-  };
+const finalStateMap: Record<
+  'DISPONIBLE' | 'MANTENIMIENTO' | 'FUERA_DE_SERVICIO',
+  EstadoEntrega
+> = {
+  DISPONIBLE: EstadoEntrega.DISPONIBLE,
+  MANTENIMIENTO: EstadoEntrega.MANTENIMIENTO,
+  FUERA_DE_SERVICIO: EstadoEntrega.FUERA_DE_SERVICIO,
+};
 
 @Injectable()
 export class ReturnsService {
@@ -178,11 +175,7 @@ export class ReturnsService {
       );
     }
 
-    if (
-      dto.implementos.some(
-        (item) => item.estadoFinal === EstadoImplemento.ALQUILADO,
-      )
-    ) {
+    if (dto.implementos.some((item) => item.estadoFinal === EstadoImplemento.ALQUILADO)) {
       throw new BadRequestException(
         'El estado final de un implemento no puede ser ALQUILADO.',
       );
@@ -208,10 +201,7 @@ export class ReturnsService {
           throw new NotFoundException('Alquiler no encontrado.');
         }
 
-        if (
-          alquiler.estado === EstadoAlquiler.FINALIZADO ||
-          alquiler.devolucion
-        ) {
+        if (alquiler.estado === EstadoAlquiler.FINALIZADO || alquiler.devolucion) {
           throw new ConflictException(
             'Este alquiler ya tiene una devolución registrada.',
           );
@@ -240,17 +230,13 @@ export class ReturnsService {
           data: {
             alquilerId: dto.alquilerId,
             usuarioId,
-            estadoEntregaImplementos: hasIssues
-              ? 'Con novedades'
-              : 'Sin novedades',
+            estadoEntregaImplementos: hasIssues ? 'Con novedades' : 'Sin novedades',
             observaciones: dto.observaciones?.trim() || null,
             detalles: {
               create: dto.implementos.map((item) => ({
                 implementoId: item.implementoId,
                 estadoFinal:
-                  finalStateMap[
-                    item.estadoFinal as keyof typeof finalStateMap
-                  ],
+                  finalStateMap[item.estadoFinal as keyof typeof finalStateMap],
                 observaciones: item.observaciones?.trim() || null,
               })),
             },

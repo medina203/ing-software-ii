@@ -1,11 +1,12 @@
-import { differenceInCalendarDays, format, isValid, parseISO, startOfDay } from 'date-fns';
+import {
+  differenceInCalendarDays,
+  format,
+  isValid,
+  parseISO,
+  startOfDay,
+} from 'date-fns';
 import { es } from 'date-fns/locale';
-import type {
-  DeliveryStatus,
-  ItemStatus,
-  RentalStatus,
-  UserRole,
-} from '../types';
+import type { DeliveryStatus, ItemStatus, RentalStatus, UserRole } from '../types';
 
 const moneyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -28,31 +29,23 @@ export function formatDate(value: string | Date | null | undefined): string {
   return date ? format(date, 'dd MMM yyyy', { locale: es }) : '—';
 }
 
-export function formatDateLong(
-  value: string | Date | null | undefined,
-): string {
+export function formatDateLong(value: string | Date | null | undefined): string {
   const date = parse(value);
-  return date
-    ? format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
-    : '—';
+  return date ? format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : '—';
 }
 
 /**
  * Formatea una fecha de calendario sin aplicar conversión de zona horaria.
  * Útil para fechas de corte que se almacenan como ISO a medianoche UTC.
  */
-export function formatDateOnly(
-  value: string | Date | null | undefined,
-): string {
+export function formatDateOnly(value: string | Date | null | undefined): string {
   if (!value) return '—';
 
   if (typeof value === 'string') {
     const datePart = /^\d{4}-\d{2}-\d{2}/.exec(value)?.[0];
     if (datePart) {
       const date = new Date(`${datePart}T12:00:00`);
-      return isValid(date)
-        ? format(date, 'dd MMM yyyy', { locale: es })
-        : '—';
+      return isValid(date) ? format(date, 'dd MMM yyyy', { locale: es }) : '—';
     }
   }
 
@@ -71,10 +64,7 @@ export function todayInputDate(): string {
 export function daysOverdue(value: string | Date): number {
   const due = parse(value);
   if (!due) return 0;
-  return Math.max(
-    0,
-    differenceInCalendarDays(startOfDay(new Date()), startOfDay(due)),
-  );
+  return Math.max(0, differenceInCalendarDays(startOfDay(new Date()), startOfDay(due)));
 }
 
 export function daysUntil(value: string | Date): number {

@@ -11,10 +11,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import { Button, IconButton } from '../components/ui/Button';
-import {
-  DeliveryStatusBadge,
-  RentalStatusBadge,
-} from '../components/ui/Badges';
+import { DeliveryStatusBadge, RentalStatusBadge } from '../components/ui/Badges';
 import {
   EmptyState,
   ErrorAlert,
@@ -23,18 +20,8 @@ import {
   SectionCard,
 } from '../components/ui/Feedback';
 import api, { getErrorMessage } from '../lib/api';
-import {
-  daysOverdue,
-  formatDate,
-  formatDateTime,
-  formatMoney,
-} from '../lib/format';
-import type {
-  ListResponse,
-  PaginatedResponse,
-  Rental,
-  ReturnRecord,
-} from '../types';
+import { daysOverdue, formatDate, formatDateTime, formatMoney } from '../lib/format';
+import type { ListResponse, PaginatedResponse, Rental, ReturnRecord } from '../types';
 
 export function ReturnsPage() {
   const navigate = useNavigate();
@@ -94,9 +81,7 @@ export function ReturnsPage() {
                 <ClipboardCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {pending.length}
-                </p>
+                <p className="text-2xl font-bold text-slate-900">{pending.length}</p>
                 <p className="text-sm text-slate-500">
                   Alquileres pendientes de devolución
                 </p>
@@ -107,9 +92,7 @@ export function ReturnsPage() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {returns.length}
-                </p>
+                <p className="text-2xl font-bold text-slate-900">{returns.length}</p>
                 <p className="text-sm text-slate-500">
                   Devoluciones recientes registradas
                 </p>
@@ -131,9 +114,7 @@ export function ReturnsPage() {
             ) : (
               <div className="divide-y divide-slate-100">
                 {pending.map((rental) => {
-                  const overdue = daysOverdue(
-                    rental.fechaPactadaDevolucion,
-                  );
+                  const overdue = daysOverdue(rental.fechaPactadaDevolucion);
                   return (
                     <div
                       key={rental.id}
@@ -186,8 +167,7 @@ export function ReturnsPage() {
                             <span>
                               {formatMoney(
                                 rental.detalles.reduce(
-                                  (sum, detail) =>
-                                    sum + Number(detail.precioUnitario),
+                                  (sum, detail) => sum + Number(detail.precioUnitario),
                                   0,
                                 ),
                               )}{' '}
@@ -217,9 +197,7 @@ export function ReturnsPage() {
                         <Button
                           size="sm"
                           icon={<RotateCcw className="h-4 w-4" />}
-                          onClick={() =>
-                            navigate(`/devoluciones/nueva/${rental.id}`)
-                          }
+                          onClick={() => navigate(`/devoluciones/nueva/${rental.id}`)}
                         >
                           Recibir
                         </Button>
@@ -264,8 +242,7 @@ export function ReturnsPage() {
                             to={`/alquileres/${record.alquilerId}`}
                             className="font-mono text-xs font-bold text-slate-800 hover:text-brand-600"
                           >
-                            {record.alquiler?.codigoAlquiler ??
-                              `#${record.alquilerId}`}
+                            {record.alquiler?.codigoAlquiler ?? `#${record.alquilerId}`}
                           </Link>
                         </td>
                         <td className="table-td">
@@ -298,8 +275,7 @@ export function ReturnsPage() {
                           <div className="flex flex-col items-start gap-1.5">
                             <span
                               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                                record.estadoEntregaImplementos ===
-                                'Sin novedades'
+                                record.estadoEntregaImplementos === 'Sin novedades'
                                   ? 'bg-emerald-50 text-emerald-700'
                                   : 'bg-amber-50 text-amber-700'
                               }`}

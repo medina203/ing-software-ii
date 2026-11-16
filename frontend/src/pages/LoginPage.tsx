@@ -39,12 +39,7 @@ export function LoginPage() {
 
   if (loading) return <FullPageLoader />;
   if (usuario) {
-    return (
-      <Navigate
-        to={usuario.rol === 'ADMIN' ? '/' : '/inventario'}
-        replace
-      />
-    );
+    return <Navigate to={usuario.rol === 'ADMIN' ? '/' : '/inventario'} replace />;
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -96,9 +91,7 @@ export function LoginPage() {
               <HardHat className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xl font-bold tracking-tight text-white">
-                ObraGest
-              </p>
+              <p className="text-xl font-bold tracking-tight text-white">ObraGest</p>
               <p className="text-xs text-slate-400">
                 Inventario & alquiler de implementos
               </p>
@@ -116,8 +109,8 @@ export function LoginPage() {
               <span className="text-brand-400">en el lugar correcto.</span>
             </h1>
             <p className="mt-5 max-w-md text-base leading-7 text-slate-400">
-              Administra inventario, alquileres, devoluciones e historial desde
-              un solo lugar. Menos planillas, más control.
+              Administra inventario, alquileres, devoluciones e historial desde un solo
+              lugar. Menos planillas, más control.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -143,9 +136,7 @@ export function LoginPage() {
                   className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm"
                 >
                   <feature.icon className="h-5 w-5 text-brand-400" />
-                  <p className="mt-3 text-sm font-semibold text-white">
-                    {feature.title}
-                  </p>
+                  <p className="mt-3 text-sm font-semibold text-white">{feature.title}</p>
                   <p className="mt-0.5 text-xs text-slate-500">{feature.text}</p>
                 </div>
               ))}
@@ -165,9 +156,7 @@ export function LoginPage() {
               <HardHat className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xl font-bold tracking-tight text-slate-900">
-                ObraGest
-              </p>
+              <p className="text-xl font-bold tracking-tight text-slate-900">ObraGest</p>
               <p className="text-xs text-slate-500">
                 Inventario & alquiler de implementos
               </p>
@@ -232,9 +221,7 @@ export function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-700"
-                  aria-label={
-                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                  }
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -281,9 +268,7 @@ export function LoginPage() {
                       {account.email} · {account.password}
                     </span>
                   </span>
-                  <span className="text-[11px] font-semibold text-brand-600">
-                    Usar
-                  </span>
+                  <span className="text-[11px] font-semibold text-brand-600">Usar</span>
                 </button>
               ))}
             </div>

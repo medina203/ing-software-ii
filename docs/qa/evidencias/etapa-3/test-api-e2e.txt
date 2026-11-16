@@ -1,0 +1,15 @@
+﻿Comando: npm run test:e2e --workspace backend
+Fecha: 2026-11-15T21:24:43.1513233-05:00
+
+> backend@1.0.0 test:e2e
+> jest --config ./test/jest-e2e.json --runInBand
+
+PASS test/stage3.e2e-spec.ts (5.084 s)
+PASS test/stage2.e2e-spec.ts
+PASS test/health.e2e-spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        7.263 s
+Ran all test suites.

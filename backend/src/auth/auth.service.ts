@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -27,10 +23,7 @@ export class AuthService {
       throw new UnauthorizedException('Correo o contraseña incorrectos.');
     }
 
-    const passwordMatches = await bcrypt.compare(
-      dto.password,
-      usuario.passwordHash,
-    );
+    const passwordMatches = await bcrypt.compare(dto.password, usuario.passwordHash);
 
     if (!passwordMatches) {
       throw new UnauthorizedException('Correo o contraseña incorrectos.');
@@ -77,10 +70,7 @@ export class AuthService {
       throw new BadRequestException('La contraseña actual no es correcta.');
     }
 
-    const isSamePassword = await bcrypt.compare(
-      dto.newPassword,
-      usuario.passwordHash,
-    );
+    const isSamePassword = await bcrypt.compare(dto.newPassword, usuario.passwordHash);
 
     if (isSamePassword) {
       throw new BadRequestException(

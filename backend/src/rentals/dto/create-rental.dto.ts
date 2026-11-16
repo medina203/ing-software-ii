@@ -24,10 +24,7 @@ export class CreateRentalDto {
   @Min(1)
   clienteId: number;
 
-  @IsDateString(
-    {},
-    { message: 'La fecha pactada de devolución no es válida.' },
-  )
+  @IsDateString({}, { message: 'La fecha pactada de devolución no es válida.' })
   fechaPactadaDevolucion: string;
 
   @IsOptional()

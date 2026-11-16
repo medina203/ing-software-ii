@@ -15,12 +15,6 @@ import { EstadoImplemento } from '@prisma/client';
 export class UpdateItemDto {
   @IsOptional()
   @IsString()
-  @MinLength(2, { message: 'El código de serie es obligatorio.' })
-  @MaxLength(50)
-  codigoSerie?: string;
-
-  @IsOptional()
-  @IsString()
   @MinLength(2, { message: 'El nombre es obligatorio.' })
   @MaxLength(140)
   nombre?: string;
@@ -38,10 +32,7 @@ export class UpdateItemDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'El precio debe ser un número válido.' },
-  )
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'El precio debe ser un número válido.' })
   @IsPositive({ message: 'El precio debe ser mayor que cero.' })
   precioAlquilerDiario?: number;
 

@@ -1,9 +1,9 @@
 # Matriz de Trazabilidad — ObraGest
 
-**Versión:** 1.1  
-**Fecha:** 9 de noviembre de 2026  
-**Etapa:** 1 y 2 — Base de calidad y usabilidad  
-**Estado:** Actualizada al cierre de la Etapa 2; se actualiza al cerrar cada etapa.
+**Versión:** 1.2  
+**Fecha:** 15 de noviembre de 2026  
+**Etapa:** 1, 2 y 3 — Base de calidad, usabilidad e inventario  
+**Estado:** Actualizada al cierre de la Etapa 3; se actualiza al cerrar cada etapa.
 
 ---
 
@@ -17,46 +17,46 @@
 
 ## 2. Trazabilidad de requisitos funcionales
 
-| Requisito | Descripción                                          | Implementación / referencia                                                                                                      | Caso(s) de prueba          | Etapa | Estado                |
-| --------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | :---: | :-------------------- |
-| **RF-01** | Autenticación                                        | `backend/src/auth/*`, `frontend/src/pages/LoginPage.tsx`                                                                         | `CP-AUTH-01`, `CP-AUTH-02` |   1   | Pasa: smoke E2E       |
-| **RF-02** | Autorización por roles                               | `backend/src/common/guards/*`, `frontend/src/App.tsx`                                                                            | `CP-AUTH-03`, `CP-SEC-01`  |   5   | Planificado           |
-| **RF-03** | Gestión de usuarios                                  | `backend/src/users/*`, `frontend/src/pages/UsersPage.tsx`                                                                        | `CP-USER-01`               |   2   | Planificado           |
-| **RF-04** | Cambio de contraseña                                 | `backend/src/auth/auth.controller.ts`, `frontend/src/pages/ProfilePage.tsx`                                                      | `CP-AUTH-04`               |   2   | Pasa: E2E de cambio   |
-| **RF-05** | Gestión de clientes                                  | `backend/src/clients/*`, `frontend/src/pages/ClientsPage.tsx`                                                                    | `CP-CLI-01`                |   2   | Pasa: CRUD E2E        |
-| **RF-06** | Búsqueda de clientes                                 | `backend/src/clients/clients.service.ts`, `frontend/src/components/ClientSearchSelect.tsx`, `frontend/src/pages/ClientsPage.tsx` | `CP-CLI-02`, `CP-CLI-03`   |   2   | Pasa: API + E2E       |
-| **RF-07** | Gestión de categorías                                | `backend/src/categories/*`, `frontend/src/pages/InventoryPage.tsx`                                                               | `CP-INV-01`                |   3   | Planificado           |
-| **RF-08** | Prefijo de categoría                                 | `backend/prisma/schema.prisma`, pendiente                                                                                        | `CP-INV-02`                |   3   | Planificado           |
-| **RF-09** | Gestión de inventario                                | `backend/src/items/*`, `frontend/src/pages/InventoryPage.tsx`                                                                    | `CP-INV-03`                |   2   | Planificado           |
-| **RF-10** | Serial automático                                    | `backend/src/items/items.service.ts`, pendiente                                                                                  | `CP-INV-04`, `CP-INV-05`   |   3   | Planificado           |
-| **RF-11** | Disponibilidad e integridad                          | `backend/src/rentals/rentals.service.ts`                                                                                         | `CP-RENT-01`, `CP-RENT-02` | 1 y 3 | Parcial: smoke manual |
-| **RF-12** | Registro de alquiler                                 | `backend/src/rentals/*`, `frontend/src/pages/NewRentalPage.tsx`                                                                  | `CP-RENT-01`, `CP-RENT-03` | 1 y 2 | Pasa: E2E de registro |
-| **RF-13** | Selector de cantidad                                 | `frontend/src/pages/NewRentalPage.tsx`, pendiente                                                                                | `CP-RENT-04`, `CP-RENT-05` |   3   | Planificado           |
-| **RF-14** | Registro de devolución                               | `backend/src/returns/*`, `frontend/src/pages/NewReturnPage.tsx`                                                                  | `CP-RET-01`                |   4   | Planificado           |
-| **RF-15** | Alerta de factura pendiente en devolución            | Pendiente: modelo de facturación                                                                                                 | `CP-BILL-01`               |   4   | Planificado           |
-| **RF-16** | Autorización de nuevo alquiler con factura pendiente | Pendiente: política y modelo                                                                                                     | `CP-BILL-02`, `CP-BILL-03` |   4   | Planificado           |
-| **RF-17** | Gestión de facturas y pagos                          | Pendiente                                                                                                                        | `CP-BILL-04`               |   4   | Planificado           |
-| **RF-18** | Reportes y dashboard                                 | `backend/src/reports/*`, `frontend/src/pages/DashboardPage.tsx`                                                                  | `CP-REP-01`                |   6   | Planificado           |
-| **RF-19** | Ingresos diarios y mensuales                         | `backend/src/reports/reports.service.ts`, `frontend/src/pages/ReportsPage.tsx`                                                   | `CP-REP-02`                |   6   | Planificado           |
-| **RF-20** | Paginación y filtros                                 | `frontend/src/pages/InventoryPage.tsx`, `backend/src/items/items.service.ts`                                                     | `CP-PAG-01`, `CP-PAG-02`   | 2 y 5 | Pasa: API + E2E       |
-| **RF-21** | Auditoría de excepciones                             | Pendiente                                                                                                                        | `CP-BILL-05`               |   4   | Planificado           |
+| Requisito | Descripción                                          | Implementación / referencia                                                                                                      | Caso(s) de prueba          | Etapa | Estado                              |
+| --------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | :---: | :---------------------------------- |
+| **RF-01** | Autenticación                                        | `backend/src/auth/*`, `frontend/src/pages/LoginPage.tsx`                                                                         | `CP-AUTH-01`, `CP-AUTH-02` |   1   | Pasa: smoke E2E                     |
+| **RF-02** | Autorización por roles                               | `backend/src/common/guards/*`, `frontend/src/App.tsx`                                                                            | `CP-AUTH-03`, `CP-SEC-01`  |   5   | Planificado                         |
+| **RF-03** | Gestión de usuarios                                  | `backend/src/users/*`, `frontend/src/pages/UsersPage.tsx`                                                                        | `CP-USER-01`               |   2   | Planificado                         |
+| **RF-04** | Cambio de contraseña                                 | `backend/src/auth/auth.controller.ts`, `frontend/src/pages/ProfilePage.tsx`                                                      | `CP-AUTH-04`               |   2   | Pasa: E2E de cambio                 |
+| **RF-05** | Gestión de clientes                                  | `backend/src/clients/*`, `frontend/src/pages/ClientsPage.tsx`                                                                    | `CP-CLI-01`                |   2   | Pasa: CRUD E2E                      |
+| **RF-06** | Búsqueda de clientes                                 | `backend/src/clients/clients.service.ts`, `frontend/src/components/ClientSearchSelect.tsx`, `frontend/src/pages/ClientsPage.tsx` | `CP-CLI-02`, `CP-CLI-03`   |   2   | Pasa: API + E2E                     |
+| **RF-07** | Gestión de categorías                                | `backend/src/categories/*`, `frontend/src/pages/CategoriesPage.tsx`                                                              | `CP-INV-01`                |   3   | Parcial: CRUD base + prefijo        |
+| **RF-08** | Prefijo de categoría                                 | `backend/prisma/schema.prisma`, `backend/src/categories/categories.service.ts`, `frontend/src/pages/CategoriesPage.tsx`          | `CP-INV-02`                |   3   | Pasa: unitaria + API + E2E          |
+| **RF-09** | Gestión de inventario                                | `backend/src/items/*`, `frontend/src/pages/InventoryPage.tsx`                                                                    | `CP-INV-03`                |   2   | Planificado                         |
+| **RF-10** | Serial automático                                    | `backend/src/items/items.service.ts`, `backend/src/common/utils/serial.ts`, `frontend/src/pages/InventoryPage.tsx`               | `CP-INV-04`, `CP-INV-05`   |   3   | Pasa: unitaria + concurrencia + E2E |
+| **RF-11** | Disponibilidad e integridad                          | `backend/src/rentals/rentals.service.ts`, `frontend/src/lib/rental-selection.ts`                                                 | `CP-RENT-01`, `CP-RENT-02` | 1 y 3 | Pasa: API + E2E                     |
+| **RF-12** | Registro de alquiler                                 | `backend/src/rentals/*`, `frontend/src/pages/NewRentalPage.tsx`                                                                  | `CP-RENT-01`, `CP-RENT-03` | 1 y 2 | Pasa: E2E de registro               |
+| **RF-13** | Selector de cantidad                                 | `frontend/src/pages/NewRentalPage.tsx`, `frontend/src/lib/rental-selection.ts`                                                   | `CP-RENT-04`, `CP-RENT-05` |   3   | Pasa: unitaria + E2E                |
+| **RF-14** | Registro de devolución                               | `backend/src/returns/*`, `frontend/src/pages/NewReturnPage.tsx`                                                                  | `CP-RET-01`                |   4   | Planificado                         |
+| **RF-15** | Alerta de factura pendiente en devolución            | Pendiente: modelo de facturación                                                                                                 | `CP-BILL-01`               |   4   | Planificado                         |
+| **RF-16** | Autorización de nuevo alquiler con factura pendiente | Pendiente: política y modelo                                                                                                     | `CP-BILL-02`, `CP-BILL-03` |   4   | Planificado                         |
+| **RF-17** | Gestión de facturas y pagos                          | Pendiente                                                                                                                        | `CP-BILL-04`               |   4   | Planificado                         |
+| **RF-18** | Reportes y dashboard                                 | `backend/src/reports/*`, `frontend/src/pages/DashboardPage.tsx`                                                                  | `CP-REP-01`                |   6   | Planificado                         |
+| **RF-19** | Ingresos diarios y mensuales                         | `backend/src/reports/reports.service.ts`, `frontend/src/pages/ReportsPage.tsx`                                                   | `CP-REP-02`                |   6   | Planificado                         |
+| **RF-20** | Paginación y filtros                                 | `frontend/src/pages/InventoryPage.tsx`, `backend/src/items/items.service.ts`                                                     | `CP-PAG-01`, `CP-PAG-02`   | 2 y 5 | Pasa: API + E2E                     |
+| **RF-21** | Auditoría de excepciones                             | Pendiente                                                                                                                        | `CP-BILL-05`               |   4   | Planificado                         |
 
 ## 3. Trazabilidad de requisitos no funcionales
 
-| Requisito  | Descripción                   | Implementación / referencia                                    | Caso(s) de prueba        | Etapa | Estado                      |
-| ---------- | ----------------------------- | -------------------------------------------------------------- | ------------------------ | :---: | :-------------------------- |
-| **RNF-01** | Seguridad de autenticación    | `backend/src/auth/*`                                           | `CP-SEC-01`, `CP-SEC-02` |   5   | Planificado                 |
-| **RNF-02** | Control de acceso             | `backend/src/common/guards/*`                                  | `CP-SEC-03`              |   5   | Planificado                 |
-| **RNF-03** | Integridad transaccional      | `backend/src/rentals/rentals.service.ts`, `returns.service.ts` | `CP-RENT-06`             |   3   | Planificado                 |
-| **RNF-04** | Rendimiento y escalabilidad   | `backend/src/items/items.service.ts`, frontend                 | `CP-PAG-03`, `CP-REN-01` | 2 y 6 | Planificado                 |
-| **RNF-05** | Usabilidad                    | `frontend/src/pages/*`                                         | `CP-USA-01`              |   6   | Planificado                 |
-| **RNF-06** | Portabilidad e instalación    | `.env.example`, README                                         | `CP-INS-01`              |   1   | Pasa: `check:env`           |
-| **RNF-07** | Facilidad de prueba           | `package.json`, configuración de test                          | `CP-TEST-01`             |   1   | Pasa: harness y smoke tests |
-| **RNF-08** | Disponibilidad y recuperación | `backend/src/app.controller.ts`, `frontend/src/main.tsx`       | `CP-REC-01`              |   5   | Planificado                 |
-| **RNF-09** | Compatibilidad                | `frontend/src/*`                                               | `CP-COM-01`              |   6   | Planificado                 |
-| **RNF-10** | Trazabilidad                  | `docs/qa/04-matriz-trazabilidad.md`                            | `CP-DOC-01`              | 1 y 6 | Parcial: matriz inicial     |
-| **RNF-11** | Accesibilidad                 | `frontend/src/components/ui/*`                                 | `CP-USA-02`              |   6   | Planificado                 |
-| **RNF-12** | Gestión de secretos           | `.env.example`, `.gitignore`                                   | `CP-INS-02`              |   1   | Implementado                |
+| Requisito  | Descripción                   | Implementación / referencia                                                                          | Caso(s) de prueba        | Etapa | Estado                               |
+| ---------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------ | :---: | :----------------------------------- |
+| **RNF-01** | Seguridad de autenticación    | `backend/src/auth/*`                                                                                 | `CP-SEC-01`, `CP-SEC-02` |   5   | Planificado                          |
+| **RNF-02** | Control de acceso             | `backend/src/common/guards/*`                                                                        | `CP-SEC-03`              |   5   | Planificado                          |
+| **RNF-03** | Integridad transaccional      | `backend/src/rentals/rentals.service.ts`, `returns.service.ts`, `backend/src/items/items.service.ts` | `CP-RENT-06`             |   3   | Pasa: API de rollback                |
+| **RNF-04** | Rendimiento y escalabilidad   | `backend/src/items/items.service.ts`, frontend                                                       | `CP-PAG-03`, `CP-REN-01` | 2 y 6 | Parcial: inventario paginado         |
+| **RNF-05** | Usabilidad                    | `frontend/src/pages/*`                                                                               | `CP-USA-01`              |   6   | Parcial: búsqueda y contraseña       |
+| **RNF-06** | Portabilidad e instalación    | `.env.example`, README                                                                               | `CP-INS-01`              |   1   | Pasa: `check:env`                    |
+| **RNF-07** | Facilidad de prueba           | `package.json`, configuración de test                                                                | `CP-TEST-01`             |   1   | Pasa: harness y smoke tests          |
+| **RNF-08** | Disponibilidad y recuperación | `backend/src/app.controller.ts`, `frontend/src/main.tsx`                                             | `CP-REC-01`              |   5   | Planificado                          |
+| **RNF-09** | Compatibilidad                | `frontend/src/*`                                                                                     | `CP-COM-01`              |   6   | Planificado                          |
+| **RNF-10** | Trazabilidad                  | `docs/qa/04-matriz-trazabilidad.md`                                                                  | `CP-DOC-01`              | 1 y 6 | Parcial: matriz al cierre de Etapa 3 |
+| **RNF-11** | Accesibilidad                 | `frontend/src/components/ui/*`                                                                       | `CP-USA-02`              |   6   | Planificado                          |
+| **RNF-12** | Gestión de secretos           | `.env.example`, `.gitignore`                                                                         | `CP-INS-02`              |   1   | Implementado                         |
 
 ## 4. Trazabilidad de hallazgos de auditoría
 
@@ -84,15 +84,15 @@
 | `CP-CLI-02`  | RF-06         | E2E / sistema              | Búsqueda de cliente por cédula en nuevo alquiler.                    |   2   |
 | `CP-CLI-03`  | RF-06         | E2E / sistema              | Búsqueda de cliente por nombre en nuevo alquiler.                    |   2   |
 | `CP-INV-01`  | RF-07         | API / integración          | CRUD de categorías y bloqueo de eliminación con implementos.         |   3   |
-| `CP-INV-02`  | RF-08         | API / integración          | Prefijo único por categoría.                                         |   3   |
+| `CP-INV-02`  | RF-08         | API / integración          | Prefijo único, formato válido y bloqueo de cambio con implementos.   |   3   |
 | `CP-INV-03`  | RF-09         | API / integración          | CRUD de implementos y bloqueo de eliminación con historial.          |   2   |
-| `CP-INV-04`  | RF-10         | Unitario / integración     | Generación de serial con prefijo y consecutivo.                      |   3   |
-| `CP-INV-05`  | RF-10         | Integración / concurrencia | Dos creaciones simultáneas no duplican serial.                       |   3   |
+| `CP-INV-04`  | RF-10         | Unitario / integración     | Serial automático, consecutivo y rechazo de serial manual.           |   3   |
+| `CP-INV-05`  | RF-10         | Integración / concurrencia | Seis creaciones simultáneas generan seriales únicos.                 |   3   |
 | `CP-RENT-01` | RF-11 / RF-12 | API / integración          | Alquiler exitoso y bloqueo de implemento.                            | 1 y 3 |
 | `CP-RENT-02` | RF-11         | API / integración          | Alquiler de implemento no disponible devuelve `409`.                 |   3   |
 | `CP-RENT-03` | RF-12         | E2E / sistema              | Registro de alquiler desde la UI.                                    |   2   |
 | `CP-RENT-04` | RF-13         | E2E / sistema              | Alquiler de 5 unidades del mismo tipo.                               |   3   |
-| `CP-RENT-05` | RF-13         | API / integración          | Cantidad mayor a la disponibilidad es rechazada.                     |   3   |
+| `CP-RENT-05` | RF-13         | API / integración          | Solicitud de 5 unidades con solo 3 disponibles es rechazada.         |   3   |
 | `CP-RENT-06` | RNF-03        | Integración / concurrencia | Fallo a mitad de transacción no deja estados parciales.              |   3   |
 | `CP-RET-01`  | RF-14         | API / integración          | Devolución completa y actualización de estados.                      |   4   |
 | `CP-BILL-01` | RF-15         | E2E / sistema              | Devolución con factura pendiente muestra alerta y permite continuar. |   4   |
@@ -120,16 +120,16 @@
 
 ## 6. Estado de la línea base
 
-| Elemento               | Estado al 2026-11-09                                                                     |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| SRS y Gherkin          | Creado en Etapa 1.                                                                       |
-| Matriz de trazabilidad | Actualizada al cierre de la Etapa 2 con resultados de búsqueda, paginación y contraseña. |
-| Pruebas backend        | 4 suites unitarias con 10 pruebas aprobadas; 2 suites API con 6 pruebas aprobadas.       |
-| Pruebas frontend       | 3 archivos con 8 pruebas aprobadas.                                                      |
-| Pruebas E2E            | 7 pruebas Playwright aprobadas (smoke + Etapa 2).                                        |
-| `.env.example`         | Verificados en raíz, backend y frontend con `npm run check:env`.                         |
-| Git                    | Commits de Etapa 1 y cambios de Etapa 2 pendientes de commit.                            |
-| Linter                 | Configurado y ejecutado sin errores.                                                     |
+| Elemento               | Estado al 2026-11-15                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| SRS y Gherkin          | Actualizados con los criterios de serial automático, prefijo y cantidad.            |
+| Matriz de trazabilidad | Actualizada al cierre de la Etapa 3 con seriales, cantidad y transacciones.         |
+| Pruebas backend        | 7 suites unitarias con 27 pruebas aprobadas; 3 suites API con 11 pruebas aprobadas. |
+| Pruebas frontend       | 4 archivos con 12 pruebas aprobadas.                                                |
+| Pruebas E2E            | 11 pruebas Playwright aprobadas (smoke + Etapas 2 y 3).                             |
+| `.env.example`         | Verificados en raíz, backend y frontend con `npm run check:env`.                    |
+| Git                    | Commit de Etapa 2 `bed3ec7`; commit de Etapa 3 en el historial local, sin push.     |
+| Linter                 | Configurado y ejecutado sin errores.                                                |
 
 ## 7. Control de cambios
 
@@ -137,3 +137,4 @@
 | ------- | ---------- | ----------------------------------------------------------------------------------------- |
 | 1.0     | 2026-11-09 | Creación inicial de la matriz.                                                            |
 | 1.1     | 2026-11-09 | Cierre de Etapa 2: búsqueda de clientes, cambio de contraseña y paginación de inventario. |
+| 1.2     | 2026-11-15 | Cierre de Etapa 3: prefijo único, serial automático, concurrencia y selector de cantidad. |

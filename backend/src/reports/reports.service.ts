@@ -100,21 +100,16 @@ export class ReportsService {
       _count: { _all: true },
     });
 
-    const total = grouped.reduce(
-      (sum, item) => sum + item._count._all,
-      0,
-    );
+    const total = grouped.reduce((sum, item) => sum + item._count._all, 0);
 
     return {
       total,
       porEstado: ALL_STATES.map((estado) => {
-        const cantidad =
-          grouped.find((item) => item.estado === estado)?._count._all ?? 0;
+        const cantidad = grouped.find((item) => item.estado === estado)?._count._all ?? 0;
         return {
           estado,
           cantidad,
-          porcentaje:
-            total > 0 ? Number(((cantidad / total) * 100).toFixed(1)) : 0,
+          porcentaje: total > 0 ? Number(((cantidad / total) * 100).toFixed(1)) : 0,
         };
       }),
     };
@@ -125,10 +120,7 @@ export class ReportsService {
     const grouped = await this.prisma.detalleAlquiler.groupBy({
       by: ['implementoId'],
       _count: { implementoId: true },
-      orderBy: [
-        { _count: { implementoId: 'desc' } },
-        { implementoId: 'asc' },
-      ],
+      orderBy: [{ _count: { implementoId: 'desc' } }, { implementoId: 'asc' }],
       take: limit,
     });
 
@@ -141,9 +133,7 @@ export class ReportsService {
       include: { categoria: true },
     });
 
-    const byId = new Map(
-      implementos.map((implemento) => [implemento.id, implemento]),
-    );
+    const byId = new Map(implementos.map((implemento) => [implemento.id, implemento]));
 
     return grouped.map((item, index) => ({
       posicion: index + 1,
@@ -182,11 +172,7 @@ export class ReportsService {
     }> = [];
     let total = 0;
 
-    for (
-      let cursor = start;
-      cursor < endExclusive;
-      cursor = addDays(cursor, 1)
-    ) {
+    for (let cursor = start; cursor < endExclusive; cursor = addDays(cursor, 1)) {
       const key = dayKey(cursor);
       const bucket = buckets.get(key);
       const amount = roundMoney(bucket?.total ?? 0);
@@ -253,10 +239,7 @@ export class ReportsService {
       select: revenueRentalSelect,
     });
     const today = startOfTodayUtc();
-    const buckets = new Map<
-      string,
-      { total: number; rentalIds: Set<number> }
-    >();
+    const buckets = new Map<string, { total: number; rentalIds: Set<number> }>();
 
     for (const rental of rentals) {
       const dailyRate = rental.detalles.reduce(
@@ -276,11 +259,7 @@ export class ReportsService {
       );
       const endExclusive = end < start ? addDays(start, 1) : addDays(end, 1);
 
-      for (
-        let cursor = start;
-        cursor < endExclusive;
-        cursor = addDays(cursor, 1)
-      ) {
+      for (let cursor = start; cursor < endExclusive; cursor = addDays(cursor, 1)) {
         const key = dayKey(cursor);
         const bucket = buckets.get(key);
         if (bucket) {
@@ -343,8 +322,7 @@ export class ReportsService {
     ]);
 
     const stateCount = (estado: EstadoImplemento) =>
-      inventorySummary.porEstado.find((item) => item.estado === estado)
-        ?.cantidad ?? 0;
+      inventorySummary.porEstado.find((item) => item.estado === estado)?.cantidad ?? 0;
 
     return {
       generadoEn: new Date().toISOString(),
@@ -354,9 +332,7 @@ export class ReportsService {
         disponibles: stateCount(EstadoImplemento.DISPONIBLE),
         alquilados: stateCount(EstadoImplemento.ALQUILADO),
         mantenimiento: stateCount(EstadoImplemento.MANTENIMIENTO),
-        fueraDeServicio: stateCount(
-          EstadoImplemento.FUERA_DE_SERVICIO,
-        ),
+        fueraDeServicio: stateCount(EstadoImplemento.FUERA_DE_SERVICIO),
         alquileresEnCurso,
         alquileresVencidos,
         clientesRegistrados,

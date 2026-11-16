@@ -43,7 +43,6 @@ import type {
 } from '../types';
 
 interface ItemFormState {
-  codigoSerie: string;
   nombre: string;
   categoriaId: string;
   descripcion: string;
@@ -52,7 +51,6 @@ interface ItemFormState {
 }
 
 const emptyForm: ItemFormState = {
-  codigoSerie: '',
   nombre: '',
   categoriaId: '',
   descripcion: '',
@@ -149,7 +147,6 @@ export function InventoryPage() {
   const openEdit = (item: Item) => {
     setEditingItem(item);
     setForm({
-      codigoSerie: item.codigoSerie,
       nombre: item.nombre,
       categoriaId: String(item.categoriaId),
       descripcion: item.descripcion ?? '',
@@ -190,7 +187,6 @@ export function InventoryPage() {
 
     const isEditingRented = editingItem?.estado === 'ALQUILADO';
     const payload = {
-      codigoSerie: form.codigoSerie.trim(),
       nombre: form.nombre.trim(),
       categoriaId: Number(form.categoriaId),
       descripcion: form.descripcion.trim(),
@@ -244,6 +240,16 @@ export function InventoryPage() {
   const hasFilters =
     Boolean(search) || statusFilter !== 'TODOS' || categoryFilter !== 'TODAS';
   const rented = editingItem?.estado === 'ALQUILADO';
+  const selectedCategory = categories.find(
+    (category) => category.id === Number(form.categoriaId),
+  );
+  const serialPreview = editingItem
+    ? editingItem.codigoSerie
+    : selectedCategory
+      ? `${selectedCategory.prefijo}-${String(
+          selectedCategory.ultimoConsecutivo + 1,
+        ).padStart(3, '0')}`
+      : '';
 
   return (
     <div className="space-y-6 page-enter">
@@ -487,16 +493,19 @@ export function InventoryPage() {
             <Field
               label="Código de serie"
               htmlFor="codigoSerie"
-              required
-              hint="Ej.: HERR-004. Debe ser único."
+              hint={
+                editingItem
+                  ? 'El serial es de solo lectura y se conserva aunque cambien los demás datos.'
+                  : 'Vista previa. El serial definitivo se genera automáticamente al guardar.'
+              }
             >
               <TextInput
                 id="codigoSerie"
-                value={form.codigoSerie}
-                onChange={(event) => updateField('codigoSerie', event.target.value)}
-                required
-                maxLength={50}
-                placeholder="HERR-004"
+                value={serialPreview}
+                readOnly
+                aria-readonly="true"
+                className="bg-slate-50 font-mono text-slate-600"
+                placeholder="Seleccione una categoría"
               />
             </Field>
             <Field label="Nombre" htmlFor="nombre" required>
@@ -546,8 +555,8 @@ export function InventoryPage() {
               <TextInput
                 id="precio"
                 type="number"
-                min="1"
-                step="100"
+                min="0.01"
+                step="0.01"
                 value={form.precio}
                 onChange={(event) => updateField('precio', event.target.value)}
                 required

@@ -1,10 +1,11 @@
 # Plan de mejoras y correcciones por etapas — ObraGest
 
-**Fecha:** 9 de noviembre de 2026  
-**Estado:** Etapa 1 cerrada; Etapa 2 pendiente de inicio  
+**Fecha de creación:** 9 de noviembre de 2026  
+**Última actualización:** 15 de noviembre de 2026  
+**Estado:** Etapas 1, 2 y 3 cerradas; Etapa 4 pendiente de inicio  
 **Objetivo:** Ordenar las mejoras y correcciones en etapas verificables, con pruebas y criterio de salida al final de cada una.
 
-> **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 quedó cerrada con SRS, Gherkin, matriz de trazabilidad, entorno de pruebas, linter, Git y evidencias en `docs/qa/evidencias/etapa-1/`.
+> **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 quedó cerrada con SRS, Gherkin, matriz de trazabilidad, entorno de pruebas, linter, Git y evidencias en `docs/qa/evidencias/etapa-1/`. La Etapa 2 fue aprobada y la Etapa 3 se cerró el 2026-11-15; sus evidencias están en `docs/qa/evidencias/etapa-2/` y `docs/qa/evidencias/etapa-3/`.
 
 ---
 
@@ -110,7 +111,7 @@ Establecer la base documental y técnica para que las etapas siguientes tengan r
 
 ## 5. Etapa 2 — Usabilidad y quick wins
 
-**Estado:** Cumplida técnicamente el 2026-11-09; aprobación del gate y Etapa 3 pospuestas por decisión del usuario. Evidencia en `docs/qa/evidencias/etapa-2/`.
+**Estado:** Cerrada y aprobada el 2026-11-15. Evidencia en `docs/qa/evidencias/etapa-2/`.
 
 ### Objetivo
 
@@ -147,9 +148,19 @@ Resolver las mejoras de usabilidad de bajo riesgo y mayor impacto percibido, sin
 
 ## 6. Etapa 3 — Inventario y alquiler
 
+**Estado:** Cerrada el 2026-11-15. Evidencia en `docs/qa/evidencias/etapa-3/`.
+
 ### Objetivo
 
 Mejorar la integridad y la operación del inventario con seriales automáticos y selección de cantidad.
+
+### Decisiones implementadas
+
+- Prefijo único por categoría, de 2 a 10 caracteres alfanuméricos y con letra inicial.
+- Serial `PREFIJO-###` generado en el backend; no editable en la UI y con consecutivo no reutilizable.
+- Los seriales existentes se conservan. El contador de cada categoría se inicializa con el mayor consecutivo encontrado.
+- El prefijo no se puede cambiar si la categoría tiene implementos. Si un implemento se mueve de categoría, el contador destino se eleva cuando el serial coincide con su prefijo.
+- La cantidad N selecciona N unidades disponibles y conserva el serial de cada una; el resumen muestra cantidad, seriales y subtotal.
 
 ### Alcance
 

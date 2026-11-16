@@ -69,10 +69,12 @@ model Cliente {
 }
 
 model Categoria {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @unique @db.VarChar(100)
-  descripcion String?  @db.VarChar(250)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id                Int      @id @default(autoincrement())
+  nombre            String   @unique @db.VarChar(100)
+  prefijo           String   @unique @db.VarChar(10)
+  ultimoConsecutivo Int      @default(0) @map("ultimo_consecutivo")
+  descripcion       String?  @db.VarChar(250)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   implementos Implemento[]
 

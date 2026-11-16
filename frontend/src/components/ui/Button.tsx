@@ -1,7 +1,4 @@
-import {
-  Loader2,
-  type LucideIcon,
-} from 'lucide-react';
+import { Loader2, type LucideIcon } from 'lucide-react';
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -64,11 +61,7 @@ export function Button({
       )}
       {...props}
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        icon
-      )}
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
       {children}
     </button>
   );

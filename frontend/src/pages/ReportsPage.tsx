@@ -58,11 +58,8 @@ export function ReportsPage() {
   const [activeRentals, setActiveRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedYear, setSelectedYear] = useState(() =>
-    new Date().getFullYear(),
-  );
-  const [monthlyRevenue, setMonthlyRevenue] =
-    useState<MonthlyRevenueReport | null>(null);
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenueReport | null>(null);
   const [revenueLoading, setRevenueLoading] = useState(true);
   const [revenueError, setRevenueError] = useState('');
 
@@ -92,10 +89,9 @@ export function ReportsPage() {
     setRevenueLoading(true);
     setRevenueError('');
     try {
-      const response = await api.get<MonthlyRevenueReport>(
-        '/reports/revenue/monthly',
-        { params: { year } },
-      );
+      const response = await api.get<MonthlyRevenueReport>('/reports/revenue/monthly', {
+        params: { year },
+      });
       setMonthlyRevenue(response.data);
     } catch (loadError) {
       setRevenueError(getErrorMessage(loadError));
@@ -139,10 +135,7 @@ export function ReportsPage() {
 
   const maxTop = Math.max(1, ...topItems.map((item) => item.totalAlquileres));
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from(
-    { length: 5 },
-    (_, index) => currentYear - index,
-  );
+  const yearOptions = Array.from({ length: 5 }, (_, index) => currentYear - index);
   const maxMonthlyRevenue = Math.max(
     1,
     ...(monthlyRevenue?.meses.map((month) => month.total) ?? [0]),
@@ -152,9 +145,7 @@ export function ReportsPage() {
       (accumulator, state) => {
         const start = accumulator.current;
         const end = start + state.porcentaje;
-        accumulator.stops.push(
-          `${stateColors[state.estado].hex} ${start}% ${end}%`,
-        );
+        accumulator.stops.push(`${stateColors[state.estado].hex} ${start}% ${end}%`);
         accumulator.current = end;
         return accumulator;
       },
@@ -198,9 +189,7 @@ export function ReportsPage() {
             {formatDateOnly(dashboard.fechaCorte)}
           </strong>
         </span>
-        <span>
-          Datos actualizados: {formatDateTime(dashboard.generadoEn)}
-        </span>
+        <span>Datos actualizados: {formatDateTime(dashboard.generadoEn)}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -296,10 +285,7 @@ export function ReportsPage() {
                       style={{
                         width: `${
                           month.total > 0
-                            ? Math.max(
-                                4,
-                                (month.total / maxMonthlyRevenue) * 100,
-                              )
+                            ? Math.max(4, (month.total / maxMonthlyRevenue) * 100)
                             : 0
                         }%`,
                       }}
@@ -482,9 +468,7 @@ export function ReportsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {activeRentals.map((rental) => {
-                  const overdue = daysOverdue(
-                    rental.fechaPactadaDevolucion,
-                  );
+                  const overdue = daysOverdue(rental.fechaPactadaDevolucion);
                   return (
                     <tr key={rental.id} className="hover:bg-slate-50/60">
                       <td className="table-td">
@@ -500,17 +484,13 @@ export function ReportsPage() {
                           {rental.cliente.nombres} {rental.cliente.apellidos}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {rental.cliente.documentoIdentidad} ·{' '}
-                          {rental.cliente.telefono}
+                          {rental.cliente.documentoIdentidad} · {rental.cliente.telefono}
                         </p>
                       </td>
                       <td className="table-td">
                         <div className="max-w-sm space-y-0.5">
                           {rental.detalles.map((detail) => (
-                            <p
-                              key={detail.id}
-                              className="text-xs text-slate-600"
-                            >
+                            <p key={detail.id} className="text-xs text-slate-600">
                               <span className="font-mono text-[10px] font-semibold text-slate-500">
                                 {detail.implemento.codigoSerie}
                               </span>{' '}
@@ -519,9 +499,7 @@ export function ReportsPage() {
                           ))}
                         </div>
                       </td>
-                      <td className="table-td">
-                        {formatDate(rental.fechaAlquiler)}
-                      </td>
+                      <td className="table-td">{formatDate(rental.fechaAlquiler)}</td>
                       <td className="table-td">
                         <p className="font-medium text-slate-700">
                           {formatDate(rental.fechaPactadaDevolucion)}
@@ -539,8 +517,7 @@ export function ReportsPage() {
                         <span className="font-semibold text-slate-800">
                           {formatMoney(
                             rental.detalles.reduce(
-                              (sum, detail) =>
-                                sum + Number(detail.precioUnitario),
+                              (sum, detail) => sum + Number(detail.precioUnitario),
                               0,
                             ),
                           )}

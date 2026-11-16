@@ -1,0 +1,4 @@
+﻿Comando: npx prettier --check backend/src frontend/src e2e scripts backend/prisma/seed.ts
+Fecha: 2026-11-15T21:26:27.4376859-05:00
+Checking formatting...
+All matched files use Prettier code style!

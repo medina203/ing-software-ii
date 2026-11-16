@@ -1,14 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
-type Tone =
-  | 'emerald'
-  | 'blue'
-  | 'amber'
-  | 'rose'
-  | 'slate'
-  | 'purple'
-  | 'sky';
+type Tone = 'emerald' | 'blue' | 'amber' | 'rose' | 'slate' | 'purple' | 'sky';
 
 const toneStyles: Record<Tone, string> = {
   emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',

@@ -18,12 +18,7 @@ import {
   PageHeader,
 } from '../components/ui/Feedback';
 import api, { getErrorMessage } from '../lib/api';
-import {
-  daysOverdue,
-  formatDate,
-  formatMoney,
-  rentalStatusLabels,
-} from '../lib/format';
+import { daysOverdue, formatDate, formatMoney, rentalStatusLabels } from '../lib/format';
 import type { PaginatedResponse, Rental } from '../types';
 
 const PAGE_SIZE = 12;
@@ -106,9 +101,7 @@ export function RentalsPage() {
               variant="secondary"
             />
             <Link to="/alquileres/nuevo">
-              <Button icon={<Plus className="h-4 w-4" />}>
-                Registrar alquiler
-              </Button>
+              <Button icon={<Plus className="h-4 w-4" />}>Registrar alquiler</Button>
             </Link>
           </>
         }
@@ -142,8 +135,7 @@ export function RentalsPage() {
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
           <span>
-            <strong className="text-slate-700">{total}</strong> alquileres
-            encontrados
+            <strong className="text-slate-700">{total}</strong> alquileres encontrados
           </span>
           {(search || statusFilter !== 'TODOS') && (
             <button
@@ -177,9 +169,7 @@ export function RentalsPage() {
               </Button>
             ) : (
               <Link to="/alquileres/nuevo">
-                <Button icon={<Plus className="h-4 w-4" />}>
-                  Registrar alquiler
-                </Button>
+                <Button icon={<Plus className="h-4 w-4" />}>Registrar alquiler</Button>
               </Link>
             )
           }
@@ -207,14 +197,9 @@ export function RentalsPage() {
                       (sum, item) => sum + Number(item.precioUnitario),
                       0,
                     );
-                    const overdue = daysOverdue(
-                      rental.fechaPactadaDevolucion,
-                    );
+                    const overdue = daysOverdue(rental.fechaPactadaDevolucion);
                     return (
-                      <tr
-                        key={rental.id}
-                        className="group hover:bg-slate-50/60"
-                      >
+                      <tr key={rental.id} className="group hover:bg-slate-50/60">
                         <td className="table-td">
                           <Link
                             to={`/alquileres/${rental.id}`}
@@ -256,9 +241,7 @@ export function RentalsPage() {
                           </div>
                           <p className="mt-1 text-[11px] text-slate-400">
                             {rental.detalles.length}{' '}
-                            {rental.detalles.length === 1
-                              ? 'implemento'
-                              : 'implementos'}
+                            {rental.detalles.length === 1 ? 'implemento' : 'implementos'}
                           </p>
                         </td>
                         <td className="table-td">
@@ -277,9 +260,7 @@ export function RentalsPage() {
                             {formatDate(rental.fechaPactadaDevolucion)}
                           </p>
                         </td>
-                        <td className="table-td text-sm">
-                          {rental.usuario.nombre}
-                        </td>
+                        <td className="table-td text-sm">{rental.usuario.nombre}</td>
                         <td className="table-td">
                           <RentalStatusBadge status={rental.estado} />
                         </td>
@@ -321,9 +302,7 @@ export function RentalsPage() {
                 variant="secondary"
                 size="sm"
                 disabled={page >= totalPages || loading}
-                onClick={() =>
-                  setPage((current) => Math.min(totalPages, current + 1))
-                }
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
               >
                 Siguiente
                 <ArrowRight className="h-4 w-4" />
@@ -336,9 +315,9 @@ export function RentalsPage() {
       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-500">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
         <p>
-          Cada alquiler conserva el cliente, los implementos, el usuario que lo
-          registró y las fechas pactadas. Los alquileres se marcan como
-          vencidos automáticamente al superar la fecha de devolución.
+          Cada alquiler conserva el cliente, los implementos, el usuario que lo registró y
+          las fechas pactadas. Los alquileres se marcan como vencidos automáticamente al
+          superar la fecha de devolución.
         </p>
       </div>
     </div>

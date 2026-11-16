@@ -21,14 +21,11 @@ export function NotFoundPage() {
           Esta página está en obra
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          La dirección que buscas no existe o fue movida. Vuelve al panel para
-          continuar con la operación.
+          La dirección que buscas no existe o fue movida. Vuelve al panel para continuar
+          con la operación.
         </p>
         <div className="mt-7 flex flex-col justify-center gap-2 sm:flex-row">
-          <Button
-            icon={<Home className="h-4 w-4" />}
-            onClick={() => navigate(home)}
-          >
+          <Button icon={<Home className="h-4 w-4" />} onClick={() => navigate(home)}>
             Ir al inicio
           </Button>
           <Button

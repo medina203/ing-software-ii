@@ -14,10 +14,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
-import {
-  Button,
-  IconButton,
-} from '../components/ui/Button';
+import { Button, IconButton } from '../components/ui/Button';
 import {
   EmptyState,
   ErrorAlert,
@@ -43,10 +40,7 @@ import type {
   StateBreakdown,
 } from '../types';
 
-const statusVisuals: Record<
-  ItemStatus,
-  { bar: string; dot: string; text: string }
-> = {
+const statusVisuals: Record<ItemStatus, { bar: string; dot: string; text: string }> = {
   DISPONIBLE: {
     bar: 'bg-emerald-500',
     dot: 'bg-emerald-500',
@@ -124,17 +118,17 @@ export function DashboardPage() {
     return (
       <div className="space-y-6">
         <PageHeader eyebrow="Panel general" title="Resumen operativo" />
-        <ErrorAlert message={error || 'No fue posible cargar el panel.'} onRetry={loadDashboard} />
+        <ErrorAlert
+          message={error || 'No fue posible cargar el panel.'}
+          onRetry={loadDashboard}
+        />
       </div>
     );
   }
 
   const { resumen, porEstado, topImplementos, alquileresActivos } = data;
   const firstName = usuario?.nombre.split(' ')[0] ?? '';
-  const maxTop = Math.max(
-    1,
-    ...topImplementos.map((item) => item.totalAlquileres),
-  );
+  const maxTop = Math.max(1, ...topImplementos.map((item) => item.totalAlquileres));
   const maxDailyRevenue = Math.max(
     1,
     ...(revenue?.data.map((point) => point.total) ?? [0]),
@@ -240,9 +234,7 @@ export function DashboardPage() {
           label="Alquileres vencidos"
           value={resumen.alquileresVencidos}
           hint={
-            resumen.alquileresVencidos > 0
-              ? 'Requieren seguimiento'
-              : 'Sin pendientes'
+            resumen.alquileresVencidos > 0 ? 'Requieren seguimiento' : 'Sin pendientes'
           }
           icon={AlertTriangle}
           tone={resumen.alquileresVencidos > 0 ? 'rose' : 'slate'}
@@ -274,10 +266,7 @@ export function DashboardPage() {
           <div className="p-5 sm:p-6">
             <div className="flex min-h-[190px] items-end gap-2 overflow-x-auto pb-1">
               {revenue.data.map((point) => {
-                const height = Math.max(
-                  4,
-                  (point.total / maxDailyRevenue) * 140,
-                );
+                const height = Math.max(4, (point.total / maxDailyRevenue) * 140);
                 return (
                   <div
                     key={point.fecha}
@@ -308,9 +297,7 @@ export function DashboardPage() {
                   {formatMoney(revenue.promedioDiario)}
                 </strong>
               </span>
-              <span>
-                Calculado con la tarifa diaria y los días de alquiler.
-              </span>
+              <span>Calculado con la tarifa diaria y los días de alquiler.</span>
             </div>
           </div>
         ) : (
@@ -339,7 +326,11 @@ export function DashboardPage() {
         >
           <div className="space-y-5 p-5 sm:p-6">
             {porEstado.map((state) => (
-              <InventoryBar key={state.estado} state={state} total={resumen.totalImplementos} />
+              <InventoryBar
+                key={state.estado}
+                state={state}
+                total={resumen.totalImplementos}
+              />
             ))}
           </div>
         </SectionCard>
@@ -413,11 +404,7 @@ export function DashboardPage() {
         title="Alquileres en curso"
         description="Implementos pendientes de devolución y clientes responsables"
         action={
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate('/alquileres')}
-          >
+          <Button variant="secondary" size="sm" onClick={() => navigate('/alquileres')}>
             Ver todos
           </Button>
         }
@@ -489,9 +476,7 @@ export function DashboardPage() {
                             ? `${overdue} día(s) de retraso`
                             : daysUntil(rental.fechaPactadaDevolucion) === 0
                               ? 'Vence hoy'
-                              : `En ${daysUntil(
-                                  rental.fechaPactadaDevolucion,
-                                )} día(s)`}
+                              : `En ${daysUntil(rental.fechaPactadaDevolucion)} día(s)`}
                         </p>
                       </td>
                       <td className="table-td">
@@ -520,13 +505,7 @@ export function DashboardPage() {
   );
 }
 
-function InventoryBar({
-  state,
-  total,
-}: {
-  state: StateBreakdown;
-  total: number;
-}) {
+function InventoryBar({ state, total }: { state: StateBreakdown; total: number }) {
   const visual = statusVisuals[state.estado];
   return (
     <div>

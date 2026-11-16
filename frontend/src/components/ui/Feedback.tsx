@@ -31,9 +31,7 @@ export function PageHeader({
           </p>
         )}
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center gap-2">{actions}</div>
-      )}
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
@@ -63,14 +61,14 @@ export function ErrorAlert({
 }
 
 export function Spinner({ className }: { className?: string }) {
-  return (
-    <Loader2
-      className={cn('h-5 w-5 animate-spin text-brand-600', className)}
-    />
-  );
+  return <Loader2 className={cn('h-5 w-5 animate-spin text-brand-600', className)} />;
 }
 
-export function LoadingBlock({ message = 'Cargando información…' }: { message?: string }) {
+export function LoadingBlock({
+  message = 'Cargando información…',
+}: {
+  message?: string;
+}) {
   return (
     <div className="flex min-h-52 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white">
       <Spinner className="h-7 w-7" />
@@ -86,9 +84,7 @@ export function FullPageLoader() {
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink-900 text-brand-400 shadow-lg">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-        <p className="text-sm font-semibold text-slate-500">
-          Preparando ObraGest…
-        </p>
+        <p className="text-sm font-semibold text-slate-500">Preparando ObraGest…</p>
       </div>
     </div>
   );
@@ -119,9 +115,7 @@ export function EmptyState({
       </div>
       <h3 className="text-base font-semibold text-slate-800">{title}</h3>
       {description && (
-        <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">
-          {description}
-        </p>
+        <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">{description}</p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -154,9 +148,7 @@ export function MetricCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-            {value}
-          </p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
           {hint && <p className="mt-2 text-xs text-slate-500">{hint}</p>}
         </div>
         <div className={cn('rounded-xl p-2.5', tones[tone])}>
@@ -185,9 +177,7 @@ export function SectionCard({
       <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <h2 className="text-base font-bold text-slate-900">{title}</h2>
-          {description && (
-            <p className="mt-0.5 text-sm text-slate-500">{description}</p>
-          )}
+          {description && <p className="mt-0.5 text-sm text-slate-500">{description}</p>}
         </div>
         {action}
       </div>

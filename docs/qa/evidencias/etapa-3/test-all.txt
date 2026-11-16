@@ -1,0 +1,41 @@
+﻿Comando: npm test
+Fecha: 2026-11-15T21:23:56.2063838-05:00
+
+> inventario-alquiler-implementos@1.0.0 test
+> npm run test --workspace backend && npm run test --workspace frontend
+
+
+> backend@1.0.0 test
+> jest
+
+PASS src/common/utils/search.spec.ts (8.198 s)
+PASS src/common/utils/serial.spec.ts (8.45 s)
+PASS src/common/utils/dates.spec.ts (9.874 s)
+PASS src/clients/clients.service.spec.ts (9.938 s)
+PASS src/items/items.service.spec.ts (9.992 s)
+PASS src/categories/categories.service.spec.ts (9.995 s)
+PASS src/app.controller.spec.ts (10.746 s)
+
+Test Suites: 7 passed, 7 total
+Tests:       27 passed, 27 total
+Snapshots:   0 total
+Time:        12.501 s, estimated 13 s
+Ran all test suites.
+
+> frontend@1.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/Zoraida Velasquez/Documents/vscode projects/ing-software-ii/frontend[39m
+
+ [32m✓[39m src/lib/clients.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/rental-selection.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/components/ClientSearchSelect.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 692[2mms[22m[39m
+   [33m[2m✓[22m[39m ClientSearchSelect[2m > [22mbusca con debounce y selecciona un cliente con el teclado [33m 641[2mms[22m[39m
+ [32m✓[39m src/lib/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 21:24:13
+[2m   Duration [22m 7.35s[2m (transform 333ms, setup 1.57s, collect 4.69s, tests 720ms, environment 6.76s, prepare 943ms)[22m
+

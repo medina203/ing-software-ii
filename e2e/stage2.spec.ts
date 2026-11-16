@@ -124,12 +124,10 @@ test('busca cliente por cédula y nombre, y crea un alquiler', async ({ page }) 
   });
   await itemSearch.fill(itemCode);
 
-  const itemButton = page.getByRole('button', {
-    name: new RegExp(itemCode),
-  });
-  await expect(itemButton).toBeVisible();
-  await itemButton.click();
-  await expect(itemButton).toHaveAttribute('aria-pressed', 'true');
+  const quantityInput = page.getByLabel(`Cantidad de ${itemName}`);
+  await expect(quantityInput).toBeVisible();
+  await quantityInput.fill('1');
+  await expect(quantityInput).toHaveValue('1');
 
   await page.getByRole('button', { name: 'Confirmar alquiler' }).click();
 

@@ -16,10 +16,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import { Button, IconButton } from '../components/ui/Button';
-import {
-  DeliveryStatusBadge,
-  RentalStatusBadge,
-} from '../components/ui/Badges';
+import { DeliveryStatusBadge, RentalStatusBadge } from '../components/ui/Badges';
 import {
   EmptyState,
   ErrorAlert,
@@ -75,9 +72,7 @@ export function RentalDetailPage() {
             <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
               Alquiler
             </p>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Cargando detalle…
-            </h1>
+            <h1 className="text-2xl font-bold text-slate-900">Cargando detalle…</h1>
           </div>
         </div>
         <LoadingBlock />
@@ -167,9 +162,8 @@ export function RentalDetailPage() {
           <div>
             <p className="font-semibold">Devolución vencida</p>
             <p className="mt-0.5 text-xs leading-5 text-rose-700">
-              La fecha pactada era el{' '}
-              {formatDate(rental.fechaPactadaDevolucion)}. Han transcurrido{' '}
-              {overdue} día(s) de retraso.
+              La fecha pactada era el {formatDate(rental.fechaPactadaDevolucion)}. Han
+              transcurrido {overdue} día(s) de retraso.
             </p>
           </div>
         </div>
@@ -209,9 +203,7 @@ export function RentalDetailPage() {
                           />
                         )}
                       </td>
-                      <td className="table-td">
-                        {detail.implemento.categoria.nombre}
-                      </td>
+                      <td className="table-td">{detail.implemento.categoria.nombre}</td>
                       <td className="table-td">
                         {rental.devolucion ? (
                           <ReturnedItemBadge
@@ -233,7 +225,10 @@ export function RentalDetailPage() {
                 </tbody>
                 <tfoot className="border-t border-slate-200 bg-slate-50/60">
                   <tr>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-600" colSpan={4}>
+                    <td
+                      className="px-5 py-4 text-sm font-semibold text-slate-600"
+                      colSpan={4}
+                    >
                       Tarifa diaria total
                     </td>
                     <td className="px-5 py-4 text-right text-base font-bold text-slate-900">
@@ -252,8 +247,7 @@ export function RentalDetailPage() {
               action={
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    rental.devolucion.estadoEntregaImplementos ===
-                    'Sin novedades'
+                    rental.devolucion.estadoEntregaImplementos === 'Sin novedades'
                       ? 'bg-emerald-50 text-emerald-700'
                       : 'bg-amber-50 text-amber-700'
                   }`}
@@ -277,8 +271,7 @@ export function RentalDetailPage() {
                   icon={ShieldCheck}
                   label="Novedades"
                   value={
-                    rental.devolucion.estadoEntregaImplementos ===
-                    'Sin novedades'
+                    rental.devolucion.estadoEntregaImplementos === 'Sin novedades'
                       ? 'Ninguna'
                       : 'Requiere revisión'
                   }
@@ -294,8 +287,7 @@ export function RentalDetailPage() {
                     >
                       <div>
                         <p className="text-xs font-semibold text-slate-700">
-                          {detail.implemento.codigoSerie} ·{' '}
-                          {detail.implemento.nombre}
+                          {detail.implemento.codigoSerie} · {detail.implemento.nombre}
                         </p>
                         {detail.observaciones && (
                           <p className="mt-1 text-xs text-slate-500">
@@ -331,8 +323,8 @@ export function RentalDetailPage() {
                     Devolución pendiente
                   </p>
                   <p className="mt-0.5 text-xs leading-5 text-slate-500">
-                    Registra la inspección física para liberar o enviar a
-                    mantenimiento los implementos.
+                    Registra la inspección física para liberar o enviar a mantenimiento
+                    los implementos.
                   </p>
                 </div>
               </div>
@@ -437,8 +429,8 @@ export function RentalDetailPage() {
               Registro auditable
             </p>
             <p className="mt-1 text-emerald-700">
-              Este alquiler conserva la trazabilidad del cliente, los equipos y
-              el usuario responsable.
+              Este alquiler conserva la trazabilidad del cliente, los equipos y el usuario
+              responsable.
             </p>
           </div>
         </aside>
@@ -454,9 +446,7 @@ function ReturnedItemNote({
   implementoId: number;
   returnDetails: NonNullable<Rental['devolucion']>['detalles'];
 }) {
-  const detail = returnDetails.find(
-    (item) => item.implementoId === implementoId,
-  );
+  const detail = returnDetails.find((item) => item.implementoId === implementoId);
   if (!detail?.observaciones) return null;
   return (
     <p className="mt-1 text-[11px] italic text-slate-500">
@@ -472,9 +462,7 @@ function ReturnedItemBadge({
   implementoId: number;
   returnDetails: NonNullable<Rental['devolucion']>['detalles'];
 }) {
-  const detail = returnDetails.find(
-    (item) => item.implementoId === implementoId,
-  );
+  const detail = returnDetails.find((item) => item.implementoId === implementoId);
   return detail ? (
     <DeliveryStatusBadge status={detail.estadoFinal} />
   ) : (

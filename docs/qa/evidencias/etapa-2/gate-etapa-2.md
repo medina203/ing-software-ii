@@ -1,7 +1,8 @@
 # Gate de salida — Etapa 2
 
 **Fecha:** 9 de noviembre de 2026  
-**Estado:** Cumplido técnicamente; aprobación y Etapa 3 pospuestas por decisión del usuario el 2026-11-09
+**Última actualización:** 15 de noviembre de 2026  
+**Estado:** Aprobado el 2026-11-15; habilita la Etapa 3
 
 ## Checklist
 
@@ -28,8 +29,8 @@
 
 - No se modificó el modelo de inventario ni el de facturación; esas decisiones se implementan en las etapas 3 y 4.
 - No se resetearon datos existentes. Las pruebas E2E crean y eliminan sus propios registros temporales.
-- La aprobación de este gate habilita el inicio de la Etapa 3.
+- La aprobación de este gate habilitó el inicio de la Etapa 3, cerrada el 2026-11-15.
 
 ## Resultado
 
-La Etapa 2 cumple los criterios técnicos y de regresión definidos. El usuario decidió posponer la aprobación del gate y el inicio de la Etapa 3. El trabajo queda como checkpoint técnico, con la Etapa 3 pendiente para una próxima sesión.
+La Etapa 2 cumple los criterios técnicos y de regresión definidos. El usuario autorizó continuar el 2026-11-15; el gate queda aprobado y la Etapa 3 se cerró con evidencias propias.

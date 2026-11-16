@@ -1,17 +1,11 @@
 export type UserRole = 'ADMIN' | 'EMPLEADO';
 
 export type ItemStatus =
-  | 'DISPONIBLE'
-  | 'ALQUILADO'
-  | 'MANTENIMIENTO'
-  | 'FUERA_DE_SERVICIO';
+  'DISPONIBLE' | 'ALQUILADO' | 'MANTENIMIENTO' | 'FUERA_DE_SERVICIO';
 
 export type RentalStatus = 'ACTIVO' | 'FINALIZADO' | 'VENCIDO';
 
-export type DeliveryStatus =
-  | 'DISPONIBLE'
-  | 'MANTENIMIENTO'
-  | 'FUERA_DE_SERVICIO';
+export type DeliveryStatus = 'DISPONIBLE' | 'MANTENIMIENTO' | 'FUERA_DE_SERVICIO';
 
 export interface User {
   id: number;
@@ -25,6 +19,8 @@ export interface User {
 export interface Category {
   id: number;
   nombre: string;
+  prefijo: string;
+  ultimoConsecutivo: number;
   descripcion: string | null;
   createdAt?: string;
   _count?: { implementos: number };

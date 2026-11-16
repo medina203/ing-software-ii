@@ -59,22 +59,27 @@ async function main() {
   const categoriesData = [
     {
       nombre: 'Herramientas eléctricas',
+      prefijo: 'HERR',
       descripcion: 'Taladros, esmeriladoras y herramientas de corte.',
     },
     {
       nombre: 'Maquinaria ligera',
+      prefijo: 'MAQ',
       descripcion: 'Equipos para mezcla, compactación y generación de energía.',
     },
     {
       nombre: 'Andamios y acceso',
+      prefijo: 'AND',
       descripcion: 'Estructuras y equipos para trabajo en altura.',
     },
     {
       nombre: 'Equipos de medición',
+      prefijo: 'MED',
       descripcion: 'Instrumentos de precisión para obra y topografía.',
     },
     {
       nombre: 'Seguridad industrial',
+      prefijo: 'SEG',
       descripcion: 'Elementos de protección personal para obra.',
     },
   ];
@@ -357,15 +362,34 @@ async function main() {
     await prisma.implemento.updateMany({
       where: {
         id: {
-          in: [
-            items['HERR-001'].id,
-            items['HERR-003'].id,
-            items['MAQ-001'].id,
-          ],
+          in: [items['HERR-001'].id, items['HERR-003'].id, items['MAQ-001'].id],
         },
       },
       data: { estado: EstadoImplemento.ALQUILADO },
     });
+  }
+
+  // Sincroniza el consecutivo con los seriales existentes sin retrocederlo.
+  // Así el seed también deja la base lista para generar PREFIJO-###.
+  const categoryRecords = await prisma.categoria.findMany();
+  for (const category of categoryRecords) {
+    const serials = await prisma.implemento.findMany({
+      where: { categoriaId: category.id },
+      select: { codigoSerie: true },
+    });
+    const escapedPrefix = category.prefijo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const serialPattern = new RegExp(`^${escapedPrefix}-(\\d+)$`);
+    const maxConsecutive = serials.reduce((max, item) => {
+      const match = serialPattern.exec(item.codigoSerie);
+      return match ? Math.max(max, Number(match[1])) : max;
+    }, 0);
+
+    if (maxConsecutive > category.ultimoConsecutivo) {
+      await prisma.categoria.update({
+        where: { id: category.id },
+        data: { ultimoConsecutivo: maxConsecutive },
+      });
+    }
   }
 
   console.log('✅ Seed completado.');

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Rol } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -66,15 +62,12 @@ export class UsersService {
     }
 
     if (id === requestingUserId && dto.activo === false) {
-      throw new BadRequestException(
-        'No puede desactivar su propia cuenta de usuario.',
-      );
+      throw new BadRequestException('No puede desactivar su propia cuenta de usuario.');
     }
 
     const losesAdminAccess =
       usuario.rol === Rol.ADMIN &&
-      ((dto.rol !== undefined && dto.rol !== Rol.ADMIN) ||
-        dto.activo === false);
+      ((dto.rol !== undefined && dto.rol !== Rol.ADMIN) || dto.activo === false);
 
     if (losesAdminAccess) {
       const activeAdmins = await this.prisma.usuario.count({

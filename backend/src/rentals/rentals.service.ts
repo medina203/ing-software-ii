@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { EstadoAlquiler, EstadoImplemento, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import {
-  parseDateOnly,
-  startOfTodayUtc,
-  yyyymmdd,
-} from '../common/utils/dates';
+import { parseDateOnly, startOfTodayUtc, yyyymmdd } from '../common/utils/dates';
 import { markOverdueRentals } from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRentalDto } from './dto/create-rental.dto';
@@ -185,8 +181,7 @@ export class RentalsService {
         }
 
         const noDisponibles = implementos.filter(
-          (implemento) =>
-            implemento.estado !== EstadoImplemento.DISPONIBLE,
+          (implemento) => implemento.estado !== EstadoImplemento.DISPONIBLE,
         );
 
         if (noDisponibles.length > 0) {
@@ -213,8 +208,7 @@ export class RentalsService {
             detalles: {
               create: implementoIds.map((implementoId) => ({
                 implementoId,
-                precioUnitario:
-                  implementosPorId.get(implementoId)!.precioAlquilerDiario,
+                precioUnitario: implementosPorId.get(implementoId)!.precioAlquilerDiario,
               })),
             },
           },

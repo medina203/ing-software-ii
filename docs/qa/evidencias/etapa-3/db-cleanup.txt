@@ -1,0 +1,67 @@
+﻿Comando: node .tmp-db-check.cjs
+Fecha: 2026-11-15T21:27:02.7207873-05:00
+◇ injected env (5) from backend\.env // tip: ◈ secrets for agents [www.dotenvx.com]
+{
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Herramientas eléctricas",
+      "prefijo": "HERR",
+      "ultimoConsecutivo": 3,
+      "implementos": 5
+    },
+    {
+      "id": 2,
+      "nombre": "Maquinaria ligera",
+      "prefijo": "MAQ",
+      "ultimoConsecutivo": 3,
+      "implementos": 3
+    },
+    {
+      "id": 3,
+      "nombre": "Andamios y acceso",
+      "prefijo": "AND",
+      "ultimoConsecutivo": 2,
+      "implementos": 2
+    },
+    {
+      "id": 4,
+      "nombre": "Equipos de medición",
+      "prefijo": "MED",
+      "ultimoConsecutivo": 2,
+      "implementos": 2
+    },
+    {
+      "id": 5,
+      "nombre": "Seguridad industrial",
+      "prefijo": "SEG",
+      "ultimoConsecutivo": 2,
+      "implementos": 2
+    }
+  ],
+  "seriales": [
+    "AND-001",
+    "AND-002",
+    "CAT-ASFDASD-02",
+    "CSDFHSJDFKHAJDKFHASJDFHASJKDFHUWAEIQHAT-ASFDASD-02",
+    "HERR-001",
+    "HERR-002",
+    "HERR-003",
+    "MAQ-001",
+    "MAQ-002",
+    "MAQ-003",
+    "MED-001",
+    "MED-002",
+    "SEG-001",
+    "SEG-002"
+  ],
+  "datosTemporales": {
+    "categoriasQA": 0,
+    "implementosQA": 0,
+    "alquileresEtapa3": 0
+  },
+  "migracionEtapa3": {
+    "migration_name": "20261115100000_stage3_category_prefix",
+    "finished_at": "2026-11-16T01:23:09.340Z"
+  }
+}

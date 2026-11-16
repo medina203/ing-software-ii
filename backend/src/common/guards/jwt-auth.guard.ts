@@ -8,10 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import {
-  AuthenticatedUser,
-  JwtPayload,
-} from '../types/authenticated-user.interface';
+import { AuthenticatedUser, JwtPayload } from '../types/authenticated-user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 
 type AuthenticatedRequest = Request & { user?: AuthenticatedUser };
@@ -59,9 +56,7 @@ export class JwtAuthGuard implements CanActivate {
       });
 
       if (!usuario?.activo) {
-        throw new UnauthorizedException(
-          'El usuario no existe o se encuentra inactivo.',
-        );
+        throw new UnauthorizedException('El usuario no existe o se encuentra inactivo.');
       }
 
       request.user = usuario;

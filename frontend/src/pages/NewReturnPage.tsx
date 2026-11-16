@@ -13,13 +13,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useToast } from '../components/Toast';
-import {
-  Button,
-  Field,
-  IconButton,
-  Select,
-  TextArea,
-} from '../components/ui/Button';
+import { Button, Field, IconButton, Select, TextArea } from '../components/ui/Button';
 import { Badge, ItemStatusBadge } from '../components/ui/Badges';
 import {
   EmptyState,
@@ -52,9 +46,7 @@ export function NewReturnPage() {
   const { success } = useToast();
 
   const [rental, setRental] = useState<Rental | null>(null);
-  const [itemStates, setItemStates] = useState<Record<number, ItemReturnState>>(
-    {},
-  );
+  const [itemStates, setItemStates] = useState<Record<number, ItemReturnState>>({});
   const [observations, setObservations] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -89,10 +81,7 @@ export function NewReturnPage() {
   }, [loadRental]);
 
   const hasIssues = useMemo(
-    () =>
-      Object.values(itemStates).some(
-        (item) => item.estadoFinal !== 'DISPONIBLE',
-      ),
+    () => Object.values(itemStates).some((item) => item.estadoFinal !== 'DISPONIBLE'),
     [itemStates],
   );
 
@@ -100,10 +89,7 @@ export function NewReturnPage() {
     (item) => item.estadoFinal !== 'DISPONIBLE',
   ).length;
 
-  const updateItemState = (
-    implementoId: number,
-    changes: Partial<ItemReturnState>,
-  ) => {
+  const updateItemState = (implementoId: number, changes: Partial<ItemReturnState>) => {
     setItemStates((current) => ({
       ...current,
       [implementoId]: {
@@ -117,10 +103,7 @@ export function NewReturnPage() {
     if (!rental) return;
     setItemStates(
       Object.fromEntries(
-        rental.detalles.map((detail) => [
-          detail.implementoId,
-          { ...INITIAL_ITEM_STATE },
-        ]),
+        rental.detalles.map((detail) => [detail.implementoId, { ...INITIAL_ITEM_STATE }]),
       ),
     );
   };
@@ -166,9 +149,7 @@ export function NewReturnPage() {
             <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
               Devoluciones
             </p>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Preparando devolución…
-            </h1>
+            <h1 className="text-2xl font-bold text-slate-900">Preparando devolución…</h1>
           </div>
         </div>
         <LoadingBlock />
@@ -188,10 +169,7 @@ export function NewReturnPage() {
           title="No fue posible cargar el alquiler"
           description="Verifica el enlace o vuelve a la lista de devoluciones pendientes."
           action={
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/devoluciones')}
-            >
+            <Button variant="secondary" onClick={() => navigate('/devoluciones')}>
               Volver a devoluciones
             </Button>
           }
@@ -210,9 +188,7 @@ export function NewReturnPage() {
             variant="secondary"
             onClick={() => navigate(`/alquileres/${rental.id}`)}
           />
-          <h1 className="text-2xl font-bold text-slate-900">
-            Devolución ya registrada
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900">Devolución ya registrada</h1>
         </div>
         <EmptyState
           icon={CheckCircle2}
@@ -266,9 +242,9 @@ export function NewReturnPage() {
           <div>
             <p className="font-semibold">Devolución con retraso</p>
             <p className="mt-0.5 text-xs leading-5 text-rose-700">
-              La fecha pactada era el{' '}
-              {formatDate(rental.fechaPactadaDevolucion)} y presenta {overdue}{' '}
-              día(s) de retraso. Puedes registrar la devolución igualmente.
+              La fecha pactada era el {formatDate(rental.fechaPactadaDevolucion)} y
+              presenta {overdue} día(s) de retraso. Puedes registrar la devolución
+              igualmente.
             </p>
           </div>
         </div>
@@ -349,13 +325,9 @@ export function NewReturnPage() {
           >
             <div className="divide-y divide-slate-100">
               {rental.detalles.map((detail, index) => {
-                const state =
-                  itemStates[detail.implementoId] ?? INITIAL_ITEM_STATE;
+                const state = itemStates[detail.implementoId] ?? INITIAL_ITEM_STATE;
                 return (
-                  <div
-                    key={detail.implementoId}
-                    className="space-y-4 p-5 sm:p-6"
-                  >
+                  <div key={detail.implementoId} className="space-y-4 p-5 sm:p-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex items-start gap-3">
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
@@ -386,18 +358,15 @@ export function NewReturnPage() {
                           value={state.estadoFinal}
                           onChange={(event) =>
                             updateItemState(detail.implementoId, {
-                              estadoFinal: event.target
-                                .value as DeliveryStatus,
+                              estadoFinal: event.target.value as DeliveryStatus,
                             })
                           }
                         >
-                          {Object.entries(deliveryStatusLabels).map(
-                            ([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ),
-                          )}
+                          {Object.entries(deliveryStatusLabels).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
                         </Select>
                       </Field>
                       <Field
@@ -462,8 +431,7 @@ export function NewReturnPage() {
                 {hasIssues ? 'Con novedades' : 'Sin novedades'}
               </p>
               <p className="mt-1 text-xs text-slate-400">
-                {rental.detalles.length} implementos · {issueCount} con
-                novedad(es)
+                {rental.detalles.length} implementos · {issueCount} con novedad(es)
               </p>
             </div>
 
@@ -503,8 +471,8 @@ export function NewReturnPage() {
 
               {hasIssues && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-800">
-                  Los equipos con novedades no volverán a estar disponibles
-                  hasta que el administrador los habilite nuevamente.
+                  Los equipos con novedades no volverán a estar disponibles hasta que el
+                  administrador los habilite nuevamente.
                 </div>
               )}
 
