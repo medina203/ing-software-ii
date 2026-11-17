@@ -1,7 +1,10 @@
 import {
   EstadoAlquiler,
+  EstadoFactura,
   EstadoEntrega,
   EstadoImplemento,
+  MetodoPago,
+  Prisma,
   PrismaClient,
   Rol,
 } from '@prisma/client';
@@ -369,6 +372,71 @@ async function main() {
     });
   }
 
+  // Etapa 4: facturas de los alquileres demo (idempotente). Así la demo muestra
+  // una factura pendiente, una vencida y una pagada.
+  const demoInvoices = [
+    { codigoAlquiler: 'ALQ-DEMO-0001', codigoFactura: 'FAC-DEMO-0001', pagada: false },
+    { codigoAlquiler: 'ALQ-DEMO-0002', codigoFactura: 'FAC-DEMO-0002', pagada: false },
+    { codigoAlquiler: 'ALQ-DEMO-0003', codigoFactura: 'FAC-DEMO-0003', pagada: true },
+  ];
+
+  for (const demo of demoInvoices) {
+    const rental = await prisma.alquiler.findUnique({
+      where: { codigoAlquiler: demo.codigoAlquiler },
+      include: { detalles: true, factura: true, devolucion: true },
+    });
+    if (!rental || rental.factura) continue;
+
+    const end = rental.devolucion?.fechaDevolucion ?? rental.fechaPactadaDevolucion;
+    const days = Math.max(
+      1,
+      Math.round(
+        (Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()) -
+          Date.UTC(
+            rental.fechaAlquiler.getUTCFullYear(),
+            rental.fechaAlquiler.getUTCMonth(),
+            rental.fechaAlquiler.getUTCDate(),
+          )) /
+          86_400_000,
+      ),
+    );
+    const total = rental.detalles.reduce(
+      (sum, detalle) => sum.plus(new Prisma.Decimal(detalle.precioUnitario).times(days)),
+      new Prisma.Decimal(0),
+    );
+    const vencida = rental.fechaPactadaDevolucion < dateAtDays(0);
+
+    const factura = await prisma.factura.create({
+      data: {
+        codigoFactura: demo.codigoFactura,
+        alquilerId: rental.id,
+        clienteId: rental.clienteId,
+        fechaEmision: rental.fechaAlquiler,
+        fechaVencimiento: rental.fechaPactadaDevolucion,
+        total,
+        saldo: demo.pagada ? 0 : total,
+        estado: demo.pagada
+          ? EstadoFactura.PAGADA
+          : vencida
+            ? EstadoFactura.VENCIDA
+            : EstadoFactura.PENDIENTE,
+      },
+    });
+
+    if (demo.pagada) {
+      await prisma.pago.create({
+        data: {
+          facturaId: factura.id,
+          usuarioId: empleado.id,
+          monto: total,
+          metodoPago: MetodoPago.TRANSFERENCIA,
+          referencia: 'PAGO-DEMO-0003',
+          fechaPago: rental.devolucion?.fechaDevolucion ?? rental.fechaPactadaDevolucion,
+        },
+      });
+    }
+  }
+
   // Sincroniza el consecutivo con los seriales existentes sin retrocederlo.
   // Así el seed también deja la base lista para generar PREFIJO-###.
   const categoryRecords = await prisma.categoria.findMany();
@@ -397,6 +465,7 @@ async function main() {
   console.log(`   Empleado:      ${empleado.email} / Empleado123*`);
   console.log('   Categorías: 5 | Implementos: 12 | Clientes: 3');
   console.log('   Alquileres demo: activo, vencido y finalizado.');
+  console.log('   Facturas demo: pendiente, vencida y pagada.');
 }
 
 main()

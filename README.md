@@ -24,7 +24,9 @@ El repositorio es un monorepo con dos aplicaciones:
   - `MANTENIMIENTO`
   - `FUERA_DE_SERVICIO`
 - Historial de alquileres y devoluciones con usuario responsable, fechas y observaciones.
-- Actualización automática de alquileres vencidos al consultar alquileres, devoluciones o reportes.
+- Estado vencido calculado al consultar (sin escrituras en `GET`) y sincronizado por un proceso programado cada 15 minutos.
+- Facturación por alquiler, pagos parciales, cartera por cliente, alerta en devoluciones y autorización auditada de ADMIN para clientes con saldo pendiente.
+- Bloqueo temporal tras 5 intentos fallidos de inicio de sesión.
 - Reportes de inventario por estado, implementos más alquilados y alquileres vigentes/vencidos.
 - Administración de categorías y usuarios.
 - Interfaz adaptada a móvil, con modales, notificaciones y vistas imprimibles de alquiler y reportes.
@@ -156,13 +158,16 @@ Se crea a partir de `.env.example`. Es opcional porque `docker-compose.yml` defi
 
 Se crea a partir de `backend/.env.example`.
 
-| Variable                 | Ejemplo                                                                            | Descripción                                          |
-| ------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `DATABASE_URL`           | `postgresql://inventario:inventario123@localhost:5432/inventario_db?schema=public` | Cadena de conexión usada por Prisma                  |
-| `JWT_SECRET`             | Cadena larga y aleatoria                                                           | Firma de los tokens JWT                              |
-| `JWT_EXPIRES_IN_SECONDS` | `28800`                                                                            | Vigencia del token en segundos (8 horas por defecto) |
-| `PORT`                   | `4000`                                                                             | Puerto de la API                                     |
-| `FRONTEND_URL`           | `http://localhost:5173`                                                            | Origen(es) permitidos por CORS, separados por coma   |
+| Variable                                                             | Ejemplo                                                                            | Descripción                                              |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`                                                       | `postgresql://inventario:inventario123@localhost:5432/inventario_db?schema=public` | Cadena de conexión usada por Prisma                      |
+| `JWT_SECRET`                                                         | Cadena larga y aleatoria                                                           | Firma de los tokens JWT                                  |
+| `JWT_EXPIRES_IN_SECONDS`                                             | `28800`                                                                            | Vigencia del token en segundos (8 horas por defecto)     |
+| `PORT`                                                               | `4000`                                                                             | Puerto de la API                                         |
+| `FRONTEND_URL`                                                       | `http://localhost:5173`                                                            | Origen(es) permitidos por CORS, separados por coma       |
+| `APP_TIMEZONE`                                                       | `America/Bogota`                                                                   | Zona del negocio para "hoy", vencimientos y días         |
+| `STATUS_SYNC_INTERVAL_MINUTES`                                       | `15`                                                                               | Sincronización de estados vencidos (0 = solo al iniciar) |
+| `LOGIN_MAX_FAILURES` / `LOGIN_WINDOW_MINUTES` / `LOGIN_LOCK_MINUTES` | `5` / `15` / `15`                                                                  | Bloqueo por intentos fallidos (responde `429`)           |
 
 > Si cambia `POSTGRES_PORT` en el `.env` raíz, actualice también el puerto de `DATABASE_URL` en `backend/.env`.
 
@@ -310,10 +315,11 @@ erDiagram
 4. Un alquiler solo puede tener una devolución.
 5. La devolución debe incluir exactamente todos los implementos del alquiler.
 6. Al registrar la devolución, el alquiler pasa a `FINALIZADO` y cada implemento adopta el estado final inspeccionado.
-7. Un alquiler activo con fecha pactada anterior al día actual se marca automáticamente como `VENCIDO` antes de listar alquileres, devoluciones o reportes.
-8. No se puede eliminar un cliente con alquileres, una categoría con implementos ni un implemento con historial de alquileres.
-9. Debe existir al menos un administrador activo; un administrador no puede desactivar su propia cuenta.
-10. Los códigos de alquiler se generan con el formato `ALQ-YYYYMMDD-00001`.
+7. Un alquiler activo con fecha pactada anterior al día actual (en `APP_TIMEZONE`) se presenta como `VENCIDO`. Las consultas no escriben en la base de datos; `StatusSyncService` sincroniza el estado guardado al iniciar y cada 15 minutos.
+8. La factura se emite con los días pactados y se liquida con los días reales al registrar la devolución (mínimo 1 día), descontando los pagos. El reporte de ingresos usa la misma regla.
+9. No se puede eliminar un cliente con alquileres, una categoría con implementos ni un implemento con historial de alquileres.
+10. Debe existir al menos un administrador activo; un administrador no puede desactivar su propia cuenta.
+11. Los códigos de alquiler se generan con el formato `ALQ-YYYYMMDD-00001`.
 
 ---
 
@@ -518,6 +524,7 @@ El seed es idempotente y crea:
   - `ALQ-DEMO-0001`: activo.
   - `ALQ-DEMO-0002`: vencido, para probar el estado automático.
   - `ALQ-DEMO-0003`: finalizado, con devolución registrada.
+- 3 facturas: `FAC-DEMO-0001` pendiente, `FAC-DEMO-0002` vencida y `FAC-DEMO-0003` pagada. El cliente `CC-10324567` tiene saldo pendiente, por lo que un nuevo alquiler para él exige autorización de ADMIN.
 
 Los alquileres demo solo se crean si la tabla de alquileres está vacía. Volver a ejecutar el seed no duplica operaciones.
 
@@ -584,17 +591,14 @@ Antes de desplegar:
 
 ### Estado de validación
 
-- `npm run build` compila backend y frontend sin errores.
-- La migración inicial fue aplicada sobre PostgreSQL 16.14 y el seed se ejecutó correctamente.
-- `npm test` ejecuta 5 pruebas unitarias de backend y 4 de frontend.
-- `npm run test:e2e --workspace backend` ejecuta el smoke test de integración de `/health`.
-- `npm run test:e2e` ejecuta 2 pruebas E2E de humo con Playwright y Chrome: health de la API e inicio de sesión de administrador.
-- `npm run lint` finaliza sin errores.
-- `npm run check:env` verifica las plantillas `.env.example` de raíz, backend y frontend.
-- Las verificaciones manuales anteriores (34 comprobaciones de API y 15 de interfaz) se conservan como referencia histórica; la evidencia versionada y reproducible se consolida en `docs/qa/evidencias/`.
-- El entorno de desarrollo no disponía de Docker; la validación se realizó con PostgreSQL 16 local. La configuración de `docker-compose.yml` se entrega lista para usar.
+Validación del 2026-11-17 (evidencia en `docs/qa/evidencias/etapa-4-5/` e informe en `docs/qa/05-evaluacion-calidad-iso25010.md`):
 
----
+- `npm run build` compila backend y frontend sin errores; el JS inicial pasó de más de 500 kB a 381 kB gracias a la carga diferida de rutas.
+- `npm test`: 57 pruebas unitarias de backend y 18 de frontend aprobadas.
+- `npm run test:e2e --workspace backend`: 21 pruebas de API aprobadas (Etapas 2 a 5).
+- `npm run test:e2e`: 15 pruebas Playwright aprobadas en Chrome (humo y Etapas 2 a 4).
+- `npm run lint` y `prettier --check` finalizan sin errores.
+- `/api/health` responde `503` con PostgreSQL detenido y `200` al restablecerlo.
 
 ## 16. Solución de problemas
 

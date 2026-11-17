@@ -5,37 +5,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EstadoAlquiler, EstadoEntrega, EstadoImplemento, Prisma } from '@prisma/client';
-import { getPendingInvoices, markOverdueInvoices } from '../common/utils/billing';
-import { markOverdueRentals } from '../common/utils/rental-status';
+import {
+  getPendingInvoices,
+  markOverdueInvoices,
+  settleInvoiceOnReturn,
+} from '../common/utils/billing';
+import {
+  markOverdueRentals,
+  withEffectiveRentalStatus,
+} from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReturnDto } from './dto/create-return.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
-
-const userSummary = {
-  id: true,
-  nombre: true,
-  email: true,
-  rol: true,
-} satisfies Prisma.UsuarioSelect;
-
-const clientSummary = {
-  id: true,
-  documentoIdentidad: true,
-  nombres: true,
-  apellidos: true,
-  telefono: true,
-  correo: true,
-  direccion: true,
-} satisfies Prisma.ClienteSelect;
-
-const itemSummary = {
-  id: true,
-  codigoSerie: true,
-  nombre: true,
-  estado: true,
-  precioAlquilerDiario: true,
-  categoria: { select: { id: true, nombre: true } },
-} satisfies Prisma.ImplementoSelect;
+import { userSummary, clientSummary, itemSummary } from '../common/prisma-selects';
 
 const returnInclude = {
   usuario: { select: userSummary },
@@ -78,9 +60,7 @@ export class ReturnsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findPending() {
-    await markOverdueRentals(this.prisma);
-
-    const data = await this.prisma.alquiler.findMany({
+    const rows = await this.prisma.alquiler.findMany({
       where: {
         estado: {
           in: [EstadoAlquiler.ACTIVO, EstadoAlquiler.VENCIDO],
@@ -91,6 +71,7 @@ export class ReturnsService {
       orderBy: [{ fechaPactadaDevolucion: 'asc' }, { id: 'asc' }],
     });
 
+    const data = rows.map((row) => withEffectiveRentalStatus(row));
     return { data, total: data.length };
   }
 
@@ -182,6 +163,7 @@ export class ReturnsService {
       );
     }
 
+    await markOverdueRentals(this.prisma);
     await markOverdueInvoices(this.prisma);
 
     return this.prisma.$transaction(
@@ -190,6 +172,9 @@ export class ReturnsService {
           where: { id: dto.alquilerId },
           include: {
             devolucion: { select: { id: true } },
+            factura: {
+              select: { id: true, total: true, saldo: true, fechaVencimiento: true },
+            },
             detalles: {
               include: {
                 implemento: {
@@ -262,6 +247,27 @@ export class ReturnsService {
           where: { id: dto.alquilerId },
           data: { estado: EstadoAlquiler.FINALIZADO },
         });
+
+        // Liquidación: la factura se ajusta a los días reales del alquiler.
+        if (alquiler.factura) {
+          const liquidacion = settleInvoiceOnReturn({
+            fechaAlquiler: alquiler.fechaAlquiler,
+            fechaDevolucion: devolucion.fechaDevolucion,
+            fechaVencimiento: alquiler.factura.fechaVencimiento,
+            items: alquiler.detalles,
+            totalAnterior: alquiler.factura.total,
+            saldoAnterior: alquiler.factura.saldo,
+          });
+
+          await tx.factura.update({
+            where: { id: alquiler.factura.id },
+            data: {
+              total: liquidacion.total,
+              saldo: liquidacion.saldo,
+              estado: liquidacion.estado,
+            },
+          });
+        }
 
         return tx.devolucion.findUniqueOrThrow({
           where: { id: devolucion.id },

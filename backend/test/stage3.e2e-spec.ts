@@ -5,6 +5,7 @@ import { EstadoImplemento } from '@prisma/client';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { deleteRentalsCascade } from './helpers/cleanup';
 
 describe('Etapa 3 — seriales automáticos y cantidad (e2e)', () => {
   let app: INestApplication;
@@ -125,11 +126,7 @@ describe('Etapa 3 — seriales automáticos y cantidad (e2e)', () => {
           });
           const rentalIds = [...new Set(details.map((detail) => detail.alquilerId))];
 
-          if (rentalIds.length > 0) {
-            await prisma.alquiler.deleteMany({
-              where: { id: { in: rentalIds } },
-            });
-          }
+          await deleteRentalsCascade(prisma, rentalIds);
 
           await prisma.implemento.deleteMany({
             where: { id: { in: testItemIds } },
@@ -370,6 +367,8 @@ describe('Etapa 3 — seriales automáticos y cantidad (e2e)', () => {
         clienteId: clientId,
         fechaPactadaDevolucion: futureDate(),
         implementos: [{ implementoId: items[0].id }],
+        // El cliente ya tiene la factura del alquiler anterior (RF-16).
+        autorizacionCartera: { motivo: 'Prueba e2e de disponibilidad (Etapa 3)' },
       })
       .expect(409);
   });
@@ -397,6 +396,7 @@ describe('Etapa 3 — seriales automáticos y cantidad (e2e)', () => {
         clienteId: clientId,
         fechaPactadaDevolucion: futureDate(),
         implementos: items.map((item) => ({ implementoId: item.id })),
+        autorizacionCartera: { motivo: 'Prueba e2e de disponibilidad (Etapa 3)' },
       })
       .expect(409);
 

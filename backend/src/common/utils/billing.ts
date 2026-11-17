@@ -1,8 +1,11 @@
 import { EstadoFactura, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { startOfTodayUtc, yyyymmdd } from './dates';
-
-const MS_PER_DAY = 86_400_000;
+import {
+  businessDay,
+  businessDaysBetween,
+  startOfBusinessToday,
+  yyyymmdd,
+} from './dates';
 
 export interface InvoiceRentalItem {
   precioUnitario: Prisma.Decimal | string | number;
@@ -26,14 +29,13 @@ export interface PendingInvoicesResult {
   vencidas: number;
 }
 
+/**
+ * Días facturables de un alquiler: diferencia de días calendario del negocio,
+ * con un mínimo de 1. Es la misma regla que usan la factura, el ajuste en la
+ * devolución, el reporte de ingresos y la interfaz.
+ */
 export function rentalDays(start: Date, end: Date): number {
-  const startDay = new Date(start);
-  startDay.setUTCHours(0, 0, 0, 0);
-
-  const endDay = new Date(end);
-  endDay.setUTCHours(0, 0, 0, 0);
-
-  return Math.max(1, Math.round((endDay.getTime() - startDay.getTime()) / MS_PER_DAY));
+  return Math.max(1, businessDaysBetween(start, end));
 }
 
 export function calculateInvoiceTotal(
@@ -51,8 +53,48 @@ export function nextInvoiceStatus(
   fechaVencimiento: Date,
 ): EstadoFactura {
   if (saldo.lte(0)) return EstadoFactura.PAGADA;
-  if (fechaVencimiento < startOfTodayUtc()) return EstadoFactura.VENCIDA;
+  if (businessDay(fechaVencimiento) < startOfBusinessToday())
+    return EstadoFactura.VENCIDA;
   return EstadoFactura.PENDIENTE;
+}
+
+export interface ReturnSettlement {
+  dias: number;
+  total: Prisma.Decimal;
+  pagado: Prisma.Decimal;
+  saldo: Prisma.Decimal;
+  estado: EstadoFactura;
+}
+
+/**
+ * Liquida la factura al registrar la devolución: el total se recalcula con
+ * los días reales (devolución tardía o anticipada) y el saldo descuenta lo ya
+ * pagado. El saldo nunca es negativo; un eventual saldo a favor del cliente no
+ * se modela en esta versión.
+ */
+export function settleInvoiceOnReturn(params: {
+  fechaAlquiler: Date;
+  fechaDevolucion: Date;
+  fechaVencimiento: Date;
+  items: InvoiceRentalItem[];
+  totalAnterior: Prisma.Decimal;
+  saldoAnterior: Prisma.Decimal;
+}): ReturnSettlement {
+  const dias = rentalDays(params.fechaAlquiler, params.fechaDevolucion);
+  const total = calculateInvoiceTotal(params.items, dias);
+  const pagado = Prisma.Decimal.max(
+    new Prisma.Decimal(0),
+    params.totalAnterior.minus(params.saldoAnterior),
+  );
+  const saldo = Prisma.Decimal.max(new Prisma.Decimal(0), total.minus(pagado));
+
+  return {
+    dias,
+    total,
+    pagado,
+    saldo,
+    estado: nextInvoiceStatus(saldo, params.fechaVencimiento),
+  };
 }
 
 export async function createInvoiceForRental(
@@ -98,7 +140,7 @@ export async function markOverdueInvoices(
   const result = await prisma.factura.updateMany({
     where: {
       estado: EstadoFactura.PENDIENTE,
-      fechaVencimiento: { lt: startOfTodayUtc() },
+      fechaVencimiento: { lt: startOfBusinessToday() },
       saldo: { gt: 0 },
     },
     data: { estado: EstadoFactura.VENCIDA },
@@ -107,11 +149,16 @@ export async function markOverdueInvoices(
   return result.count;
 }
 
+/**
+ * Facturas con saldo del cliente. El estado VENCIDA se deriva de la fecha y no
+ * del valor guardado, para que la consulta sea correcta aunque el proceso
+ * programado aún no haya actualizado la base de datos.
+ */
 export async function getPendingInvoices(
   prisma: Prisma.TransactionClient,
   clienteId: number,
 ): Promise<PendingInvoicesResult> {
-  const facturas = await prisma.factura.findMany({
+  const rows = await prisma.factura.findMany({
     where: {
       clienteId,
       estado: { in: [EstadoFactura.PENDIENTE, EstadoFactura.VENCIDA] },
@@ -130,6 +177,11 @@ export async function getPendingInvoices(
     },
   });
 
+  const facturas = rows.map((factura) => ({
+    ...factura,
+    estado: nextInvoiceStatus(factura.saldo, factura.fechaVencimiento),
+  }));
+
   const totalSaldo = facturas.reduce(
     (total, factura) => total.plus(factura.saldo),
     new Prisma.Decimal(0),
@@ -141,5 +193,15 @@ export async function getPendingInvoices(
     cantidad: facturas.length,
     vencidas: facturas.filter((factura) => factura.estado === EstadoFactura.VENCIDA)
       .length,
+  };
+}
+
+/** Aplica el estado efectivo (VENCIDA por fecha) a una factura devuelta por Prisma. */
+export function withEffectiveInvoiceStatus<
+  T extends { estado: EstadoFactura; saldo: Prisma.Decimal; fechaVencimiento: Date },
+>(factura: T): T {
+  return {
+    ...factura,
+    estado: nextInvoiceStatus(factura.saldo, factura.fechaVencimiento),
   };
 }

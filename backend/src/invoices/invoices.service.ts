@@ -9,26 +9,13 @@ import {
   getPendingInvoices,
   markOverdueInvoices,
   nextInvoiceStatus,
+  withEffectiveInvoiceStatus,
 } from '../common/utils/billing';
+import { invoiceStatusWhere } from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { ListInvoicesQueryDto } from './dto/list-invoices-query.dto';
-
-const userSummary = {
-  id: true,
-  nombre: true,
-  email: true,
-  rol: true,
-} satisfies Prisma.UsuarioSelect;
-
-const clientSummary = {
-  id: true,
-  documentoIdentidad: true,
-  nombres: true,
-  apellidos: true,
-  telefono: true,
-  correo: true,
-} satisfies Prisma.ClienteSelect;
+import { userSummary, clientSummary } from '../common/prisma-selects';
 
 const invoiceInclude = {
   cliente: { select: clientSummary },
@@ -52,47 +39,47 @@ export class InvoicesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(query: ListInvoicesQueryDto) {
-    await markOverdueInvoices(this.prisma);
-
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 20);
     const term = query.search?.trim();
 
     const where: Prisma.FacturaWhereInput = {
-      ...(query.estado ? { estado: query.estado } : {}),
       ...(query.clienteId ? { clienteId: query.clienteId } : {}),
-      ...(term
-        ? {
-            OR: [
-              {
-                codigoFactura: { contains: term, mode: 'insensitive' },
-              },
-              {
-                cliente: {
-                  documentoIdentidad: { contains: term, mode: 'insensitive' },
+      AND: [
+        query.estado ? invoiceStatusWhere(query.estado) : {},
+        term
+          ? {
+              OR: [
+                {
+                  codigoFactura: { contains: term, mode: 'insensitive' },
                 },
-              },
-              {
-                cliente: {
-                  nombres: { contains: term, mode: 'insensitive' },
+                {
+                  cliente: {
+                    documentoIdentidad: { contains: term, mode: 'insensitive' },
+                  },
                 },
-              },
-              {
-                cliente: {
-                  apellidos: { contains: term, mode: 'insensitive' },
+                {
+                  cliente: {
+                    nombres: { contains: term, mode: 'insensitive' },
+                  },
                 },
-              },
-              {
-                alquiler: {
-                  codigoAlquiler: { contains: term, mode: 'insensitive' },
+                {
+                  cliente: {
+                    apellidos: { contains: term, mode: 'insensitive' },
+                  },
                 },
-              },
-            ],
-          }
-        : {}),
+                {
+                  alquiler: {
+                    codigoAlquiler: { contains: term, mode: 'insensitive' },
+                  },
+                },
+              ],
+            }
+          : {},
+      ],
     };
 
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.factura.findMany({
         where,
         include: invoiceInclude,
@@ -104,7 +91,7 @@ export class InvoicesService {
     ]);
 
     return {
-      data,
+      data: rows.map((row) => withEffectiveInvoiceStatus(row)),
       total,
       page,
       pageSize,
@@ -113,8 +100,6 @@ export class InvoicesService {
   }
 
   async findOne(id: number) {
-    await markOverdueInvoices(this.prisma);
-
     const factura = await this.prisma.factura.findUnique({
       where: { id },
       include: invoiceInclude,
@@ -124,7 +109,7 @@ export class InvoicesService {
       throw new NotFoundException('Factura no encontrada.');
     }
 
-    return factura;
+    return withEffectiveInvoiceStatus(factura);
   }
 
   async findPendingByClient(clienteId: number) {
@@ -144,7 +129,6 @@ export class InvoicesService {
       throw new NotFoundException('Cliente no encontrado.');
     }
 
-    await markOverdueInvoices(this.prisma);
     const pending = await getPendingInvoices(this.prisma, clienteId);
 
     return {

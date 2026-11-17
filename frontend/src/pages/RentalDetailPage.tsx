@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -16,7 +16,11 @@ import {
   UserRound,
 } from 'lucide-react';
 import { Button, IconButton } from '../components/ui/Button';
-import { DeliveryStatusBadge, RentalStatusBadge } from '../components/ui/Badges';
+import {
+  DeliveryStatusBadge,
+  InvoiceStatusBadge,
+  RentalStatusBadge,
+} from '../components/ui/Badges';
 import {
   EmptyState,
   ErrorAlert,
@@ -411,6 +415,51 @@ export function RentalDetailPage() {
               </div>
             </div>
           </SectionCard>
+
+          {rental.factura && (
+            <SectionCard title="Facturación">
+              <div className="space-y-3 p-5 text-sm" data-testid="rental-invoice">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-semibold text-slate-700">
+                    {rental.factura.codigoFactura}
+                  </span>
+                  <InvoiceStatusBadge status={rental.factura.estado} />
+                </div>
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>Total</span>
+                  <span className="font-semibold text-slate-800">
+                    {formatMoney(rental.factura.total)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>Saldo</span>
+                  <span className="font-semibold text-slate-800">
+                    {formatMoney(rental.factura.saldo)}
+                  </span>
+                </div>
+                <p className="text-[11px] leading-4 text-slate-400">
+                  {isFinished
+                    ? 'Liquidada con los días reales del alquiler.'
+                    : 'Calculada con los días pactados; se ajusta al registrar la devolución.'}
+                </p>
+                {rental.devolucion?.alertaCartera && (
+                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+                    Al recibir la devolución el cliente tenía cartera pendiente
+                    {rental.devolucion.saldoCarteraAlerta
+                      ? ` por ${formatMoney(rental.devolucion.saldoCarteraAlerta)}`
+                      : ''}
+                    .
+                  </p>
+                )}
+                <Link
+                  to="/cartera"
+                  className="text-xs font-semibold text-brand-700 underline"
+                >
+                  Ir a cartera
+                </Link>
+              </div>
+            </SectionCard>
+          )}
 
           <SectionCard title="Observaciones">
             <div className="p-5">

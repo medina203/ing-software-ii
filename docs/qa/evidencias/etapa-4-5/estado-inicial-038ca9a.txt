@@ -1,0 +1,42 @@
+# Verificación del estado recibido — commit 038ca9a ("."), rama main
+# Fecha: 2026-11-17 (America/Bogota). Entorno: Linux, Node.js v22.23.4, PostgreSQL 16.
+# Base de datos limpia: migraciones aplicadas y seed ejecutado.
+
+## npm run build --workspace frontend  -> FALLA (exit 2)
+src/pages/NewRentalPage.tsx(260,5): error TS2657: JSX expressions must have one parent element.
+src/pages/NewRentalPage.tsx(534,9): error TS17002: Expected corresponding JSX closing tag for 'form'.
+src/pages/NewRentalPage.tsx(535,9): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/pages/NewRentalPage.tsx(556,5): error TS1005: ')' expected.
+src/pages/NewRentalPage.tsx(557,3): error TS1109: Expression expected.
+(Además: variables sin declarar setCarteraError/setCarteraLoading/selectedIds, SectionCard
+ sin importar, botón de envío eliminado y campo `cantidad` en el cuerpo de POST /rentals,
+ que la API rechaza con 400 por forbidNonWhitelisted.)
+
+## npm run build --workspace backend  -> OK
+
+## npm run lint  -> FALLA (exit 1)
+frontend/src/pages/NewRentalPage.tsx 534:8 error Parsing error: Expected corresponding JSX closing tag for 'form'
+
+## npm test --workspace backend  -> FALLA: 25 de 28 pruebas
+FAIL src/clients/clients.service.spec.ts (3 pruebas)
+  TypeError: Cannot read properties of undefined (reading 'updateMany')
+  at markOverdueInvoices (common/utils/billing.ts:98) <- ClientsService.findAll (GET que escribe)
+
+## npm test --workspace frontend  -> OK: 12 de 12
+
+## npm run test:e2e --workspace backend  -> FALLA: 10 de 12 pruebas
+stage3 › registra un alquiler con 5 unidades del mismo tipo y las descuenta
+  expected 409 "Conflict", got 403 "Forbidden"
+stage3 › rechaza la cantidad cuando no hay unidades suficientes ...
+  expected 409 "Conflict", got 403 "Forbidden"
+stage3 › afterAll: Foreign key constraint violated: `facturas_alquiler_id_fkey`
+  -> la limpieza falla y deja clientes/alquileres QA-ST3-* en la base de datos.
+
+## npm run test:e2e (Playwright)  -> NO EJECUTABLE: el frontend no compila (0 de 12)
+
+## Total automatizado: 47 de 64 pruebas aprobadas (73 %).
+
+## Prueba dinámica de seguridad (RNF-01): 8 intentos de login con contraseña incorrecta
+401 401 401 401 401 401 401 401   -> sin bloqueo ni 429.
+
+## Revisión de /api/health: responde {"status":"ok"} sin consultar PostgreSQL.

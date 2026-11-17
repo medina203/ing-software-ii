@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { PrismaClient, Rol } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { deleteRentalsCascade } from './helpers/cleanup';
 
 const prisma = new PrismaClient();
 const stamp = Date.now();
@@ -65,11 +66,7 @@ test.afterAll(async () => {
     });
     const rentalIds = [...new Set(details.map((detail) => detail.alquilerId))];
 
-    if (rentalIds.length > 0) {
-      await prisma.alquiler.deleteMany({
-        where: { id: { in: rentalIds } },
-      });
-    }
+    await deleteRentalsCascade(prisma, rentalIds);
 
     await prisma.implemento.deleteMany({
       where: { id: tempItemId },
@@ -129,7 +126,12 @@ test('busca cliente por cédula y nombre, y crea un alquiler', async ({ page }) 
   await quantityInput.fill('1');
   await expect(quantityInput).toHaveValue('1');
 
-  await page.getByRole('button', { name: 'Confirmar alquiler' }).click();
+  // El cliente demo tiene la factura FAC-DEMO-0001 pendiente (Etapa 4): el ADMIN
+  // registra el motivo de la excepción en el mismo flujo.
+  await expect(page.getByTestId('cartera-alert')).toBeVisible();
+  await page.getByRole('button', { name: 'Autorizar y confirmar' }).click();
+  await page.locator('#cartera-motivo').fill('Cliente demo con pago comprometido');
+  await page.getByRole('button', { name: 'Autorizar y registrar' }).click();
 
   await expect(page).toHaveURL(/\/alquileres\/\d+$/);
   await expect(page.getByText(itemCode).first()).toBeVisible();

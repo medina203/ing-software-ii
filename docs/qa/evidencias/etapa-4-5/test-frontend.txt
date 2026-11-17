@@ -1,0 +1,22 @@
+# 2026-11-17T16:16:55-05:00
+
+> frontend@1.0.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /home/claude/repo/frontend
+
+ ✓ src/components/ClientSearchSelect.test.tsx (2 tests) 448ms
+   ✓ ClientSearchSelect > busca con debounce y selecciona un cliente con el teclado  407ms
+ ✓ src/components/ErrorBoundary.test.tsx (2 tests) 121ms
+ ✓ src/lib/rental-selection.test.ts (4 tests) 16ms
+ ✓ src/lib/format.test.ts (4 tests) 4ms
+ ✓ src/lib/cartera.test.ts (4 tests) 3ms
+ ✓ src/lib/clients.test.ts (2 tests) 2ms
+
+ Test Files  6 passed (6)
+      Tests  18 passed (18)
+   Start at  16:16:56
+   Duration  5.97s (transform 157ms, setup 194ms, collect 1.95s, tests 594ms, environment 1.92s, prepare 447ms)
+
+exit=0

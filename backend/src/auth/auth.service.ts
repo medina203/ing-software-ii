@@ -6,29 +6,38 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { LoginAttemptsService } from './login-attempts.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly loginAttempts: LoginAttemptsService,
   ) {}
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, clientIp = 'desconocida') {
     const email = dto.email.trim().toLowerCase();
+    // Clave por cuenta y por origen: frena la fuerza bruta sobre una cuenta y
+    // el barrido de cuentas desde una misma IP.
+    const keys = [`login:email:${email}`, `login:ip:${clientIp}:${email}`];
+    this.loginAttempts.assertNotLocked(keys);
+
     const usuario = await this.prisma.usuario.findUnique({
       where: { email },
     });
 
-    if (!usuario || !usuario.activo) {
+    const passwordMatches =
+      !!usuario &&
+      usuario.activo &&
+      (await bcrypt.compare(dto.password, usuario.passwordHash));
+
+    if (!usuario || !usuario.activo || !passwordMatches) {
+      this.loginAttempts.registerFailure(keys);
       throw new UnauthorizedException('Correo o contraseña incorrectos.');
     }
 
-    const passwordMatches = await bcrypt.compare(dto.password, usuario.passwordHash);
-
-    if (!passwordMatches) {
-      throw new UnauthorizedException('Correo o contraseña incorrectos.');
-    }
+    this.loginAttempts.registerSuccess(keys);
 
     const accessToken = await this.jwtService.signAsync({
       sub: usuario.id,
@@ -53,8 +62,11 @@ export class AuthService {
     return user;
   }
 
-  async validateAdminCredentials(email: string, password: string) {
+  async validateAdminCredentials(email: string, password: string, requesterKey: string) {
     const normalizedEmail = email.trim().toLowerCase();
+    const keys = [`admin-auth:email:${normalizedEmail}`, `admin-auth:${requesterKey}`];
+    this.loginAttempts.assertNotLocked(keys);
+
     const administrador = await this.prisma.usuario.findUnique({
       where: { email: normalizedEmail },
       select: {
@@ -68,6 +80,7 @@ export class AuthService {
     });
 
     if (!administrador || !administrador.activo || administrador.rol !== Rol.ADMIN) {
+      this.loginAttempts.registerFailure(keys);
       throw new UnauthorizedException({
         statusCode: 401,
         code: 'INVALID_ADMIN_CREDENTIALS',
@@ -78,6 +91,7 @@ export class AuthService {
     const passwordMatches = await bcrypt.compare(password, administrador.passwordHash);
 
     if (!passwordMatches) {
+      this.loginAttempts.registerFailure(keys);
       throw new UnauthorizedException({
         statusCode: 401,
         code: 'INVALID_ADMIN_CREDENTIALS',
@@ -85,6 +99,7 @@ export class AuthService {
       });
     }
 
+    this.loginAttempts.registerSuccess(keys);
     return {
       id: administrador.id,
       nombre: administrador.nombre,

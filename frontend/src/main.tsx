@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 import './index.css';
 
@@ -14,12 +15,14 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ToastProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </ToastProvider>
+    <ErrorBoundary fullPage>
+      <ToastProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
+      </ToastProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

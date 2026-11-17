@@ -28,7 +28,7 @@ import {
   formatDate,
   formatMoney,
 } from '../lib/format';
-import type { DeliveryStatus, Rental } from '../types';
+import type { DeliveryStatus, PendingInvoicesResponse, Rental } from '../types';
 
 interface ItemReturnState {
   estadoFinal: DeliveryStatus;
@@ -52,6 +52,7 @@ export function NewReturnPage() {
   const [loadError, setLoadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [cartera, setCartera] = useState<PendingInvoicesResponse | null>(null);
 
   const loadRental = useCallback(async () => {
     if (!id) return;
@@ -60,6 +61,13 @@ export function NewReturnPage() {
     try {
       const response = await api.get<Rental>(`/rentals/${id}`);
       setRental(response.data);
+      // RF-15: la alerta de cartera es informativa; si falla no bloquea la devolución.
+      api
+        .get<PendingInvoicesResponse>(
+          `/invoices/client/${response.data.clienteId}/pending`,
+        )
+        .then((pending) => setCartera(pending.data))
+        .catch(() => setCartera(null));
       if (!response.data.devolucion) {
         const states = Object.fromEntries(
           response.data.detalles.map((detail) => [
@@ -245,6 +253,26 @@ export function NewReturnPage() {
               La fecha pactada era el {formatDate(rental.fechaPactadaDevolucion)} y
               presenta {overdue} día(s) de retraso. Puedes registrar la devolución
               igualmente.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {cartera && cartera.cantidad > 0 && (
+        <div
+          role="status"
+          data-testid="return-cartera-alert"
+          className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-900"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div>
+            <p className="font-semibold">Cliente con cartera pendiente</p>
+            <p className="mt-0.5 text-xs leading-5 text-amber-800">
+              Saldo de {formatMoney(cartera.totalSaldo)} en {cartera.cantidad}{' '}
+              {cartera.cantidad === 1 ? 'factura' : 'facturas'}
+              {cartera.vencidas > 0 && ` (${cartera.vencidas} vencida(s))`}. Infórmale al
+              cliente; la devolución se puede registrar y la alerta quedará registrada. Al
+              confirmar, la factura de este alquiler se liquida con los días reales.
             </p>
           </div>
         </div>

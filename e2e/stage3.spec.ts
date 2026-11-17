@@ -1,9 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { EstadoImplemento, PrismaClient } from '@prisma/client';
+import { deleteRentalsCascade } from './helpers/cleanup';
 
 const prisma = new PrismaClient();
 const stamp = Date.now();
 const createdCategoryNames: string[] = [];
+// Cliente propio sin cartera: desde la Etapa 4 un cliente con saldo pendiente
+// exige autorización (RF-16) y ese flujo se prueba en stage4.spec.ts.
+const clientDocument = `E2E-ST3-${stamp}`;
+const secondClientDocument = `E2E-ST3B-${stamp}`;
 
 function uniquePrefix(letter: string): string {
   return `${letter}${stamp.toString(36).toUpperCase().slice(-4)}`;
@@ -17,11 +22,11 @@ async function login(page: Page) {
   await expect(page).not.toHaveURL(/\/login$/);
 }
 
-async function selectClient(page: Page) {
+async function selectClient(page: Page, document = clientDocument) {
   const clientSearch = page.locator('#cliente');
-  await clientSearch.fill('CC-10324567');
+  await clientSearch.fill(document);
   const option = page.getByRole('option', {
-    name: /CC-10324567 · Carlos Andrés Gómez Ruiz/,
+    name: new RegExp(`${document} · Cliente E2E Etapa 3`),
   });
   await expect(option).toBeVisible();
   await option.click();
@@ -68,6 +73,16 @@ async function createCategoryWithItems(options: {
 
 test.beforeAll(async () => {
   await prisma.$connect();
+  for (const documentoIdentidad of [clientDocument, secondClientDocument]) {
+    await prisma.cliente.create({
+      data: {
+        documentoIdentidad,
+        nombres: 'Cliente E2E',
+        apellidos: 'Etapa 3',
+        telefono: '3000000000',
+      },
+    });
+  }
 });
 
 test.afterAll(async () => {
@@ -93,11 +108,7 @@ test.afterAll(async () => {
         });
         const rentalIds = [...new Set(details.map((detail) => detail.alquilerId))];
 
-        if (rentalIds.length > 0) {
-          await prisma.alquiler.deleteMany({
-            where: { id: { in: rentalIds } },
-          });
-        }
+        await deleteRentalsCascade(prisma, rentalIds);
 
         await prisma.implemento.deleteMany({
           where: { id: { in: itemIds } },
@@ -106,6 +117,9 @@ test.afterAll(async () => {
 
       await prisma.categoria.delete({ where: { id: category.id } });
     }
+    await prisma.cliente.deleteMany({
+      where: { documentoIdentidad: { in: [clientDocument, secondClientDocument] } },
+    });
   } finally {
     await prisma.$disconnect();
   }
@@ -233,7 +247,7 @@ test('rechaza el alquiler cuando una unidad deja de estar disponible', async ({
 
   await login(page);
   await page.goto('/alquileres/nuevo');
-  await selectClient(page);
+  await selectClient(page, secondClientDocument);
 
   const itemSearch = page.getByRole('textbox', {
     name: 'Buscar implementos disponibles',

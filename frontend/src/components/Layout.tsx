@@ -17,6 +17,7 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { cn } from '../lib/cn';
+import { ErrorBoundary } from './ErrorBoundary';
 import { initials, roleLabels } from '../lib/format';
 
 const navigation = [
@@ -80,7 +81,7 @@ export function Layout() {
             </div>
             <div>
               <p className="text-lg font-bold leading-tight tracking-tight text-white">
-                DM alquiuler
+                DM alquiler
               </p>
               <p className="text-[11px] font-medium text-slate-500">
                 Inventario & alquiler
@@ -173,7 +174,7 @@ export function Layout() {
             </button>
           </div>
           <p className="mt-3 text-center text-[10px] text-slate-600">
-            DM alquiuler · v1.0 · {new Date().getFullYear()}
+            DM alquiler · v1.0 · {new Date().getFullYear()}
           </p>
         </div>
       </aside>
@@ -192,7 +193,7 @@ export function Layout() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-black text-ink-900">
               OG
             </div>
-            <span className="font-bold tracking-tight text-slate-900">DM alquiuler</span>
+            <span className="font-bold tracking-tight text-slate-900">DM alquiler</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
             {usuario ? initials(usuario.nombre) : 'US'}
@@ -200,7 +201,9 @@ export function Layout() {
         </header>
 
         <main className="mx-auto min-h-screen max-w-[1500px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <Outlet />
+          <ErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
