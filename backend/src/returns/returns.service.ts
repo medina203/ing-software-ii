@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EstadoAlquiler, EstadoEntrega, EstadoImplemento, Prisma } from '@prisma/client';
+import { getPendingInvoices, markOverdueInvoices } from '../common/utils/billing';
 import { markOverdueRentals } from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReturnDto } from './dto/create-return.dto';
@@ -181,6 +182,8 @@ export class ReturnsService {
       );
     }
 
+    await markOverdueInvoices(this.prisma);
+
     return this.prisma.$transaction(
       async (tx) => {
         const alquiler = await tx.alquiler.findUnique({
@@ -226,11 +229,16 @@ export class ReturnsService {
           (item) => item.estadoFinal !== EstadoImplemento.DISPONIBLE,
         );
 
+        const pendingCartera = await getPendingInvoices(tx, alquiler.clienteId);
+
         const devolucion = await tx.devolucion.create({
           data: {
             alquilerId: dto.alquilerId,
             usuarioId,
             estadoEntregaImplementos: hasIssues ? 'Con novedades' : 'Sin novedades',
+            alertaCartera: pendingCartera.cantidad > 0,
+            saldoCarteraAlerta:
+              pendingCartera.cantidad > 0 ? pendingCartera.totalSaldo : null,
             observaciones: dto.observaciones?.trim() || null,
             detalles: {
               create: dto.implementos.map((item) => ({

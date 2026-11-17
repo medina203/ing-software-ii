@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Tags,
   Users,
+  Wallet,
   X,
 } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -30,6 +31,7 @@ const navigation = [
   { to: '/clientes', label: 'Clientes', icon: Users },
   { to: '/alquileres', label: 'Alquileres', icon: ClipboardList },
   { to: '/devoluciones', label: 'Devoluciones', icon: RotateCcw },
+  { to: '/cartera', label: 'Cartera', icon: Wallet },
   { to: '/reportes', label: 'Reportes', icon: BarChart3, adminOnly: true },
   { to: '/categorias', label: 'Categorías', icon: Tags, adminOnly: true },
   { to: '/usuarios', label: 'Usuarios', icon: Package, adminOnly: true },
@@ -78,7 +80,7 @@ export function Layout() {
             </div>
             <div>
               <p className="text-lg font-bold leading-tight tracking-tight text-white">
-                ObraGest
+                DM alquiuler
               </p>
               <p className="text-[11px] font-medium text-slate-500">
                 Inventario & alquiler
@@ -171,7 +173,7 @@ export function Layout() {
             </button>
           </div>
           <p className="mt-3 text-center text-[10px] text-slate-600">
-            ObraGest · v1.0 · {new Date().getFullYear()}
+            DM alquiuler · v1.0 · {new Date().getFullYear()}
           </p>
         </div>
       </aside>
@@ -190,7 +192,7 @@ export function Layout() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-black text-ink-900">
               OG
             </div>
-            <span className="font-bold tracking-tight text-slate-900">ObraGest</span>
+            <span className="font-bold tracking-tight text-slate-900">DM alquiuler</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
             {usuario ? initials(usuario.nombre) : 'US'}

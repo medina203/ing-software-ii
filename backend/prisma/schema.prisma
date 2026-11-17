@@ -34,6 +34,19 @@ enum EstadoEntrega {
   FUERA_DE_SERVICIO
 }
 
+enum EstadoFactura {
+  PENDIENTE
+  PAGADA
+  VENCIDA
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA
+  OTRO
+}
+
 model Usuario {
   id           Int      @id @default(autoincrement())
   nombre       String   @db.VarChar(120)
@@ -43,25 +56,30 @@ model Usuario {
   activo       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  alquileres   Alquiler[]
-  devoluciones Devolucion[]
+  alquileres                Alquiler[]
+  devoluciones              Devolucion[]
+  pagos                     Pago[]
+  autorizacionesSolicitadas AutorizacionCartera[] @relation("AutorizacionSolicitante")
+  autorizacionesOtorgadas   AutorizacionCartera[] @relation("AutorizacionAdministrador")
 
   @@index([rol, activo])
   @@map("usuarios")
 }
 
 model Cliente {
-  id                  Int      @id @default(autoincrement())
-  documentoIdentidad  String   @unique @map("documento_identidad") @db.VarChar(30)
-  nombres             String   @db.VarChar(100)
-  apellidos           String   @db.VarChar(100)
-  telefono            String   @db.VarChar(30)
-  correo              String?  @db.VarChar(160)
-  direccion           String?  @db.VarChar(220)
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                 Int      @id @default(autoincrement())
+  documentoIdentidad String   @unique @map("documento_identidad") @db.VarChar(30)
+  nombres            String   @db.VarChar(100)
+  apellidos          String   @db.VarChar(100)
+  telefono           String   @db.VarChar(30)
+  correo             String?  @db.VarChar(160)
+  direccion          String?  @db.VarChar(220)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  alquileres Alquiler[]
+  alquileres            Alquiler[]
+  facturas              Factura[]
+  autorizacionesCartera AutorizacionCartera[]
 
   @@index([apellidos, nombres])
   @@index([telefono])
@@ -92,9 +110,9 @@ model Implemento {
   createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  categoria      Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
-  detalles       DetalleAlquiler[]
-  devoluciones   DetalleDevolucion[]
+  categoria    Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  detalles     DetalleAlquiler[]
+  devoluciones DetalleDevolucion[]
 
   @@index([estado])
   @@index([categoriaId])
@@ -114,10 +132,12 @@ model Alquiler {
   createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  cliente    Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
-  usuario    Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  detalles   DetalleAlquiler[]
-  devolucion Devolucion?
+  cliente             Cliente              @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  usuario             Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles            DetalleAlquiler[]
+  devolucion          Devolucion?
+  factura             Factura?
+  autorizacionCartera AutorizacionCartera?
 
   @@index([estado, fechaPactadaDevolucion])
   @@index([clienteId])
@@ -142,16 +162,18 @@ model DetalleAlquiler {
 }
 
 model Devolucion {
-  id                        Int      @id @default(autoincrement())
-  alquilerId                Int      @unique @map("alquiler_id")
-  fechaDevolucion           DateTime @default(now()) @map("fecha_devolucion") @db.Timestamptz(6)
-  usuarioId                 Int      @map("usuario_id")
-  estadoEntregaImplementos  String   @map("estado_entrega_implementos") @db.VarChar(100)
-  observaciones             String?  @db.Text
-  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id                       Int      @id @default(autoincrement())
+  alquilerId               Int      @unique @map("alquiler_id")
+  fechaDevolucion          DateTime @default(now()) @map("fecha_devolucion") @db.Timestamptz(6)
+  usuarioId                Int      @map("usuario_id")
+  estadoEntregaImplementos String   @map("estado_entrega_implementos") @db.VarChar(100)
+  alertaCartera            Boolean  @default(false) @map("alerta_cartera")
+  saldoCarteraAlerta       Decimal? @map("saldo_cartera_alerta") @db.Decimal(12, 2)
+  observaciones            String?  @db.Text
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  alquiler Alquiler          @relation(fields: [alquilerId], references: [id], onDelete: Restrict)
-  usuario  Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  alquiler Alquiler            @relation(fields: [alquilerId], references: [id], onDelete: Restrict)
+  usuario  Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
   detalles DetalleDevolucion[]
 
   @@index([fechaDevolucion])
@@ -172,4 +194,67 @@ model DetalleDevolucion {
   @@unique([devolucionId, implementoId])
   @@index([implementoId])
   @@map("detalle_devoluciones")
+}
+
+model Factura {
+  id               Int           @id @default(autoincrement())
+  codigoFactura    String        @unique @map("codigo_factura") @db.VarChar(40)
+  alquilerId       Int           @unique @map("alquiler_id")
+  clienteId        Int           @map("cliente_id")
+  fechaEmision     DateTime      @default(now()) @map("fecha_emision") @db.Timestamptz(6)
+  fechaVencimiento DateTime      @map("fecha_vencimiento") @db.Timestamptz(6)
+  total            Decimal       @db.Decimal(12, 2)
+  saldo            Decimal       @db.Decimal(12, 2)
+  estado           EstadoFactura @default(PENDIENTE)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  alquiler       Alquiler              @relation(fields: [alquilerId], references: [id], onDelete: Restrict)
+  cliente        Cliente               @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  pagos          Pago[]
+  autorizaciones AutorizacionCartera[]
+
+  @@index([clienteId, estado])
+  @@index([fechaVencimiento, estado])
+  @@map("facturas")
+}
+
+model Pago {
+  id         Int        @id @default(autoincrement())
+  facturaId  Int        @map("factura_id")
+  usuarioId  Int        @map("usuario_id")
+  monto      Decimal    @db.Decimal(12, 2)
+  metodoPago MetodoPago @default(EFECTIVO) @map("metodo_pago")
+  referencia String?    @db.VarChar(120)
+  fechaPago  DateTime   @default(now()) @map("fecha_pago") @db.Timestamptz(6)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  factura Factura @relation(fields: [facturaId], references: [id], onDelete: Restrict)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([facturaId, fechaPago])
+  @@index([usuarioId])
+  @@map("pagos")
+}
+
+model AutorizacionCartera {
+  id                   Int      @id @default(autoincrement())
+  clienteId            Int      @map("cliente_id")
+  facturaId            Int      @map("factura_id")
+  alquilerId           Int?     @unique @map("alquiler_id")
+  usuarioSolicitanteId Int      @map("usuario_solicitante_id")
+  administradorId      Int      @map("administrador_id")
+  saldoPendiente       Decimal  @map("saldo_pendiente") @db.Decimal(12, 2)
+  motivo               String   @db.Text
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  cliente            Cliente   @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  factura            Factura   @relation(fields: [facturaId], references: [id], onDelete: Restrict)
+  alquiler           Alquiler? @relation(fields: [alquilerId], references: [id], onDelete: SetNull)
+  usuarioSolicitante Usuario   @relation("AutorizacionSolicitante", fields: [usuarioSolicitanteId], references: [id], onDelete: Restrict)
+  administrador      Usuario   @relation("AutorizacionAdministrador", fields: [administradorId], references: [id], onDelete: Restrict)
+
+  @@index([clienteId, createdAt])
+  @@index([facturaId])
+  @@map("autorizaciones_cartera")
 }

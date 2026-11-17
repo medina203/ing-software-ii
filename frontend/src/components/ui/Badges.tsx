@@ -99,6 +99,24 @@ export function DeliveryStatusBadge({
   return <Badge tone={config.tone}>{config.label}</Badge>;
 }
 
+export function InvoiceStatusBadge({
+  status,
+}: {
+  status: 'PENDIENTE' | 'PAGADA' | 'VENCIDA';
+}) {
+  const config = {
+    PENDIENTE: { tone: 'amber' as const, label: 'Pendiente' },
+    PAGADA: { tone: 'emerald' as const, label: 'Pagada' },
+    VENCIDA: { tone: 'rose' as const, label: 'Vencida' },
+  }[status];
+
+  return (
+    <Badge tone={config.tone} dot>
+      {config.label}
+    </Badge>
+  );
+}
+
 export function RoleBadge({ role }: { role: 'ADMIN' | 'EMPLEADO' }) {
   return role === 'ADMIN' ? (
     <Badge tone="purple">Administrador</Badge>

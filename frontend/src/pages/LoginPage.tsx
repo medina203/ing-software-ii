@@ -91,7 +91,7 @@ export function LoginPage() {
               <HardHat className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xl font-bold tracking-tight text-white">ObraGest</p>
+              <p className="text-xl font-bold tracking-tight text-white">DM alquiuler</p>
               <p className="text-xs text-slate-400">
                 Inventario & alquiler de implementos
               </p>
@@ -156,7 +156,9 @@ export function LoginPage() {
               <HardHat className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xl font-bold tracking-tight text-slate-900">ObraGest</p>
+              <p className="text-xl font-bold tracking-tight text-slate-900">
+                DM alquiuler
+              </p>
               <p className="text-xs text-slate-500">
                 Inventario & alquiler de implementos
               </p>

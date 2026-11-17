@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Rol } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
@@ -50,6 +51,45 @@ export class AuthService {
 
   getProfile(user: AuthenticatedUser) {
     return user;
+  }
+
+  async validateAdminCredentials(email: string, password: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const administrador = await this.prisma.usuario.findUnique({
+      where: { email: normalizedEmail },
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        rol: true,
+        activo: true,
+        passwordHash: true,
+      },
+    });
+
+    if (!administrador || !administrador.activo || administrador.rol !== Rol.ADMIN) {
+      throw new UnauthorizedException({
+        statusCode: 401,
+        code: 'INVALID_ADMIN_CREDENTIALS',
+        message: 'Las credenciales del administrador no son válidas.',
+      });
+    }
+
+    const passwordMatches = await bcrypt.compare(password, administrador.passwordHash);
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException({
+        statusCode: 401,
+        code: 'INVALID_ADMIN_CREDENTIALS',
+        message: 'Las credenciales del administrador no son válidas.',
+      });
+    }
+
+    return {
+      id: administrador.id,
+      nombre: administrador.nombre,
+      email: administrador.email,
+    };
   }
 
   async changePassword(userId: number, dto: ChangePasswordDto) {

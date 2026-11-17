@@ -1,13 +1,22 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EstadoAlquiler, EstadoImplemento, Prisma } from '@prisma/client';
+import { EstadoAlquiler, EstadoImplemento, Prisma, Rol } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { AuthService } from '../auth/auth.service';
+import {
+  createInvoiceForRental,
+  getPendingInvoices,
+  markOverdueInvoices,
+  type PendingInvoicesResult,
+} from '../common/utils/billing';
 import { parseDateOnly, startOfTodayUtc, yyyymmdd } from '../common/utils/dates';
 import { markOverdueRentals } from '../common/utils/rental-status';
+import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { ListRentalsQueryDto } from './dto/list-rentals-query.dto';
@@ -58,11 +67,22 @@ const rentalInclude = {
       },
     },
   },
+  factura: {
+    include: {
+      pagos: {
+        include: { usuario: { select: userSummary } },
+        orderBy: { fechaPago: 'desc' },
+      },
+    },
+  },
 } satisfies Prisma.AlquilerInclude;
 
 @Injectable()
 export class RentalsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+  ) {}
 
   async findAll(query: ListRentalsQueryDto) {
     await markOverdueRentals(this.prisma);
@@ -137,7 +157,7 @@ export class RentalsService {
     return alquiler;
   }
 
-  async create(dto: CreateRentalDto, usuarioId: number) {
+  async create(dto: CreateRentalDto, usuario: AuthenticatedUser) {
     const fechaPactada = parseDateOnly(dto.fechaPactadaDevolucion);
     if (fechaPactada < startOfTodayUtc()) {
       throw new BadRequestException(
@@ -161,8 +181,24 @@ export class RentalsService {
       throw new NotFoundException('Cliente no encontrado.');
     }
 
+    await markOverdueInvoices(this.prisma);
+    const pendingBefore = await getPendingInvoices(this.prisma, dto.clienteId);
+    const authorization = await this.resolveCarteraAuthorization(
+      dto,
+      usuario,
+      pendingBefore,
+    );
+
     return this.prisma.$transaction(
       async (tx) => {
+        const pendingAtCreation = await getPendingInvoices(tx, dto.clienteId);
+
+        if (pendingAtCreation.cantidad > 0 && !authorization) {
+          throw new ForbiddenException(
+            'El cliente tiene saldo pendiente. Un ADMIN debe autorizar el nuevo alquiler e indicar el motivo.',
+          );
+        }
+
         const implementos = await tx.implemento.findMany({
           where: { id: { in: implementoIds } },
           select: {
@@ -201,7 +237,7 @@ export class RentalsService {
           data: {
             codigoAlquiler: `TMP-${randomUUID()}`,
             clienteId: dto.clienteId,
-            usuarioId,
+            usuarioId: usuario.id,
             fechaPactadaDevolucion: fechaPactada,
             estado: EstadoAlquiler.ACTIVO,
             observaciones: dto.observaciones?.trim() || null,
@@ -222,6 +258,32 @@ export class RentalsService {
           where: { id: alquilerTemporal.id },
           data: { codigoAlquiler },
         });
+
+        await createInvoiceForRental(tx, {
+          alquilerId: alquilerTemporal.id,
+          clienteId: dto.clienteId,
+          fechaEmision: alquilerTemporal.fechaAlquiler,
+          fechaVencimiento: fechaPactada,
+          items: implementoIds.map((implementoId) => ({
+            precioUnitario: implementosPorId.get(implementoId)!.precioAlquilerDiario,
+          })),
+        });
+
+        if (pendingAtCreation.cantidad > 0 && authorization) {
+          const referenceInvoice = pendingAtCreation.facturas[0];
+
+          await tx.autorizacionCartera.create({
+            data: {
+              clienteId: dto.clienteId,
+              facturaId: referenceInvoice.id,
+              alquilerId: alquilerTemporal.id,
+              usuarioSolicitanteId: usuario.id,
+              administradorId: authorization.administradorId,
+              saldoPendiente: pendingAtCreation.totalSaldo,
+              motivo: authorization.motivo,
+            },
+          });
+        }
 
         const updated = await tx.implemento.updateMany({
           where: {
@@ -247,5 +309,42 @@ export class RentalsService {
         timeout: 15000,
       },
     );
+  }
+
+  private async resolveCarteraAuthorization(
+    dto: CreateRentalDto,
+    usuario: AuthenticatedUser,
+    pending: PendingInvoicesResult,
+  ) {
+    if (pending.cantidad === 0) {
+      return null;
+    }
+
+    const motivo = dto.autorizacionCartera?.motivo?.trim();
+    if (!motivo) {
+      throw new ForbiddenException(
+        'El cliente tiene saldo pendiente. Un ADMIN debe autorizar el nuevo alquiler e indicar el motivo.',
+      );
+    }
+
+    if (usuario.rol === Rol.ADMIN) {
+      return { administradorId: usuario.id, motivo };
+    }
+
+    const adminEmail = dto.autorizacionCartera?.adminEmail?.trim();
+    const adminPassword = dto.autorizacionCartera?.adminPassword;
+
+    if (!adminEmail || !adminPassword) {
+      throw new ForbiddenException(
+        'El cliente tiene saldo pendiente. Ingrese las credenciales de un ADMIN y el motivo de la autorización.',
+      );
+    }
+
+    const administrador = await this.authService.validateAdminCredentials(
+      adminEmail,
+      adminPassword,
+    );
+
+    return { administradorId: administrador.id, motivo };
   }
 }

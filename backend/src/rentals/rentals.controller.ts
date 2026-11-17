@@ -21,6 +21,6 @@ export class RentalsController {
 
   @Post()
   create(@Body() dto: CreateRentalDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.rentalsService.create(dto, user.id);
+    return this.rentalsService.create(dto, user);
   }
 }

@@ -84,7 +84,7 @@ export function FullPageLoader() {
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink-900 text-brand-400 shadow-lg">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-        <p className="text-sm font-semibold text-slate-500">Preparando ObraGest…</p>
+        <p className="text-sm font-semibold text-slate-500">Preparando DM alquiuler…</p>
       </div>
     </div>
   );

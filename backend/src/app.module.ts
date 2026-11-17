@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ClientsModule } from './clients/clients.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { InvoicesModule } from './invoices/invoices.module';
 import { ItemsModule } from './items/items.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RentalsModule } from './rentals/rentals.module';
@@ -28,6 +29,7 @@ import { UsersModule } from './users/users.module';
     ItemsModule,
     RentalsModule,
     ReturnsModule,
+    InvoicesModule,
     ReportsModule,
   ],
   controllers: [AppController],

@@ -23,8 +23,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isLoginRequest = String(error.config?.url ?? '').includes('/auth/login');
+    const isInvalidAdminCredentials =
+      error.response?.data?.code === 'INVALID_ADMIN_CREDENTIALS';
 
-    if (error.response?.status === 401 && !isLoginRequest) {
+    if (error.response?.status === 401 && !isLoginRequest && !isInvalidAdminCredentials) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       window.dispatchEvent(new Event('obragest:logout'));
     }

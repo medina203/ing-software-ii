@@ -6,7 +6,14 @@ import {
   startOfDay,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import type { DeliveryStatus, ItemStatus, RentalStatus, UserRole } from '../types';
+import type {
+  DeliveryStatus,
+  InvoiceStatus,
+  ItemStatus,
+  PaymentMethod,
+  RentalStatus,
+  UserRole,
+} from '../types';
 
 const moneyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -73,6 +80,20 @@ export function daysUntil(value: string | Date): number {
   return differenceInCalendarDays(startOfDay(due), startOfDay(new Date()));
 }
 
+/**
+ * Días de alquiler usados para facturar: mínimo 1 y diferencia de días calendario.
+ * Debe coincidir con la regla del backend.
+ */
+export function rentalDays(start: string | Date, end: string | Date): number {
+  const startDate = parse(start);
+  const endDate = parse(end);
+  if (!startDate || !endDate) return 1;
+  return Math.max(
+    1,
+    differenceInCalendarDays(startOfDay(endDate), startOfDay(startDate)),
+  );
+}
+
 export function initials(name: string): string {
   return name
     .split(' ')
@@ -104,4 +125,17 @@ export const deliveryStatusLabels: Record<DeliveryStatus, string> = {
 export const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Administrador',
   EMPLEADO: 'Empleado',
+};
+
+export const invoiceStatusLabels: Record<InvoiceStatus, string> = {
+  PENDIENTE: 'Pendiente',
+  PAGADA: 'Pagada',
+  VENCIDA: 'Vencida',
+};
+
+export const paymentMethodLabels: Record<PaymentMethod, string> = {
+  EFECTIVO: 'Efectivo',
+  TRANSFERENCIA: 'Transferencia',
+  TARJETA: 'Tarjeta',
+  OTRO: 'Otro',
 };

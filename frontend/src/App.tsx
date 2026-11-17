@@ -7,6 +7,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InventoryPage } from './pages/InventoryPage';
+import { InvoicesPage } from './pages/InvoicesPage';
 import { LoginPage } from './pages/LoginPage';
 import { NewRentalPage } from './pages/NewRentalPage';
 import { NewReturnPage } from './pages/NewReturnPage';
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="alquileres/:id" element={<RentalDetailPage />} />
           <Route path="devoluciones" element={<ReturnsPage />} />
           <Route path="devoluciones/nueva/:id" element={<NewReturnPage />} />
+          <Route path="cartera" element={<InvoicesPage />} />
           <Route
             path="reportes"
             element={

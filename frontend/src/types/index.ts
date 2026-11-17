@@ -7,6 +7,10 @@ export type RentalStatus = 'ACTIVO' | 'FINALIZADO' | 'VENCIDO';
 
 export type DeliveryStatus = 'DISPONIBLE' | 'MANTENIMIENTO' | 'FUERA_DE_SERVICIO';
 
+export type InvoiceStatus = 'PENDIENTE' | 'PAGADA' | 'VENCIDA';
+
+export type PaymentMethod = 'EFECTIVO' | 'TRANSFERENCIA' | 'TARJETA' | 'OTRO';
+
 export interface User {
   id: number;
   nombre: string;
@@ -38,6 +42,12 @@ export interface Item {
   categoria: Pick<Category, 'id' | 'nombre'>;
 }
 
+export interface ClientPortfolio {
+  saldoPendiente: string;
+  facturasPendientes: number;
+  facturasVencidas: number;
+}
+
 export interface Client {
   id: number;
   documentoIdentidad: string;
@@ -48,6 +58,65 @@ export interface Client {
   direccion: string | null;
   createdAt?: string;
   _count?: { alquileres: number };
+  cartera?: ClientPortfolio;
+}
+
+export interface Payment {
+  id: number;
+  facturaId: number;
+  usuarioId: number;
+  monto: string;
+  metodoPago: PaymentMethod;
+  referencia: string | null;
+  fechaPago: string;
+  createdAt: string;
+  usuario: User;
+}
+
+export interface InvoiceRentalSummary {
+  id: number;
+  codigoAlquiler: string;
+  fechaAlquiler: string;
+  fechaPactadaDevolucion: string;
+  estado: RentalStatus;
+}
+
+export interface Invoice {
+  id: number;
+  codigoFactura: string;
+  alquilerId: number;
+  clienteId: number;
+  fechaEmision: string;
+  fechaVencimiento: string;
+  total: string;
+  saldo: string;
+  estado: InvoiceStatus;
+  createdAt: string;
+  updatedAt: string;
+  cliente?: Client;
+  alquiler?: InvoiceRentalSummary;
+  pagos?: Payment[];
+}
+
+export interface PendingInvoicesResponse {
+  clienteId: number;
+  cliente: Client;
+  totalSaldo: string;
+  cantidad: number;
+  vencidas: number;
+  facturas: Invoice[];
+}
+
+export interface RentalCarteraAuthorization {
+  motivo: string;
+  adminEmail?: string;
+  adminPassword?: string;
+}
+
+export interface CreatePaymentPayload {
+  monto: number;
+  metodoPago: PaymentMethod;
+  referencia?: string;
 }
 
 export interface RentalDetail {
@@ -73,6 +142,8 @@ export interface ReturnRecord {
   fechaDevolucion: string;
   usuarioId: number;
   estadoEntregaImplementos: string;
+  alertaCartera?: boolean;
+  saldoCarteraAlerta?: string | null;
   observaciones: string | null;
   createdAt: string;
   usuario: User;
@@ -103,6 +174,7 @@ export interface Rental {
   usuario: User;
   detalles: RentalDetail[];
   devolucion?: ReturnRecord | null;
+  factura?: Invoice | null;
 }
 
 export interface ListResponse<T> {
@@ -191,4 +263,5 @@ export interface ApiErrorBody {
   statusCode?: number;
   message?: string | string[];
   error?: string;
+  code?: string;
 }

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   ArrowLeft,
   CalendarDays,
   ClipboardCheck,
@@ -8,6 +9,7 @@ import {
   PackageOpen,
   Plus,
   RefreshCw,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import {
@@ -23,21 +25,20 @@ import {
   ErrorAlert,
   LoadingBlock,
   PageHeader,
-  SectionCard,
 } from '../components/ui/Feedback';
+import { CarteraAuthorizationModal } from '../components/CarteraAuthorizationModal';
 import { ClientSearchSelect } from '../components/ClientSearchSelect';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../auth/AuthContext';
 import api, { getErrorMessage } from '../lib/api';
 import { formatMoney, itemStatusLabels } from '../lib/format';
-import {
-  countSelectedInGroup,
-  groupAvailableItems,
-  selectedGroups,
-  selectedItemsFromGroups,
-  setGroupQuantity,
-  type AvailableItemGroup,
-} from '../lib/rental-selection';
-import type { Client, Item, ListResponse } from '../types';
+import type {
+  Client,
+  Item,
+  ListResponse,
+  PendingInvoicesResponse,
+  RentalCarteraAuthorization,
+} from '../types';
 
 function defaultDueDate(): string {
   const date = new Date();
@@ -57,6 +58,8 @@ function minDate(): string {
 export function NewRentalPage() {
   const navigate = useNavigate();
   const { success } = useToast();
+  const { usuario } = useAuth();
+  const isAdmin = usuario?.rol === 'ADMIN';
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [availableItems, setAvailableItems] = useState<Item[]>([]);
@@ -64,6 +67,18 @@ export function NewRentalPage() {
   const [loadError, setLoadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [authorization, setAuthorization] = useState<{
+    motivo: string;
+    adminEmail?: string;
+    adminPassword?: string;
+  }>({
+    motivo: '',
+  });
+  const [authorizationOpen, setAuthorizationOpen] = useState(false);
+  const [pendingCartera, setPendingCartera] = useState<PendingInvoicesResponse | null>(
+    null,
+  );
+  const carteraRequestRef = useRef(0);
 
   const [dueDate, setDueDate] = useState(defaultDueDate());
   const [observations, setObservations] = useState('');
@@ -94,86 +109,74 @@ export function NewRentalPage() {
     void loadData();
   }, [loadData]);
 
+  const selectedClientId = selectedClient?.id;
+
+  useEffect(() => {
+    setAuthorizationOpen(false);
+    setSubmitError('');
+  }, [selectedClientId]);
+
+  const loadCartera = useCallback(async () => {
+    const requestId = ++carteraRequestRef.current;
+
+    if (!selectedClientId) {
+      setPendingCartera(null);
+      setCarteraError('');
+      setCarteraLoading(false);
+      return;
+    }
+
+    setCarteraLoading(true);
+    setCarteraError('');
+
+    try {
+      const response = await api.get<PendingInvoicesResponse>(
+        `/invoices/client/${selectedClientId}/pending`,
+      );
+      if (requestId !== carteraRequestRef.current) return;
+      setPendingCartera(response.data);
+    } catch (error) {
+      if (requestId !== carteraRequestRef.current) return;
+      setPendingCartera(null);
+      setCarteraError(getErrorMessage(error));
+    } finally {
+      if (requestId === carteraRequestRef.current) {
+        setCarteraLoading(false);
+      }
+    }
+  }, [selectedClientId]);
+
+  useEffect(() => {
+    void loadCartera();
+  }, [loadCartera]);
+
   const categories = useMemo(() => {
     const map = new Map<number, string>();
     availableItems.forEach((item) => map.set(item.categoria.id, item.categoria.nombre));
     return [...map.entries()].map(([id, nombre]) => ({ id, nombre }));
   }, [availableItems]);
 
-  const groups = useMemo(() => groupAvailableItems(availableItems), [availableItems]);
-
-  const filteredGroups = useMemo(() => {
+  const filteredItems = useMemo(() => {
     const term = itemSearch.trim().toLowerCase();
 
-    return groups.filter((group) => {
+    return availableItems.filter((item) => {
       const matchesCategory =
-        categoryFilter === 'TODAS' || group.categoriaId === Number(categoryFilter);
+        categoryFilter === 'TODAS' || item.categoria.id === Number(categoryFilter);
       const matchesTerm =
         !term ||
-        group.nombre.toLowerCase().includes(term) ||
-        group.categoriaNombre.toLowerCase().includes(term) ||
-        group.items.some((item) => item.codigoSerie.toLowerCase().includes(term));
+        item.codigoSerie.toLowerCase().includes(term) ||
+        item.nombre.toLowerCase().includes(term);
 
       return matchesCategory && matchesTerm;
     });
-  }, [groups, itemSearch, categoryFilter]);
+  }, [availableItems, itemSearch, categoryFilter]);
 
-  const selectedItems = useMemo(
-    () => selectedItemsFromGroups(groups, selectedIds),
-    [groups, selectedIds],
-  );
-  const selectedGroupsSummary = useMemo(
-    () => selectedGroups(groups, selectedIds),
-    [groups, selectedIds],
-  );
-  const dailyTotal = selectedItems.reduce(
-    (sum, item) => sum + Number(item.precioAlquilerDiario),
-    0,
-  );
-
-  const updateGroupQuantity = (group: AvailableItemGroup, quantity: number) => {
-    const available = group.items.length;
-
-    if (quantity > available) {
-      setQuantityErrors((current) => ({
-        ...current,
-        [group.key]: `Solo hay ${available} ${
-          available === 1 ? 'unidad disponible' : 'unidades disponibles'
-        } de este tipo.`,
-      }));
-    } else {
-      setQuantityErrors((current) => {
-        if (!current[group.key]) return current;
-        const next = { ...current };
-        delete next[group.key];
-        return next;
-      });
-    }
-
-    setSelectedIds((current) => setGroupQuantity(group, current, quantity));
-  };
-
-  const incrementGroup = (group: AvailableItemGroup) => {
-    const current = countSelectedInGroup(group, selectedIds);
-    if (current >= group.items.length) return;
-    updateGroupQuantity(group, current + 1);
-  };
-
-  const decrementGroup = (group: AvailableItemGroup) => {
-    const current = countSelectedInGroup(group, selectedIds);
-    if (current <= 0) return;
-    updateGroupQuantity(group, current - 1);
-  };
-
-  const clearGroup = (group: AvailableItemGroup) => {
-    setSelectedIds((current) => setGroupQuantity(group, current, 0));
-    setQuantityErrors((current) => {
-      if (!current[group.key]) return current;
-      const next = { ...current };
-      delete next[group.key];
-      return next;
-    });
-  };
+  const dailyTotal = useMemo(() => {
+    const selected = selectedIds;
+    return filteredItems
+      .filter((item) => selected.has(item.id))
+      .reduce((sum, item) => sum + Number(item.precioAlquilerDiario), 0);
+  }, [filteredItems, selectedIds]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -183,21 +186,45 @@ export function NewRentalPage() {
       setSubmitError('Seleccione un cliente para el alquiler.');
       return;
     }
-    if (selectedItems.length === 0) {
+    if (selectedIds.size === 0) {
       setSubmitError('Seleccione al menos una unidad disponible.');
       return;
     }
 
+    // Si hay cartera pendiente y aún no hay autorización, abrir el modal
+    if (pendingCartera && pendingCartera.totalSaldo > 0 && !authorization.motivo) {
+      setAuthorizationOpen(true);
+      return;
+    }
+
+    // Construir el cuerpo con autorización opcional
+    const body: any = {
+      clienteId: selectedClient.id,
+      fechaPactadaDevolucion: dueDate,
+      observaciones: observations.trim() || undefined,
+      implementos: filteredItems
+        .filter((item) => selectedIds.has(item.id))
+        .map((item) => ({
+          implementoId: item.id,
+          cantidad: 1, // Cada item seleccionado contribuye una vez al alquiler
+        })),
+    };
+
+    if (authorization.motivo) {
+      body.autorizacionCartera = {
+        motivo: authorization.motivo,
+        ...(!isAdmin && authorization.adminEmail && authorization.adminPassword
+          ? {
+              adminEmail: authorization.adminEmail,
+              adminPassword: authorization.adminPassword,
+            }
+          : {}),
+      };
+    }
+
     setSubmitting(true);
     try {
-      const response = await api.post<{ id: number }>('/rentals', {
-        clienteId: selectedClient.id,
-        fechaPactadaDevolucion: dueDate,
-        observaciones: observations.trim() || undefined,
-        implementos: selectedItems.map((item) => ({
-          implementoId: item.id,
-        })),
-      });
+      const response = await api.post<{ id: number }>('/rentals', body);
       success('Alquiler registrado correctamente.');
       navigate(`/alquileres/${response.data.id}`);
     } catch (error) {
@@ -205,6 +232,15 @@ export function NewRentalPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const onAuthorize = (auth: {
+    motivo: string;
+    adminEmail?: string;
+    adminPassword?: string;
+  }) => {
+    setAuthorization(auth);
+    setAuthorizationOpen(false);
   };
 
   if (loading) {
@@ -225,7 +261,7 @@ export function NewRentalPage() {
       <PageHeader
         eyebrow="Alquileres"
         title="Registrar nuevo alquiler"
-        description="Selecciona el cliente, la fecha de devolución y las unidades disponibles. Puedes indicar la cantidad por tipo de implemento; el inventario se bloqueará de forma atómica al confirmar."
+        description="Selecciona el cliente, la fecha de devolución y las unidades disponibles. Marca los implementos que necesitas y la cantidad por cada uno."
         actions={
           <Link to="/alquileres">
             <Button variant="secondary" icon={<ArrowLeft className="h-4 w-4" />}>
@@ -297,7 +333,7 @@ export function NewRentalPage() {
 
           <SectionCard
             title="Implementos disponibles"
-            description="Solo se muestran equipos con estado Disponible. Agrupa por tipo y ajusta la cantidad que necesitas."
+            description="Marca los implementos que necesitas para el alquiler. Cada uno se contará como una unidad."
             action={
               <Button
                 variant="secondary"
@@ -346,7 +382,7 @@ export function NewRentalPage() {
                 }
                 className="border-0"
               />
-            ) : filteredGroups.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
               <EmptyState
                 icon={PackageOpen}
                 title="Sin resultados"
@@ -365,48 +401,39 @@ export function NewRentalPage() {
                 className="border-0"
               />
             ) : (
-              <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-                {filteredGroups.map((group) => {
-                  const selectedCount = countSelectedInGroup(group, selectedIds);
+              <div className="grid gap-3 p-4 sm:grid-cols-3">
+                {filteredItems.map((item) => {
+                  const isSelected = selectedIds.has(item.id);
+                  const currentQuantity = isSelected ? 1 : 0;
 
                   return (
                     <div
-                      key={group.key}
-                      className={`rounded-2xl border p-4 transition ${
-                        selectedCount > 0
-                          ? 'border-brand-500 bg-brand-50/40 ring-4 ring-brand-500/10'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                      key={item.id}
+                      className={`rounded-xl border p-4 transition ${
+                        isSelected ? 'border-brand-500 bg-brand-50/40 ring-4 ring-brand-500/10' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-800">
-                            {group.nombre}
+                            {item.codigoSerie}
                           </p>
                           <p className="mt-0.5 text-xs text-slate-500">
-                            {group.categoriaNombre}
-                          </p>
-                          <p className="mt-1 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            {group.items.length}{' '}
-                            {group.items.length === 1
-                              ? 'unidad disponible'
-                              : 'unidades disponibles'}
+                            {item.nombre}
                           </p>
                         </div>
                         <span
                           className={`inline-flex min-w-[3rem] items-center justify-center rounded-lg px-2 py-1 text-xs font-bold ${
-                            selectedCount > 0
-                              ? 'bg-brand-500 text-ink-900'
-                              : 'bg-slate-100 text-slate-500'
+                            isSelected ? 'bg-brand-500 text-ink-900' : 'bg-slate-100 text-slate-500'
                           }`}
                         >
-                          {selectedCount}/{group.items.length}
+                          {isSelected ? '1' : '0'}
                         </span>
                       </div>
 
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
                         <span className="text-sm font-bold text-slate-900">
-                          {formatMoney(group.precioUnitario)}
+                          {formatMoney(item.precioAlquilerDiario)}
                           <span className="ml-1 text-[10px] font-medium text-slate-400">
                             / día
                           </span>
@@ -414,29 +441,27 @@ export function NewRentalPage() {
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={() => decrementGroup(group)}
-                            disabled={selectedCount === 0}
-                            aria-label={`Quitar una unidad de ${group.nombre}`}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedIds((prev) => new Set([...prev].filter((id) => id !== item.id)));
+                              } else {
+                                setSelectedIds((prev) => new Set([...prev, item.id]));
+                              }
+                            }}
+                            disabled={isSelected}
+                            aria-label={`Quitar ${item.codigoSerie} del alquiler`}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <input
-                            type="number"
-                            min={0}
-                            max={group.items.length}
-                            value={selectedCount}
-                            onChange={(event) =>
-                              updateGroupQuantity(group, Number(event.target.value))
-                            }
-                            aria-label={`Cantidad de ${group.nombre}`}
-                            className="h-8 w-12 rounded-lg border border-slate-200 bg-white text-center text-sm font-bold text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                          />
+                          <span className="mx-2 text-[10px] text-slate-500">·</span>
                           <button
                             type="button"
-                            onClick={() => incrementGroup(group)}
-                            disabled={selectedCount >= group.items.length}
-                            aria-label={`Agregar una unidad de ${group.nombre}`}
+                            onClick={() => {
+                              setSelectedIds((prev) => new Set([...prev, item.id]));
+                            }}
+                            disabled={isSelected}
+                            aria-label={`Agregar ${item.codigoSerie} al alquiler`}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <Plus className="h-3.5 w-3.5" />
@@ -444,18 +469,9 @@ export function NewRentalPage() {
                         </div>
                       </div>
 
-                      {selectedCount > 0 && (
-                        <p className="mt-2 break-words font-mono text-[10px] leading-4 text-slate-500">
-                          {group.items
-                            .filter((item) => selectedIds.has(item.id))
-                            .map((item) => item.codigoSerie)
-                            .join(', ')}
-                        </p>
-                      )}
-
-                      {quantityErrors[group.key] && (
-                        <p className="mt-2 text-xs font-medium text-rose-600">
-                          {quantityErrors[group.key]}
+                      {isSelected && (
+                        <p className="mt-2 text-[10px] leading-4 text-slate-500">
+                          Implemento seleccionado para el alquiler
                         </p>
                       )}
                     </div>
@@ -477,12 +493,8 @@ export function NewRentalPage() {
               </div>
               <p className="mt-2 text-3xl font-bold">{formatMoney(dailyTotal)}</p>
               <p className="mt-1 text-xs text-slate-400">
-                Tarifa diaria · {selectedItems.length}{' '}
-                {selectedItems.length === 1 ? 'unidad' : 'unidades'}
-                {selectedGroupsSummary.length > 0 &&
-                  ` · ${selectedGroupsSummary.length} ${
-                    selectedGroupsSummary.length === 1 ? 'tipo' : 'tipos'
-                  }`}
+                Tarifa diaria · {selectedIds.size}{' '}
+                {selectedIds.size === 1 ? 'unidad' : 'unidades'}
               </p>
             </div>
 
@@ -503,90 +515,44 @@ export function NewRentalPage() {
                     Unidades
                   </p>
                   <span className="text-xs font-semibold text-slate-500">
-                    {selectedItems.length}
+                    {selectedIds.size}
                   </span>
                 </div>
-                {selectedItems.length === 0 ? (
+                {selectedIds.size === 0 ? (
                   <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs leading-5 text-slate-500">
-                    Selecciona unidades disponibles del catálogo.
+                    Selecciona implementos disponibles del catálogo.
                   </p>
                 ) : (
-                  <ul className="space-y-2">
-                    {selectedGroupsSummary.map((group) => (
-                      <li
-                        key={group.key}
-                        className="flex items-start gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-semibold text-slate-700">
-                            {group.nombre}
-                          </p>
-                          <p className="text-[10px] text-slate-500">
-                            {group.cantidad}{' '}
-                            {group.cantidad === 1 ? 'unidad' : 'unidades'} ·{' '}
-                            {formatMoney(group.precioUnitario)} c/u
-                          </p>
-                          <p className="mt-1 break-words font-mono text-[10px] leading-4 text-slate-400">
-                            {group.selectedItems
-                              .map((item) => item.codigoSerie)
-                              .join(', ')}
-                          </p>
-                          <p className="mt-1 text-[10px] font-semibold text-slate-600">
-                            Subtotal diario: {formatMoney(group.subtotal)}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => clearGroup(group)}
-                          className="rounded-md p-1 text-slate-400 hover:bg-white hover:text-rose-600"
-                          aria-label={`Quitar ${group.nombre}`}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-xs text-slate-500">
+                    {selectedIds.size} implemento{' '}{selectedIds.size === 1 ? 'seleccionado' : 'seleccionados'}
+                  </p>
                 )}
               </div>
-
-              {selectedClient && (
-                <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Cliente
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-slate-700">
-                    {selectedClient.nombres} {selectedClient.apellidos}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    {selectedClient.documentoIdentidad}
-                  </p>
-                </div>
-              )}
-
-              {submitError && <ErrorAlert message={submitError} />}
-
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
-                loading={submitting}
-                disabled={
-                  !selectedClient ||
-                  availableItems.length === 0 ||
-                  selectedItems.length === 0
-                }
-                icon={<Plus className="h-4 w-4" />}
-              >
-                Confirmar alquiler
-              </Button>
-              <p className="text-center text-[10px] leading-4 text-slate-400">
-                Al confirmar, las unidades seleccionadas cambiarán a estado{' '}
-                {itemStatusLabels.ALQUILADO.toLowerCase()} de manera automática.
-              </p>
             </div>
           </div>
         </aside>
+      </aside>
       </form>
+
+      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs leading-5 text-slate-500">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+        <p>
+          Cada implemento seleccionado contribuye al alquiler. Al confirmar, las unidades
+          seleccionadas cambiarán a estado Alquilado de manera automática.
+        </p>
+      </div>
+
+      <CarteraAuthorizationModal
+        open={authorizationOpen}
+        onClose={() => {
+          setAuthorizationOpen(false);
+        }}
+        onAuthorize={onAuthorize}
+        pending={pendingCartera}
+        isAdmin={isAdmin}
+        loading={submitting}
+        error={''}
+      />
     </div>
   );
 }

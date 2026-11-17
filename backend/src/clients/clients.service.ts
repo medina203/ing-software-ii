@@ -1,10 +1,36 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { EstadoFactura, Prisma } from '@prisma/client';
+import { markOverdueInvoices } from '../common/utils/billing';
 import { normalizeSearchTerm } from '../common/utils/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { ListClientsQueryDto } from './dto/list-clients-query.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+
+const pendingInvoiceSelect = {
+  id: true,
+  codigoFactura: true,
+  saldo: true,
+  estado: true,
+  fechaVencimiento: true,
+} satisfies Prisma.FacturaSelect;
+
+function summarizeCartera(
+  facturas: Array<{ saldo: Prisma.Decimal; estado: EstadoFactura }>,
+) {
+  const saldoPendiente = facturas.reduce(
+    (total, factura) => total.plus(factura.saldo),
+    new Prisma.Decimal(0),
+  );
+
+  return {
+    saldoPendiente: saldoPendiente.toFixed(2),
+    facturasPendientes: facturas.length,
+    facturasVencidas: facturas.filter(
+      (factura) => factura.estado === EstadoFactura.VENCIDA,
+    ).length,
+  };
+}
 
 @Injectable()
 export class ClientsService {
@@ -24,11 +50,21 @@ export class ClientsService {
         }
       : {};
 
-    const [data, total] = await Promise.all([
+    await markOverdueInvoices(this.prisma);
+
+    const [clientes, total] = await Promise.all([
       this.prisma.cliente.findMany({
         where,
         include: {
           _count: { select: { alquileres: true } },
+          facturas: {
+            where: {
+              estado: { in: [EstadoFactura.PENDIENTE, EstadoFactura.VENCIDA] },
+              saldo: { gt: 0 },
+            },
+            select: pendingInvoiceSelect,
+            orderBy: [{ fechaVencimiento: 'asc' }, { id: 'asc' }],
+          },
         },
         orderBy: [{ apellidos: 'asc' }, { nombres: 'asc' }],
         ...(query.limit ? { take: query.limit } : {}),
@@ -36,14 +72,29 @@ export class ClientsService {
       this.prisma.cliente.count({ where }),
     ]);
 
+    const data = clientes.map(({ facturas, ...cliente }) => ({
+      ...cliente,
+      cartera: summarizeCartera(facturas),
+    }));
+
     return { data, total };
   }
 
   async findOne(id: number) {
+    await markOverdueInvoices(this.prisma);
+
     const cliente = await this.prisma.cliente.findUnique({
       where: { id },
       include: {
         _count: { select: { alquileres: true } },
+        facturas: {
+          where: {
+            estado: { in: [EstadoFactura.PENDIENTE, EstadoFactura.VENCIDA] },
+            saldo: { gt: 0 },
+          },
+          select: pendingInvoiceSelect,
+          orderBy: [{ fechaVencimiento: 'asc' }, { id: 'asc' }],
+        },
       },
     });
 
@@ -51,7 +102,11 @@ export class ClientsService {
       throw new NotFoundException('Cliente no encontrado.');
     }
 
-    return cliente;
+    const { facturas, ...data } = cliente;
+    return {
+      ...data,
+      cartera: summarizeCartera(facturas),
+    };
   }
 
   async create(dto: CreateClientDto) {
