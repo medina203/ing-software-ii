@@ -202,7 +202,7 @@ Ejecute todos desde la raíz del repositorio.
 | `npm run db:down`         | Detiene los contenedores sin borrar el volumen                                    |
 | `npm run db:reset`        | **Borra la base**, la recrea, genera Prisma, migra y siembra                      |
 | `npm run db:setup`        | Genera Prisma, aplica migraciones y ejecuta el seed                               |
-| `npm run db:deploy`       | Aplica migraciones existentes sin generar nuevas                                  |
+| `npm run db:deploy`       | Aplica migraciones existentes y regenera el cliente de Prisma                     |
 | `npm run db:migrate`      | Crea/aplica una migración de desarrollo con Prisma Migrate                        |
 | `npm run db:seed`         | Carga o actualiza los datos demo                                                  |
 | `npm run db:studio`       | Abre Prisma Studio                                                                |
