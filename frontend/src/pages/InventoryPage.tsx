@@ -28,7 +28,7 @@ import { ImagePicker } from '../components/ImagePicker';
 import { ItemImage } from '../components/ItemImage';
 import { ItemUnitsModal } from '../components/ItemUnitsModal';
 import { NumericInput } from '../components/ui/NumericInput';
-import { assetUrl, itemIllustration } from '../lib/assets';
+import { assetUrl, defaultItemImage } from '../lib/assets';
 import { imageFormData, MULTIPART } from '../lib/image-resize';
 import {
   ConfirmDialog,
@@ -867,7 +867,7 @@ export function InventoryPage() {
               onFileChange={setImageFile}
               currentUrl={
                 form.nombre.trim()
-                  ? itemIllustration(form.nombre, selectedCategory?.nombre)
+                  ? defaultItemImage(form.nombre, selectedCategory?.nombre).src
                   : undefined
               }
               hint="Si no subes una, se usa una ilustración según el tipo. Desde el celular puedes tomar una foto."
@@ -937,7 +937,7 @@ export function InventoryPage() {
               onFileChange={setImageFile}
               currentUrl={
                 assetUrl(imageGroup.imagenUrl) ??
-                itemIllustration(imageGroup.nombre, imageGroup.categoria.nombre)
+                defaultItemImage(imageGroup.nombre, imageGroup.categoria.nombre).src
               }
             />
           )}

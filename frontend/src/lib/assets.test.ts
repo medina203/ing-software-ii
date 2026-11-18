@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assetUrl, itemIllustration } from './assets';
+import { assetUrl, defaultItemImage, itemIllustration, itemPhoto } from './assets';
 
 describe('imágenes de implementos', () => {
   it('elige la ilustración por el nombre del implemento', () => {
@@ -32,5 +32,28 @@ describe('imágenes de implementos', () => {
     );
     expect(assetUrl('/ilustraciones/andamio.svg')).toBe('/ilustraciones/andamio.svg');
     expect(assetUrl(null)).toBeUndefined();
+  });
+
+  it('usa las fotos incluidas cuando el nombre coincide', () => {
+    expect(itemPhoto('Andamio certificado 2 m')).toBe('/implementos/andamio-2m.webp');
+    expect(itemPhoto('Estación total Topcon')).toBe(
+      '/implementos/estacion-total-topcon.webp',
+    );
+    expect(itemPhoto('KIT de llaves tipo L')).toBe('/implementos/kit-llaves-tipo-l.webp');
+    expect(itemPhoto('Kit de llaves tipo estria')).toBe(
+      '/implementos/kit-llaves-estria.webp',
+    );
+    expect(itemPhoto('Taladro percutor Bosch 850 W')).toBeUndefined();
+  });
+
+  it('la foto tiene prioridad y la ilustración queda como respaldo', () => {
+    expect(defaultItemImage('Arnés de seguridad full body')).toEqual({
+      src: '/implementos/arnes-full-body.webp',
+      kind: 'foto',
+    });
+    expect(defaultItemImage('Taladro percutor Bosch 850 W')).toEqual({
+      src: '/ilustraciones/taladro.svg',
+      kind: 'ilustracion',
+    });
   });
 });
