@@ -12,6 +12,7 @@ test('el endpoint de salud responde ok', async ({ request }) => {
 
 test('login de administrador y acceso al resumen operativo', async ({ page }) => {
   await page.goto('/login');
+  await expect(page).toHaveTitle('DM alquiler · Inventario y alquiler');
 
   await page.locator('#email').fill('admin@obragest.local');
   await page.locator('#password').fill('Admin123*');
