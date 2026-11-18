@@ -17,6 +17,7 @@ import {
   SearchInput,
   TextArea,
   TextInput,
+  Select,
 } from '../components/ui/Button';
 import {
   ConfirmDialog,
@@ -28,10 +29,22 @@ import {
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/Toast';
 import api, { getErrorMessage } from '../lib/api';
+import { NumericInput } from '../components/ui/NumericInput';
+import {
+  buildDocument,
+  DOCUMENT_TYPES,
+  documentRule,
+  parseDocument,
+  validateDocument,
+  validatePhone,
+  type DocumentType,
+} from '../lib/document';
 import type { Client, ListResponse } from '../types';
 
 interface ClientFormState {
-  documentoIdentidad: string;
+  docTipo: DocumentType;
+  docNumero: string;
+  docDv: string;
   nombres: string;
   apellidos: string;
   telefono: string;
@@ -40,7 +53,9 @@ interface ClientFormState {
 }
 
 const emptyForm: ClientFormState = {
-  documentoIdentidad: '',
+  docTipo: 'CC',
+  docNumero: '',
+  docDv: '',
   nombres: '',
   apellidos: '',
   telefono: '',
@@ -111,8 +126,11 @@ export function ClientsPage() {
 
   const openEdit = (client: Client) => {
     setEditingClient(client);
+    const documento = parseDocument(client.documentoIdentidad);
     setForm({
-      documentoIdentidad: client.documentoIdentidad,
+      docTipo: documento.tipo,
+      docNumero: documento.numero,
+      docDv: documento.dv,
       nombres: client.nombres,
       apellidos: client.apellidos,
       telefono: client.telefono,
@@ -140,8 +158,15 @@ export function ClientsPage() {
     event.preventDefault();
     setFormError('');
 
+    const documento = { tipo: form.docTipo, numero: form.docNumero, dv: form.docDv };
+    const validation = validateDocument(documento) || validatePhone(form.telefono);
+    if (validation) {
+      setFormError(validation);
+      return;
+    }
+
     const payload = {
-      documentoIdentidad: form.documentoIdentidad.trim(),
+      documentoIdentidad: buildDocument(documento),
       nombres: form.nombres.trim(),
       apellidos: form.apellidos.trim(),
       telefono: form.telefono.trim(),
@@ -364,28 +389,77 @@ export function ClientsPage() {
         <form id="client-form" onSubmit={handleSubmit} className="space-y-4">
           {formError && <ErrorAlert message={formError} />}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Documento de identidad" htmlFor="documento" required>
-              <TextInput
-                id="documento"
-                value={form.documentoIdentidad}
-                onChange={(event) =>
-                  updateField('documentoIdentidad', event.target.value)
-                }
-                required
-                maxLength={30}
-                placeholder="CC-10324567 o NIT"
-              />
+            <Field label="Tipo de documento" htmlFor="docTipo" required>
+              <Select
+                id="docTipo"
+                value={form.docTipo}
+                onChange={(event) => {
+                  const tipo = event.target.value as DocumentType;
+                  setForm((current) => ({
+                    ...current,
+                    docTipo: tipo,
+                    docNumero: current.docNumero.slice(0, documentRule(tipo).max),
+                    docDv: tipo === 'NIT' ? current.docDv : '',
+                  }));
+                }}
+              >
+                {DOCUMENT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.value} · {type.label}
+                  </option>
+                ))}
+              </Select>
             </Field>
-            <Field label="Teléfono" htmlFor="telefono" required>
-              <TextInput
+            <Field
+              label="Número de documento"
+              htmlFor="documento"
+              required
+              hint={
+                form.docTipo === 'NIT'
+                  ? '9 dígitos y el dígito de verificación.'
+                  : `Solo números, entre ${documentRule(form.docTipo).min} y ${documentRule(form.docTipo).max} dígitos.`
+              }
+            >
+              <div className="flex items-center gap-2">
+                <NumericInput
+                  id="documento"
+                  value={form.docNumero}
+                  onValueChange={(value) => updateField('docNumero', value)}
+                  maxDigits={documentRule(form.docTipo).max}
+                  required
+                  placeholder={form.docTipo === 'NIT' ? '900123456' : '10324567'}
+                />
+                {form.docTipo === 'NIT' && (
+                  <>
+                    <span className="text-slate-400">-</span>
+                    <NumericInput
+                      id="documentoDv"
+                      aria-label="Dígito de verificación"
+                      value={form.docDv}
+                      onValueChange={(value) => updateField('docDv', value)}
+                      maxDigits={1}
+                      required
+                      className="w-14 text-center"
+                      placeholder="7"
+                    />
+                  </>
+                )}
+              </div>
+            </Field>
+            <Field
+              label="Teléfono"
+              htmlFor="telefono"
+              required
+              hint="Solo números, entre 7 y 10 dígitos."
+            >
+              <NumericInput
                 id="telefono"
-                type="tel"
+                autoComplete="tel"
                 value={form.telefono}
-                onChange={(event) => updateField('telefono', event.target.value)}
+                onValueChange={(value) => updateField('telefono', value)}
+                maxDigits={10}
                 required
-                minLength={7}
-                maxLength={30}
-                placeholder="310 555 1234"
+                placeholder="3105551234"
               />
             </Field>
             <Field label="Nombres" htmlFor="nombres" required>

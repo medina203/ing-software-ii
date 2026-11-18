@@ -105,6 +105,8 @@ model Implemento {
   nombre               String           @db.VarChar(140)
   categoriaId          Int              @map("categoria_id")
   descripcion          String?          @db.VarChar(300)
+  /// Imagen del tipo de implemento (se comparte entre sus unidades).
+  imagenUrl            String?          @map("imagen_url") @db.VarChar(300)
   precioAlquilerDiario Decimal          @map("precio_alquiler_diario") @db.Decimal(12, 2)
   estado               EstadoImplemento @default(DISPONIBLE)
   createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -257,4 +259,18 @@ model AutorizacionCartera {
   @@index([clienteId, createdAt])
   @@index([facturaId])
   @@map("autorizaciones_cartera")
+}
+
+/// Apariencia del sistema definida por el ADMIN (registro único, id = 1).
+model Configuracion {
+  id             Int      @id @default(1)
+  tema           String   @default("claro") @db.VarChar(10)
+  tamanoFuente   String   @default("normal") @map("tamano_fuente") @db.VarChar(10)
+  colorPrimario  String   @default("ambar") @map("color_primario") @db.VarChar(20)
+  imagenLoginUrl String?  @map("imagen_login_url") @db.VarChar(300)
+  carrusel       Json     @default("[]")
+  actualizadoPor Int?     @map("actualizado_por")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("configuracion")
 }

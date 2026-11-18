@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Casco y chaleco de seguridad">
+  <title>Casco y chaleco de seguridad</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g stroke="#0b0d11" stroke-width="3" stroke-linejoin="round">
+    <path d="M130 120l30-20h80l30 20 10 130H120z" fill="#1c2029"/>
+    <path d="M150 160h100M146 196h108" stroke="#cfd5df" stroke-width="10"/>
+    <path d="M200 100v150" stroke="#8a93a3" stroke-width="4"/>
+    <path d="M118 104c0-56 36-80 82-80s82 24 82 80z" fill="#f5b301"/>
+    <rect x="104" y="98" width="192" height="18" rx="9" fill="#ffcf3f"/>
+    <path d="M186 28h28v74h-28z" fill="#ffcf3f"/>
+  </g>
+</svg>

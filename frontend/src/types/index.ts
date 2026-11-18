@@ -48,6 +48,7 @@ export interface ItemGroup {
   nombre: string;
   categoria: Pick<Category, 'id' | 'nombre' | 'prefijo'>;
   descripcion: string | null;
+  imagenUrl: string | null;
   precioMin: string;
   precioMax: string;
   total: number;

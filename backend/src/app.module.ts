@@ -8,6 +8,8 @@ import { ClientsModule } from './clients/clients.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { StatusSyncModule } from './common/status-sync/status-sync.module';
+import { SettingsModule } from './settings/settings.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ItemsModule } from './items/items.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -24,6 +26,8 @@ import { UsersModule } from './users/users.module';
     }),
     PrismaModule,
     StatusSyncModule,
+    UploadsModule,
+    SettingsModule,
     AuthModule,
     UsersModule,
     ClientsModule,

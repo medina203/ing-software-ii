@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
+  Camera,
   CircleDollarSign,
   List,
   Package,
@@ -23,7 +24,12 @@ import {
   TextArea,
   TextInput,
 } from '../components/ui/Button';
+import { ImagePicker } from '../components/ImagePicker';
+import { ItemImage } from '../components/ItemImage';
 import { ItemUnitsModal } from '../components/ItemUnitsModal';
+import { NumericInput } from '../components/ui/NumericInput';
+import { assetUrl, itemIllustration } from '../lib/assets';
+import { imageFormData, MULTIPART } from '../lib/image-resize';
 import {
   ConfirmDialog,
   EmptyState,
@@ -121,6 +127,10 @@ export function InventoryPage() {
   const [mode, setMode] = useState<FormMode>('create');
   const [targetGroup, setTargetGroup] = useState<ItemGroup | null>(null);
   const [unitsGroup, setUnitsGroup] = useState<ItemGroup | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageGroup, setImageGroup] = useState<ItemGroup | null>(null);
+  const [imageSaving, setImageSaving] = useState(false);
+  const [imageError, setImageError] = useState('');
   const [form, setForm] = useState<ItemFormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -179,6 +189,7 @@ export function InventoryPage() {
   }, [loadData]);
 
   const openCreate = () => {
+    setImageFile(null);
     setMode('create');
     setTargetGroup(null);
     setForm(emptyForm);
@@ -196,6 +207,7 @@ export function InventoryPage() {
   });
 
   const openEdit = (group: ItemGroup) => {
+    setImageFile(null);
     setMode('edit');
     setTargetGroup(group);
     setForm(groupForm(group));
@@ -260,7 +272,10 @@ export function InventoryPage() {
         });
         success(`"${form.nombre.trim()}" actualizado en todas sus unidades.`);
       } else {
-        const response = await api.post<{ total: number }>('/items/batch', {
+        const response = await api.post<{
+          total: number;
+          items: Array<{ nombre: string }>;
+        }>('/items/batch', {
           nombre: form.nombre.trim(),
           categoriaId: Number(form.categoriaId),
           descripcion: form.descripcion.trim(),
@@ -269,6 +284,23 @@ export function InventoryPage() {
           cantidad: quantity,
         });
         const created = response.data.total;
+
+        if (imageFile && mode === 'create') {
+          try {
+            await api.post(
+              '/items/group/image',
+              await imageFormData(imageFile, {
+                categoriaId: Number(form.categoriaId),
+                nombre: response.data.items[0]?.nombre ?? form.nombre.trim(),
+              }),
+              MULTIPART,
+            );
+          } catch (error) {
+            showError(
+              `Se registró el implemento, pero la imagen no se guardó: ${getErrorMessage(error)}`,
+            );
+          }
+        }
 
         if (mode === 'add') {
           success(
@@ -291,6 +323,37 @@ export function InventoryPage() {
       setFormError(getErrorMessage(error));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveImage = async (reset: boolean) => {
+    if (!imageGroup) return;
+    setImageSaving(true);
+    setImageError('');
+    try {
+      if (reset) {
+        await api.delete('/items/group/image', {
+          params: { categoriaId: imageGroup.categoriaId, nombre: imageGroup.nombre },
+        });
+        success('Se restableció la ilustración del implemento.');
+      } else if (imageFile) {
+        await api.post(
+          '/items/group/image',
+          await imageFormData(imageFile, {
+            categoriaId: imageGroup.categoriaId,
+            nombre: imageGroup.nombre,
+          }),
+          MULTIPART,
+        );
+        success('Imagen actualizada.');
+      }
+      setImageGroup(null);
+      setImageFile(null);
+      await loadData();
+    } catch (error) {
+      setImageError(getErrorMessage(error));
+    } finally {
+      setImageSaving(false);
     }
   };
 
@@ -471,22 +534,38 @@ export function InventoryPage() {
                 aria-label={group.nombre}
                 className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-pop"
               >
-                <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-                    <Package className="h-5 w-5" />
-                  </div>
+                <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                  <ItemImage
+                    nombre={group.nombre}
+                    categoria={group.categoria.nombre}
+                    imagenUrl={group.imagenUrl}
+                    className="transition duration-300 group-hover:scale-[1.04]"
+                  />
                   <span
                     className={
                       hasStock
-                        ? 'inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700'
-                        : 'inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-rose-700'
+                        ? 'absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wide text-white shadow-md'
+                        : 'absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-rose-600 px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wide text-white shadow-md'
                     }
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${hasStock ? 'bg-emerald-500' : 'bg-rose-500'}`}
-                    />
+                    <span className="h-1.5 w-1.5 rounded-full bg-white" />
                     {hasStock ? 'Con stock' : 'Sin stock'}
                   </span>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImageError('');
+                        setImageGroup(group);
+                      }}
+                      aria-label={`Cambiar imagen de ${group.nombre}`}
+                      title="Cambiar imagen"
+                      className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/75"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <h3 className="text-base font-bold leading-6 text-slate-900">
@@ -504,7 +583,7 @@ export function InventoryPage() {
 
                   <div className="mt-4 space-y-2.5 rounded-xl bg-slate-50 p-3.5">
                     <div className="flex items-baseline justify-between">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                         Stock disponible
                       </p>
                       <p
@@ -519,7 +598,7 @@ export function InventoryPage() {
                     </div>
                     <StockBar group={group} />
                     {others.some((item) => item.value > 0) && (
-                      <ul className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                      <ul className="flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] text-slate-500">
                         {others
                           .filter((item) => item.value > 0)
                           .map((item) => (
@@ -535,7 +614,7 @@ export function InventoryPage() {
 
                   <div className="mt-4 flex items-end justify-between border-t border-slate-100 pt-4">
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                         Tarifa diaria
                       </p>
                       <p className="mt-1 text-lg font-bold text-slate-900">
@@ -727,13 +806,11 @@ export function InventoryPage() {
               required
               hint="Valor de referencia por día de alquiler."
             >
-              <TextInput
+              <NumericInput
                 id="precio"
-                type="number"
-                min="0.01"
-                step="0.01"
                 value={form.precio}
-                onChange={(event) => updateField('precio', event.target.value)}
+                onValueChange={(value) => updateField('precio', value)}
+                maxDigits={9}
                 required
                 placeholder="45000"
               />
@@ -751,14 +828,11 @@ export function InventoryPage() {
                   : 'Puedes registrar varias unidades iguales en una sola operación.'
               }
             >
-              <TextInput
+              <NumericInput
                 id="cantidad"
-                type="number"
-                min="1"
-                max="100"
-                step="1"
                 value={form.cantidad}
-                onChange={(event) => updateField('cantidad', event.target.value)}
+                onValueChange={(value) => updateField('cantidad', value)}
+                maxDigits={3}
                 required
               />
             </Field>
@@ -786,6 +860,20 @@ export function InventoryPage() {
             </Field>
           )}
 
+          {mode === 'create' && (
+            <ImagePicker
+              label="Imagen (opcional)"
+              file={imageFile}
+              onFileChange={setImageFile}
+              currentUrl={
+                form.nombre.trim()
+                  ? itemIllustration(form.nombre, selectedCategory?.nombre)
+                  : undefined
+              }
+              hint="Si no subes una, se usa una ilustración según el tipo. Desde el celular puedes tomar una foto."
+            />
+          )}
+
           <Field label="Descripción" htmlFor="descripcion">
             <TextArea
               id="descripcion"
@@ -808,6 +896,53 @@ export function InventoryPage() {
         confirmLabel="Eliminar"
         loading={deleting}
       />
+
+      <Modal
+        open={Boolean(imageGroup)}
+        onClose={() => !imageSaving && setImageGroup(null)}
+        title="Imagen del implemento"
+        description={
+          imageGroup
+            ? `Se muestra en la tarjeta de "${imageGroup.nombre}" y la comparten sus ${imageGroup.total} unidades.`
+            : undefined
+        }
+        footer={
+          <>
+            {imageGroup?.imagenUrl && (
+              <Button
+                variant="secondary"
+                disabled={imageSaving}
+                onClick={() => void saveImage(true)}
+              >
+                Usar ilustración
+              </Button>
+            )}
+            <Button
+              loading={imageSaving}
+              disabled={!imageFile}
+              onClick={() => void saveImage(false)}
+              icon={<Camera className="h-4 w-4" />}
+            >
+              Guardar imagen
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          {imageError && <ErrorAlert message={imageError} />}
+          {imageGroup && (
+            <ImagePicker
+              label="Nueva imagen"
+              file={imageFile}
+              onFileChange={setImageFile}
+              currentUrl={
+                assetUrl(imageGroup.imagenUrl) ??
+                itemIllustration(imageGroup.nombre, imageGroup.categoria.nombre)
+              }
+            />
+          )}
+        </div>
+      </Modal>
 
       <ItemUnitsModal
         group={unitsGroup}

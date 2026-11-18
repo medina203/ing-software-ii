@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -34,11 +34,15 @@ import {
   formatDate,
   formatDateTime,
   formatMoney,
+  paymentMethodLabels,
 } from '../lib/format';
 import type { Rental } from '../types';
 
 export function RentalDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const [highlightInvoice, setHighlightInvoice] = useState(false);
   const navigate = useNavigate();
   const [rental, setRental] = useState<Rental | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +65,16 @@ export function RentalDetailPage() {
   useEffect(() => {
     void loadRental();
   }, [loadRental]);
+
+  // Desde Cartera se llega con #factura: se desplaza y resalta la factura.
+  const rentalLoaded = Boolean(rental);
+  useEffect(() => {
+    if (!rentalLoaded || location.hash !== '#factura') return;
+    invoiceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setHighlightInvoice(true);
+    const timeout = window.setTimeout(() => setHighlightInvoice(false), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [rentalLoaded, location.hash]);
 
   if (loading) {
     return (
@@ -250,7 +264,7 @@ export function RentalDetailPage() {
               description="Inspección física y estado final de cada implemento."
               action={
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold ${
                     rental.devolucion.estadoEntregaImplementos === 'Sin novedades'
                       ? 'bg-emerald-50 text-emerald-700'
                       : 'bg-amber-50 text-amber-700'
@@ -307,7 +321,7 @@ export function RentalDetailPage() {
 
               {rental.devolucion.observaciones && (
                 <div className="border-t border-slate-100 bg-slate-50/40 px-5 py-4 sm:px-6">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Observaciones generales
                   </p>
                   <p className="mt-1.5 text-sm leading-6 text-slate-600">
@@ -417,48 +431,89 @@ export function RentalDetailPage() {
           </SectionCard>
 
           {rental.factura && (
-            <SectionCard title="Facturación">
-              <div className="space-y-3 p-5 text-sm" data-testid="rental-invoice">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-semibold text-slate-700">
-                    {rental.factura.codigoFactura}
-                  </span>
-                  <InvoiceStatusBadge status={rental.factura.estado} />
-                </div>
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>Total</span>
-                  <span className="font-semibold text-slate-800">
-                    {formatMoney(rental.factura.total)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>Saldo</span>
-                  <span className="font-semibold text-slate-800">
-                    {formatMoney(rental.factura.saldo)}
-                  </span>
-                </div>
-                <p className="text-[11px] leading-4 text-slate-400">
-                  {isFinished
-                    ? 'Liquidada con los días reales del alquiler.'
-                    : 'Calculada con los días pactados; se ajusta al registrar la devolución.'}
-                </p>
-                {rental.devolucion?.alertaCartera && (
-                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
-                    Al recibir la devolución el cliente tenía cartera pendiente
-                    {rental.devolucion.saldoCarteraAlerta
-                      ? ` por ${formatMoney(rental.devolucion.saldoCarteraAlerta)}`
-                      : ''}
-                    .
+            <div
+              id="factura"
+              ref={invoiceRef}
+              className={`scroll-mt-24 rounded-2xl transition-shadow duration-700 ${
+                highlightInvoice ? 'ring-4 ring-brand-400/60' : ''
+              }`}
+            >
+              <SectionCard title="Factura">
+                <div className="space-y-3 p-5 text-sm" data-testid="rental-invoice">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-semibold text-slate-700">
+                      {rental.factura.codigoFactura}
+                    </span>
+                    <InvoiceStatusBadge status={rental.factura.estado} />
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Total</span>
+                    <span className="font-semibold text-slate-800">
+                      {formatMoney(rental.factura.total)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Saldo</span>
+                    <span className="font-semibold text-slate-800">
+                      {formatMoney(rental.factura.saldo)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Vence</span>
+                    <span className="font-semibold text-slate-800">
+                      {formatDate(rental.factura.fechaVencimiento)}
+                    </span>
+                  </div>
+                  {rental.factura.pagos && rental.factura.pagos.length > 0 && (
+                    <div className="rounded-xl border border-slate-100">
+                      <p className="border-b border-slate-100 px-3 py-2 text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
+                        Pagos registrados
+                      </p>
+                      <ul
+                        className="divide-y divide-slate-100"
+                        data-testid="invoice-payments"
+                      >
+                        {rental.factura.pagos.map((pago) => (
+                          <li
+                            key={pago.id}
+                            className="flex justify-between gap-2 px-3 py-2 text-xs"
+                          >
+                            <span className="text-slate-500">
+                              {formatDate(pago.fechaPago)} ·{' '}
+                              {paymentMethodLabels[pago.metodoPago]}
+                              {pago.referencia ? ` · ${pago.referencia}` : ''}
+                            </span>
+                            <span className="font-semibold text-slate-800">
+                              {formatMoney(pago.monto)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <p className="text-[0.6875rem] leading-4 text-slate-400">
+                    {isFinished
+                      ? 'Liquidada con los días reales del alquiler.'
+                      : 'Calculada con los días pactados; se ajusta al registrar la devolución.'}
                   </p>
-                )}
-                <Link
-                  to="/cartera"
-                  className="text-xs font-semibold text-brand-700 underline"
-                >
-                  Ir a cartera
-                </Link>
-              </div>
-            </SectionCard>
+                  {rental.devolucion?.alertaCartera && (
+                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-[0.6875rem] text-amber-800">
+                      Al recibir la devolución el cliente tenía cartera pendiente
+                      {rental.devolucion.saldoCarteraAlerta
+                        ? ` por ${formatMoney(rental.devolucion.saldoCarteraAlerta)}`
+                        : ''}
+                      .
+                    </p>
+                  )}
+                  <Link
+                    to="/cartera"
+                    className="text-xs font-semibold text-brand-700 underline"
+                  >
+                    Ir a cartera
+                  </Link>
+                </div>
+              </SectionCard>
+            </div>
           )}
 
           <SectionCard title="Observaciones">
@@ -498,7 +553,7 @@ function ReturnedItemNote({
   const detail = returnDetails.find((item) => item.implementoId === implementoId);
   if (!detail?.observaciones) return null;
   return (
-    <p className="mt-1 text-[11px] italic text-slate-500">
+    <p className="mt-1 text-[0.6875rem] italic text-slate-500">
       Devolución: {detail.observaciones}
     </p>
   );
@@ -532,7 +587,7 @@ function InfoLabel({
     <div className="flex items-start gap-2.5">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
           {label}
         </p>
         <p className="mt-0.5 text-sm font-medium text-slate-700">{value}</p>

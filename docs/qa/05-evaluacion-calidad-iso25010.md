@@ -175,3 +175,27 @@ Comandos: `npm run build`, `npm run lint`, `npm test`, `npm run test:e2e --works
 - Frontend: `pages/NewRentalPage.tsx`, `pages/NewReturnPage.tsx`, `pages/RentalDetailPage.tsx`, `components/ErrorBoundary.tsx`, `lib/cartera.ts`, `App.tsx` (carga diferida), `main.tsx`, `components/Layout.tsx`.
 - Pruebas: 6 archivos unitarios nuevos o ampliados, `backend/test/stage4-5.e2e-spec.ts`, `e2e/stage4.spec.ts` y utilidades `helpers/cleanup.ts`.
 - Documentación: este informe, el SRS, la matriz de trazabilidad (v1.4), el plan por etapas, el README y las evidencias de `etapa-4-5/`.
+
+---
+
+## 10. Etapa 6 — Usabilidad, personalización e imágenes (17-nov-2026)
+
+Mejoras solicitadas por el usuario durante la revisión del PR #1. Evidencia en `evidencias/etapa-4-5/mejora-inventario-agrupado.md` y `evidencias/etapa-6/`.
+
+| Característica ISO/IEC 25010           | Mejora                                                                                                                                       | Verificación                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Usabilidad — protección contra errores | Identificación por tipo y solo dígitos (CC/CE/TI 6-10, NIT 9 + DV), teléfono 7-10 dígitos, tarifa, cantidades y pagos sin letras.            | Unitarias (`NumericInput`, `document`), API y E2E |
+| Usabilidad — estética de la interfaz   | Una tarjeta por tipo con stock; ilustraciones por tipo; login dividido con imagen difuminada; panel con carrusel e indicadores animados.     | E2E y capturas                                    |
+| Usabilidad — operabilidad              | "Ver factura" desde cartera lleva al detalle del alquiler y resalta la factura con sus pagos; indicadores del panel clicables.               | E2E `stage6.spec.ts`                              |
+| Usabilidad — accesibilidad             | Carrusel con pausa, teclado, roles ARIA y respeto de "reducir movimiento"; modo oscuro con contraste ajustado; tamaño de letra configurable. | E2E y revisión                                    |
+| Seguridad — integridad                 | Subida de imágenes validada por firma (JPG/PNG/WEBP), máx. 5 MB, nombres aleatorios, sin recorrido de rutas; solo ADMIN modifica.            | Unitarias, API (SVG falso → 400), manual (404)    |
+| Portabilidad — adaptabilidad           | Tema, color y tamaño de letra configurables sin tocar código; `UPLOADS_DIR` configurable.                                                    | API y E2E                                         |
+| Eficiencia — utilización de recursos   | Las fotos se reducen en el navegador (máx. 1280 px, WEBP) antes de subirlas; carga diferida de la página de apariencia.                      | Revisión                                          |
+
+**Regresión:** 150/150 pruebas (68 + 29 unitarias, 32 de API, 21 de interfaz). Lint, formato y build sin errores.
+
+**Riesgos y pendientes de esta etapa:**
+
+- Las imágenes se guardan en disco (`UPLOADS_DIR`). En producción esa carpeta debe estar en un volumen persistente con copia de seguridad, o migrarse a un almacenamiento de objetos.
+- Los clientes existentes con documentos sin el formato nuevo (por ejemplo, de pruebas antiguas) deben corregirse al editarlos; la API rechaza guardar un documento inválido.
+- El pasaporte (con letras) no está admitido como tipo de documento; si el negocio lo necesita, hay que agregarlo como excepción.

@@ -2,7 +2,7 @@
 
 **Fecha de creación:** 9 de noviembre de 2026  
 **Última actualización:** 17 de noviembre de 2026  
-**Estado:** Etapas 1 a 5 cerradas; Etapa 6 pendiente (ver `05-evaluacion-calidad-iso25010.md`)  
+**Estado:** Etapas 1 a 5 cerradas; Etapa 6 en curso: usabilidad, personalización e imágenes implementadas (ver `evidencias/etapa-6/`)  
 **Objetivo:** Ordenar las mejoras y correcciones en etapas verificables, con pruebas y criterio de salida al final de cada una.
 
 > **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 quedó cerrada con SRS, Gherkin, matriz de trazabilidad, entorno de pruebas, linter, Git y evidencias en `docs/qa/evidencias/etapa-1/`. La Etapa 2 fue aprobada y la Etapa 3 se cerró el 2026-11-15; sus evidencias están en `docs/qa/evidencias/etapa-2/` y `docs/qa/evidencias/etapa-3/`.

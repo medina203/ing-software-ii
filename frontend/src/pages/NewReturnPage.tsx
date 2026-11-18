@@ -291,7 +291,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Cliente
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -305,7 +305,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Fecha de devolución
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -317,7 +317,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Devolución pactada
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -362,7 +362,7 @@ export function NewReturnPage() {
                           {index + 1}
                         </span>
                         <div>
-                          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          <p className="font-mono text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                             {detail.implemento.codigoSerie}
                           </p>
                           <p className="mt-0.5 text-sm font-semibold text-slate-800">
@@ -451,7 +451,7 @@ export function NewReturnPage() {
             <div className="bg-ink-900 px-5 py-5 text-white">
               <div className="flex items-center gap-2 text-brand-300">
                 <RotateCcw className="h-4 w-4" />
-                <p className="text-[11px] font-bold uppercase tracking-wider">
+                <p className="text-[0.6875rem] font-bold uppercase tracking-wider">
                   Resumen de devolución
                 </p>
               </div>
@@ -515,7 +515,7 @@ export function NewReturnPage() {
               >
                 Confirmar devolución
               </Button>
-              <p className="text-center text-[10px] leading-4 text-slate-400">
+              <p className="text-center text-[0.625rem] leading-4 text-slate-400">
                 El alquiler pasará a Finalizado y los estados del inventario se
                 actualizarán en una sola transacción.
               </p>

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { SettingsProvider } from './lib/settings';
 import { ToastProvider } from './components/Toast';
 import './index.css';
 
@@ -18,9 +19,11 @@ createRoot(rootElement).render(
     <ErrorBoundary fullPage>
       <ToastProvider>
         <BrowserRouter>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <SettingsProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </SettingsProvider>
         </BrowserRouter>
       </ToastProvider>
     </ErrorBoundary>

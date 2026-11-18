@@ -1,0 +1,215 @@
+/*
+ * Tema configurable por el ADMIN (Ajustes → Apariencia).
+ * - data-color en <html> elige la paleta principal (brand-*).
+ * - La clase .dark invierte la escala slate y oscurece las superficies.
+ * - data-font ajusta el tamaño base; todo el texto usa rem.
+ */
+
+:root {
+  --brand-50: 255 251 235;
+  --brand-100: 254 243 199;
+  --brand-200: 253 230 138;
+  --brand-300: 252 211 77;
+  --brand-400: 251 191 36;
+  --brand-500: 245 158 11;
+  --brand-600: 217 119 6;
+  --brand-700: 180 83 9;
+  --brand-800: 146 64 14;
+  --brand-900: 120 53 15;
+  --brand-950: 69 26 3;
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-900: 15 23 42;
+  --slate-950: 2 6 23;
+  --surface: 255 255 255;
+  --font-base: 16px;
+  color-scheme: light;
+}
+
+html[data-color='azul'] {
+  --brand-50: 239 246 255;
+  --brand-100: 219 234 254;
+  --brand-200: 191 219 254;
+  --brand-300: 147 197 253;
+  --brand-400: 96 165 250;
+  --brand-500: 59 130 246;
+  --brand-600: 37 99 235;
+  --brand-700: 29 78 216;
+  --brand-800: 30 64 175;
+  --brand-900: 30 58 138;
+  --brand-950: 23 37 84;
+}
+
+html[data-color='verde'] {
+  --brand-50: 236 253 245;
+  --brand-100: 209 250 229;
+  --brand-200: 167 243 208;
+  --brand-300: 110 231 183;
+  --brand-400: 52 211 153;
+  --brand-500: 16 185 129;
+  --brand-600: 5 150 105;
+  --brand-700: 4 120 87;
+  --brand-800: 6 95 70;
+  --brand-900: 6 78 59;
+  --brand-950: 2 44 34;
+}
+
+html[data-color='rojo'] {
+  --brand-50: 255 241 242;
+  --brand-100: 255 228 230;
+  --brand-200: 254 205 211;
+  --brand-300: 253 164 175;
+  --brand-400: 251 113 133;
+  --brand-500: 244 63 94;
+  --brand-600: 225 29 72;
+  --brand-700: 190 18 60;
+  --brand-800: 159 18 57;
+  --brand-900: 136 19 55;
+  --brand-950: 76 5 25;
+}
+
+html[data-color='violeta'] {
+  --brand-50: 245 243 255;
+  --brand-100: 237 233 254;
+  --brand-200: 221 214 254;
+  --brand-300: 196 181 253;
+  --brand-400: 167 139 250;
+  --brand-500: 139 92 246;
+  --brand-600: 124 58 237;
+  --brand-700: 109 40 217;
+  --brand-800: 91 33 182;
+  --brand-900: 76 29 149;
+  --brand-950: 46 16 101;
+}
+
+html[data-font='pequena'] {
+  --font-base: 14px;
+}
+
+html[data-font='grande'] {
+  --font-base: 18px;
+}
+
+html {
+  font-size: var(--font-base);
+}
+
+html.dark {
+  --slate-50: 11 17 29;
+  --slate-100: 30 41 59;
+  --slate-200: 45 58 78;
+  --slate-300: 67 82 104;
+  --slate-400: 100 116 139;
+  --slate-500: 148 163 184;
+  --slate-600: 176 189 205;
+  --slate-700: 203 213 225;
+  --slate-800: 226 232 240;
+  --slate-900: 241 245 249;
+  --slate-950: 248 250 252;
+  --surface: 20 29 44;
+  color-scheme: dark;
+}
+
+/* Superficies blancas en modo oscuro. */
+html.dark .bg-white,
+html.dark .hover\:bg-white:hover {
+  background-color: rgb(var(--surface));
+}
+
+html.dark .bg-white\/90 {
+  background-color: rgb(var(--surface) / 0.9);
+}
+
+/* La barra lateral y el login ya son oscuros: conservan la escala original. */
+.theme-fixed {
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-900: 15 23 42;
+  --slate-950: 2 6 23;
+}
+
+/* Fondos y textos de color claros en modo oscuro: fondos translúcidos y
+   textos más claros para mantener el contraste (WCAG AA). */
+html.dark :is(.bg-emerald-50, .bg-emerald-100) {
+  background-color: rgb(16 185 129 / 0.14);
+}
+html.dark :is(.border-emerald-200, .border-emerald-100) {
+  border-color: rgb(16 185 129 / 0.35);
+}
+html.dark :is(.text-emerald-600, .text-emerald-700) {
+  color: rgb(52 211 153);
+}
+html.dark :is(.text-emerald-800, .text-emerald-900) {
+  color: rgb(110 231 183);
+}
+html.dark :is(.bg-amber-50, .bg-amber-100) {
+  background-color: rgb(245 158 11 / 0.14);
+}
+html.dark :is(.border-amber-200, .border-amber-100) {
+  border-color: rgb(245 158 11 / 0.35);
+}
+html.dark :is(.text-amber-600, .text-amber-700) {
+  color: rgb(251 191 36);
+}
+html.dark :is(.text-amber-800, .text-amber-900) {
+  color: rgb(252 211 77);
+}
+html.dark :is(.bg-rose-50, .bg-rose-100) {
+  background-color: rgb(244 63 94 / 0.14);
+}
+html.dark :is(.border-rose-200, .border-rose-100) {
+  border-color: rgb(244 63 94 / 0.35);
+}
+html.dark :is(.text-rose-600, .text-rose-700) {
+  color: rgb(251 113 133);
+}
+html.dark :is(.text-rose-800, .text-rose-900) {
+  color: rgb(253 164 175);
+}
+html.dark :is(.bg-blue-50, .bg-blue-100) {
+  background-color: rgb(59 130 246 / 0.14);
+}
+html.dark :is(.border-blue-200, .border-blue-100) {
+  border-color: rgb(59 130 246 / 0.35);
+}
+html.dark :is(.text-blue-600, .text-blue-700) {
+  color: rgb(96 165 250);
+}
+html.dark :is(.text-blue-800, .text-blue-900) {
+  color: rgb(147 197 253);
+}
+html.dark :is(.bg-sky-50, .bg-sky-100) {
+  background-color: rgb(14 165 233 / 0.14);
+}
+html.dark :is(.border-sky-200, .border-sky-100) {
+  border-color: rgb(14 165 233 / 0.35);
+}
+html.dark :is(.text-sky-600, .text-sky-700) {
+  color: rgb(56 189 248);
+}
+html.dark :is(.text-sky-800, .text-sky-900) {
+  color: rgb(125 211 252);
+}
+html.dark :is(.bg-brand-50, .bg-brand-100) {
+  background-color: rgb(var(--brand-500) / 0.14);
+}
+html.dark .bg-brand-50\/40 {
+  background-color: rgb(var(--brand-500) / 0.08);
+}
+html.dark :is(.text-brand-600, .text-brand-700) {
+  color: rgb(var(--brand-400));
+}

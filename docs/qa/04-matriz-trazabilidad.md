@@ -43,20 +43,20 @@
 
 ## 3. Trazabilidad de requisitos no funcionales
 
-| Requisito  | Descripción                   | Implementación / referencia                                                                          | Caso(s) de prueba                     | Etapa | Estado                               |
-| ---------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------- | :---: | :----------------------------------- |
-| **RNF-01** | Seguridad de autenticación    | `auth/login-attempts.service.ts`, `auth.service.ts`                                                  | `CP-SEC-01`, `CP-SEC-02`, `CP-SEC-04` |   5   | Pasa: unitaria + API                 |
-| **RNF-02** | Control de acceso             | `backend/src/common/guards/*`                                                                        | `CP-SEC-03`                           |   5   | Planificado                          |
-| **RNF-03** | Integridad transaccional      | `backend/src/rentals/rentals.service.ts`, `returns.service.ts`, `backend/src/items/items.service.ts` | `CP-RENT-06`                          |   3   | Pasa: API de rollback                |
-| **RNF-04** | Rendimiento y escalabilidad   | `backend/src/items/items.service.ts`, frontend                                                       | `CP-PAG-03`, `CP-REN-01`              | 2 y 6 | Parcial: inventario paginado         |
-| **RNF-05** | Usabilidad                    | `frontend/src/pages/*`                                                                               | `CP-USA-01`                           |   6   | Parcial: búsqueda y contraseña       |
-| **RNF-06** | Portabilidad e instalación    | `.env.example`, README                                                                               | `CP-INS-01`                           |   1   | Pasa: `check:env`                    |
-| **RNF-07** | Facilidad de prueba           | `package.json`, configuración de test                                                                | `CP-TEST-01`                          |   1   | Pasa: harness y smoke tests          |
-| **RNF-08** | Disponibilidad y recuperación | `app.controller.ts` (`SELECT 1`), `components/ErrorBoundary.tsx`                                     | `CP-REC-01`, `CP-REC-03`              |   5   | Pasa: unitaria + API + manual        |
-| **RNF-09** | Compatibilidad                | `frontend/src/*`                                                                                     | `CP-COM-01`                           |   6   | Planificado                          |
-| **RNF-10** | Trazabilidad                  | `docs/qa/04-matriz-trazabilidad.md`                                                                  | `CP-DOC-01`                           | 1 y 6 | Parcial: matriz al cierre de Etapa 3 |
-| **RNF-11** | Accesibilidad                 | `frontend/src/components/ui/*`                                                                       | `CP-USA-02`                           |   6   | Planificado                          |
-| **RNF-12** | Gestión de secretos           | `.env.example`, `.gitignore`                                                                         | `CP-INS-02`                           |   1   | Implementado                         |
+| Requisito  | Descripción                   | Implementación / referencia                                                                          | Caso(s) de prueba                     | Etapa | Estado                                                    |
+| ---------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------- | :---: | :-------------------------------------------------------- |
+| **RNF-01** | Seguridad de autenticación    | `auth/login-attempts.service.ts`, `auth.service.ts`                                                  | `CP-SEC-01`, `CP-SEC-02`, `CP-SEC-04` |   5   | Pasa: unitaria + API                                      |
+| **RNF-02** | Control de acceso             | `backend/src/common/guards/*`                                                                        | `CP-SEC-03`                           |   5   | Planificado                                               |
+| **RNF-03** | Integridad transaccional      | `backend/src/rentals/rentals.service.ts`, `returns.service.ts`, `backend/src/items/items.service.ts` | `CP-RENT-06`                          |   3   | Pasa: API de rollback                                     |
+| **RNF-04** | Rendimiento y escalabilidad   | `backend/src/items/items.service.ts`, frontend                                                       | `CP-PAG-03`, `CP-REN-01`              | 2 y 6 | Parcial: inventario paginado                              |
+| **RNF-05** | Usabilidad                    | `frontend/src/pages/*`                                                                               | `CP-USA-01`                           |   6   | Parcial: validación numérica, tema y carrusel (`CP-UX-*`) |
+| **RNF-06** | Portabilidad e instalación    | `.env.example`, README                                                                               | `CP-INS-01`                           |   1   | Pasa: `check:env`                                         |
+| **RNF-07** | Facilidad de prueba           | `package.json`, configuración de test                                                                | `CP-TEST-01`                          |   1   | Pasa: harness y smoke tests                               |
+| **RNF-08** | Disponibilidad y recuperación | `app.controller.ts` (`SELECT 1`), `components/ErrorBoundary.tsx`                                     | `CP-REC-01`, `CP-REC-03`              |   5   | Pasa: unitaria + API + manual                             |
+| **RNF-09** | Compatibilidad                | `frontend/src/*`                                                                                     | `CP-COM-01`                           |   6   | Planificado                                               |
+| **RNF-10** | Trazabilidad                  | `docs/qa/04-matriz-trazabilidad.md`                                                                  | `CP-DOC-01`                           | 1 y 6 | Parcial: matriz al cierre de Etapa 3                      |
+| **RNF-11** | Accesibilidad                 | `frontend/src/components/ui/*`                                                                       | `CP-USA-02`                           |   6   | Planificado                                               |
+| **RNF-12** | Gestión de secretos           | `.env.example`, `.gitignore`                                                                         | `CP-INS-02`                           |   1   | Implementado                                              |
 
 ## 4. Trazabilidad de hallazgos de auditoría
 
@@ -73,56 +73,61 @@
 
 ## 5. Casos de prueba planificados
 
-| ID           | Requisito     | Nivel / tipo               | Descripción breve                                                         | Etapa |
-| ------------ | ------------- | -------------------------- | ------------------------------------------------------------------------- | :---: |
-| `CP-AUTH-01` | RF-01         | E2E / sistema              | Login de ADMIN y acceso al resumen operativo.                             |   1   |
-| `CP-AUTH-02` | RF-01         | API / integración          | Login con credenciales inválidas devuelve error.                          |   2   |
-| `CP-AUTH-03` | RF-02         | API / seguridad            | EMPLEADO recibe `403` en ruta de ADMIN.                                   |   5   |
-| `CP-AUTH-04` | RF-04         | E2E / sistema              | Cambio de contraseña desde la UI.                                         |   2   |
-| `CP-USER-01` | RF-03         | API / integración          | CRUD de usuarios y protección del último ADMIN.                           |   2   |
-| `CP-CLI-01`  | RF-05         | API / integración          | CRUD de clientes y bloqueo de eliminación con alquileres.                 |   2   |
-| `CP-CLI-02`  | RF-06         | E2E / sistema              | Búsqueda de cliente por cédula en nuevo alquiler.                         |   2   |
-| `CP-CLI-03`  | RF-06         | E2E / sistema              | Búsqueda de cliente por nombre en nuevo alquiler.                         |   2   |
-| `CP-INV-01`  | RF-07         | API / integración          | CRUD de categorías y bloqueo de eliminación con implementos.              |   3   |
-| `CP-INV-02`  | RF-08         | API / integración          | Prefijo único, formato válido y bloqueo de cambio con implementos.        |   3   |
-| `CP-INV-03`  | RF-09         | API / integración          | CRUD de implementos y bloqueo de eliminación con historial.               |   2   |
-| `CP-INV-04`  | RF-10         | Unitario / integración     | Serial automático, consecutivo y rechazo de serial manual.                |   3   |
-| `CP-INV-05`  | RF-10         | Integración / concurrencia | Seis creaciones simultáneas generan seriales únicos.                      |   3   |
-| `CP-INV-06`  | RF-09         | Unitario / API / E2E       | Alta de N unidades y acción "Agregar unidades" con seriales consecutivos. |   3   |
-| `CP-INV-07`  | RF-09         | Unitario / API / E2E       | Una tarjeta por tipo con stock por estado; seriales en "Ver unidades".    | 4 y 5 |
-| `CP-RENT-01` | RF-11 / RF-12 | API / integración          | Alquiler exitoso y bloqueo de implemento.                                 | 1 y 3 |
-| `CP-RENT-02` | RF-11         | API / integración          | Alquiler de implemento no disponible devuelve `409`.                      |   3   |
-| `CP-RENT-03` | RF-12         | E2E / sistema              | Registro de alquiler desde la UI.                                         |   2   |
-| `CP-RENT-04` | RF-13         | E2E / sistema              | Alquiler de 5 unidades del mismo tipo.                                    |   3   |
-| `CP-RENT-05` | RF-13         | API / integración          | Solicitud de 5 unidades con solo 3 disponibles es rechazada.              |   3   |
-| `CP-RENT-06` | RNF-03        | Integración / concurrencia | Fallo a mitad de transacción no deja estados parciales.                   |   3   |
-| `CP-RET-01`  | RF-14         | API / integración          | Devolución completa y actualización de estados.                           |   4   |
-| `CP-BILL-01` | RF-15         | E2E / sistema              | Devolución con factura pendiente muestra alerta y permite continuar.      |   4   |
-| `CP-BILL-02` | RF-16         | E2E / seguridad            | EMPLEADO requiere autorización de ADMIN.                                  |   4   |
-| `CP-BILL-03` | RF-16         | E2E / sistema              | ADMIN autoriza con motivo y queda auditoría.                              |   4   |
-| `CP-BILL-04` | RF-17         | API / integración          | Registro de pago actualiza saldo pendiente.                               |   4   |
-| `CP-BILL-05` | RF-21         | API / integración          | Auditoría de excepción con usuario, fecha y motivo.                       |   4   |
-| `CP-BILL-06` | RF-17 / RF-14 | Unitario / API             | Devolución tardía recalcula total y saldo con los días reales.            |   4   |
-| `CP-REP-01`  | RF-18         | API / integración          | Dashboard y reportes solo para ADMIN.                                     |   6   |
-| `CP-REP-02`  | RF-19         | API / integración          | Ingresos diarios y mensuales con datos conocidos.                         |   6   |
-| `CP-PAG-01`  | RF-20         | E2E / sistema              | Inventario con más de 200 registros navega por páginas.                   |   2   |
-| `CP-PAG-02`  | RF-20         | API / integración          | Filtros de inventario en servidor.                                        |   2   |
-| `CP-PAG-03`  | RNF-04        | Rendimiento / volumen      | Listado paginado responde en menos de 2 s.                                |   6   |
-| `CP-SEC-01`  | RNF-01        | API / seguridad            | Sexto intento fallido de login devuelve `429`.                            |   5   |
-| `CP-SEC-02`  | RNF-01        | API / seguridad            | Contraseña incorrecta no crea sesión.                                     |   5   |
-| `CP-SEC-03`  | RNF-02        | API / seguridad            | Rutas protegidas sin token devuelven `401`.                               |   5   |
-| `CP-REC-01`  | RNF-08        | Recuperación               | PostgreSQL caído hace que `/health` devuelva `503`.                       |   5   |
-| `CP-SEC-04`  | RNF-01        | API / seguridad            | Fuerza bruta de credenciales de ADMIN en autorización devuelve `429`.     |   5   |
-| `CP-REC-03`  | RNF-08        | Unitario / UI              | Un error de render muestra el ErrorBoundary en lugar de pantalla blanca.  |   5   |
-| `CP-TZ-01`   | RF-12 / RF-17 | Unitario                   | Fecha "hoy" y días facturados en `America/Bogota`, no en UTC.             |   5   |
-| `CP-REC-02`  | H-06          | Integración                | `GET` de alquileres no modifica la base de datos.                         |   5   |
-| `CP-INS-01`  | RNF-06        | Instalación                | Instalación limpia con `.env.example`.                                    |   1   |
-| `CP-INS-02`  | RNF-12        | Revisión                   | `.env` no se versiona y `.env.example` sí.                                |   1   |
-| `CP-TEST-01` | RNF-07        | Revisión                   | `npm test` y `npm run test:e2e` existen y ejecutan.                       |   1   |
-| `CP-USA-01`  | RNF-05        | Usabilidad                 | Búsqueda de clientes con teclado y resultados claros.                     |   6   |
-| `CP-USA-02`  | RNF-11        | Accesibilidad              | Etiquetas, foco visible y contraste.                                      |   6   |
-| `CP-COM-01`  | RNF-09        | Compatibilidad             | Chrome, Edge y Firefox en escritorio y móvil.                             |   6   |
-| `CP-DOC-01`  | RNF-10        | Revisión                   | Todos los requisitos tienen caso y evidencia.                             | 1 y 6 |
+| ID           | Requisito     | Nivel / tipo               | Descripción breve                                                          | Etapa |
+| ------------ | ------------- | -------------------------- | -------------------------------------------------------------------------- | :---: |
+| `CP-AUTH-01` | RF-01         | E2E / sistema              | Login de ADMIN y acceso al resumen operativo.                              |   1   |
+| `CP-AUTH-02` | RF-01         | API / integración          | Login con credenciales inválidas devuelve error.                           |   2   |
+| `CP-AUTH-03` | RF-02         | API / seguridad            | EMPLEADO recibe `403` en ruta de ADMIN.                                    |   5   |
+| `CP-AUTH-04` | RF-04         | E2E / sistema              | Cambio de contraseña desde la UI.                                          |   2   |
+| `CP-USER-01` | RF-03         | API / integración          | CRUD de usuarios y protección del último ADMIN.                            |   2   |
+| `CP-CLI-01`  | RF-05         | API / integración          | CRUD de clientes y bloqueo de eliminación con alquileres.                  |   2   |
+| `CP-CLI-02`  | RF-06         | E2E / sistema              | Búsqueda de cliente por cédula en nuevo alquiler.                          |   2   |
+| `CP-CLI-03`  | RF-06         | E2E / sistema              | Búsqueda de cliente por nombre en nuevo alquiler.                          |   2   |
+| `CP-INV-01`  | RF-07         | API / integración          | CRUD de categorías y bloqueo de eliminación con implementos.               |   3   |
+| `CP-INV-02`  | RF-08         | API / integración          | Prefijo único, formato válido y bloqueo de cambio con implementos.         |   3   |
+| `CP-INV-03`  | RF-09         | API / integración          | CRUD de implementos y bloqueo de eliminación con historial.                |   2   |
+| `CP-INV-04`  | RF-10         | Unitario / integración     | Serial automático, consecutivo y rechazo de serial manual.                 |   3   |
+| `CP-INV-05`  | RF-10         | Integración / concurrencia | Seis creaciones simultáneas generan seriales únicos.                       |   3   |
+| `CP-INV-06`  | RF-09         | Unitario / API / E2E       | Alta de N unidades y acción "Agregar unidades" con seriales consecutivos.  |   3   |
+| `CP-INV-07`  | RF-09         | Unitario / API / E2E       | Una tarjeta por tipo con stock por estado; seriales en "Ver unidades".     | 4 y 5 |
+| `CP-UX-01`   | RNF-05        | Unitario / API / E2E       | Identificación y teléfono solo numéricos con límite de dígitos.            |   6   |
+| `CP-UX-02`   | RF-17         | E2E / sistema              | "Ver factura" desde cartera abre el detalle con la factura resaltada.      |   6   |
+| `CP-UX-03`   | RNF-05/RNF-11 | E2E / sistema              | Apariencia: modo oscuro, color y tamaño de letra persistentes.             |   6   |
+| `CP-UX-04`   | RNF-05        | E2E / sistema              | Carrusel del panel con 4 artículos navegable y con pausa.                  |   6   |
+| `CP-IMG-01`  | RF-09/RNF-01  | Unitario / API / E2E       | Imagen por tipo: subida, herencia, reemplazo y rechazo de archivos falsos. |   6   |
+| `CP-RENT-01` | RF-11 / RF-12 | API / integración          | Alquiler exitoso y bloqueo de implemento.                                  | 1 y 3 |
+| `CP-RENT-02` | RF-11         | API / integración          | Alquiler de implemento no disponible devuelve `409`.                       |   3   |
+| `CP-RENT-03` | RF-12         | E2E / sistema              | Registro de alquiler desde la UI.                                          |   2   |
+| `CP-RENT-04` | RF-13         | E2E / sistema              | Alquiler de 5 unidades del mismo tipo.                                     |   3   |
+| `CP-RENT-05` | RF-13         | API / integración          | Solicitud de 5 unidades con solo 3 disponibles es rechazada.               |   3   |
+| `CP-RENT-06` | RNF-03        | Integración / concurrencia | Fallo a mitad de transacción no deja estados parciales.                    |   3   |
+| `CP-RET-01`  | RF-14         | API / integración          | Devolución completa y actualización de estados.                            |   4   |
+| `CP-BILL-01` | RF-15         | E2E / sistema              | Devolución con factura pendiente muestra alerta y permite continuar.       |   4   |
+| `CP-BILL-02` | RF-16         | E2E / seguridad            | EMPLEADO requiere autorización de ADMIN.                                   |   4   |
+| `CP-BILL-03` | RF-16         | E2E / sistema              | ADMIN autoriza con motivo y queda auditoría.                               |   4   |
+| `CP-BILL-04` | RF-17         | API / integración          | Registro de pago actualiza saldo pendiente.                                |   4   |
+| `CP-BILL-05` | RF-21         | API / integración          | Auditoría de excepción con usuario, fecha y motivo.                        |   4   |
+| `CP-BILL-06` | RF-17 / RF-14 | Unitario / API             | Devolución tardía recalcula total y saldo con los días reales.             |   4   |
+| `CP-REP-01`  | RF-18         | API / integración          | Dashboard y reportes solo para ADMIN.                                      |   6   |
+| `CP-REP-02`  | RF-19         | API / integración          | Ingresos diarios y mensuales con datos conocidos.                          |   6   |
+| `CP-PAG-01`  | RF-20         | E2E / sistema              | Inventario con más de 200 registros navega por páginas.                    |   2   |
+| `CP-PAG-02`  | RF-20         | API / integración          | Filtros de inventario en servidor.                                         |   2   |
+| `CP-PAG-03`  | RNF-04        | Rendimiento / volumen      | Listado paginado responde en menos de 2 s.                                 |   6   |
+| `CP-SEC-01`  | RNF-01        | API / seguridad            | Sexto intento fallido de login devuelve `429`.                             |   5   |
+| `CP-SEC-02`  | RNF-01        | API / seguridad            | Contraseña incorrecta no crea sesión.                                      |   5   |
+| `CP-SEC-03`  | RNF-02        | API / seguridad            | Rutas protegidas sin token devuelven `401`.                                |   5   |
+| `CP-REC-01`  | RNF-08        | Recuperación               | PostgreSQL caído hace que `/health` devuelva `503`.                        |   5   |
+| `CP-SEC-04`  | RNF-01        | API / seguridad            | Fuerza bruta de credenciales de ADMIN en autorización devuelve `429`.      |   5   |
+| `CP-REC-03`  | RNF-08        | Unitario / UI              | Un error de render muestra el ErrorBoundary en lugar de pantalla blanca.   |   5   |
+| `CP-TZ-01`   | RF-12 / RF-17 | Unitario                   | Fecha "hoy" y días facturados en `America/Bogota`, no en UTC.              |   5   |
+| `CP-REC-02`  | H-06          | Integración                | `GET` de alquileres no modifica la base de datos.                          |   5   |
+| `CP-INS-01`  | RNF-06        | Instalación                | Instalación limpia con `.env.example`.                                     |   1   |
+| `CP-INS-02`  | RNF-12        | Revisión                   | `.env` no se versiona y `.env.example` sí.                                 |   1   |
+| `CP-TEST-01` | RNF-07        | Revisión                   | `npm test` y `npm run test:e2e` existen y ejecutan.                        |   1   |
+| `CP-USA-01`  | RNF-05        | Usabilidad                 | Búsqueda de clientes con teclado y resultados claros.                      |   6   |
+| `CP-USA-02`  | RNF-11        | Accesibilidad              | Etiquetas, foco visible y contraste.                                       |   6   |
+| `CP-COM-01`  | RNF-09        | Compatibilidad             | Chrome, Edge y Firefox en escritorio y móvil.                              |   6   |
+| `CP-DOC-01`  | RNF-10        | Revisión                   | Todos los requisitos tienen caso y evidencia.                              | 1 y 6 |
 
 ## 6. Estado de la línea base
 
@@ -130,20 +135,21 @@
 | ---------------------- | ------------------------------------------------------------------------------------ |
 | SRS y Gherkin          | RF-15, RF-16, RF-17 y RF-21 implementados; RNF-01 y RNF-08 implementados.            |
 | Matriz de trazabilidad | Actualizada con facturación, cartera, seguridad y recuperación.                      |
-| Pruebas backend        | 11 suites unitarias con 63 pruebas aprobadas; 5 suites API con 25 pruebas aprobadas. |
-| Pruebas frontend       | 6 archivos con 18 pruebas aprobadas.                                                 |
-| Pruebas E2E            | 16 pruebas Playwright aprobadas (smoke, Etapas 2 a 4 e inventario agrupado).         |
+| Pruebas backend        | 13 suites unitarias con 68 pruebas aprobadas; 6 suites API con 32 pruebas aprobadas. |
+| Pruebas frontend       | 9 archivos con 29 pruebas aprobadas.                                                 |
+| Pruebas E2E            | 21 pruebas Playwright aprobadas (smoke, Etapas 2 a 4 y 6, inventario agrupado).      |
 | `.env.example`         | Verificados; backend agrega `APP_TIMEZONE`, sincronización y bloqueo de login.       |
 | Evidencias             | `docs/qa/evidencias/etapa-4-5/`.                                                     |
 | Linter y formato       | ESLint y Prettier sin errores.                                                       |
 
 ## 7. Control de cambios
 
-| Versión | Fecha      | Cambio                                                                                    |
-| ------- | ---------- | ----------------------------------------------------------------------------------------- |
-| 1.0     | 2026-11-09 | Creación inicial de la matriz.                                                            |
-| 1.1     | 2026-11-09 | Cierre de Etapa 2: búsqueda de clientes, cambio de contraseña y paginación de inventario. |
-| 1.2     | 2026-11-15 | Cierre de Etapa 3: prefijo único, serial automático, concurrencia y selector de cantidad. |
-| 1.3     | 2026-11-15 | Alta por cantidad en inventario y acción "Agregar unidades"; conteos actualizados.        |
-| 1.4     | 2026-11-17 | Evaluación ISO/IEC 25010: Etapa 4 corregida y Etapa 5 implementada; nuevos casos `CP-*`.  |
-| 1.5     | 2026-11-17 | Inventario agrupado por tipo con stock (`CP-INV-07`); conteos actualizados.               |
+| Versión | Fecha      | Cambio                                                                                               |
+| ------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| 1.0     | 2026-11-09 | Creación inicial de la matriz.                                                                       |
+| 1.1     | 2026-11-09 | Cierre de Etapa 2: búsqueda de clientes, cambio de contraseña y paginación de inventario.            |
+| 1.2     | 2026-11-15 | Cierre de Etapa 3: prefijo único, serial automático, concurrencia y selector de cantidad.            |
+| 1.3     | 2026-11-15 | Alta por cantidad en inventario y acción "Agregar unidades"; conteos actualizados.                   |
+| 1.4     | 2026-11-17 | Evaluación ISO/IEC 25010: Etapa 4 corregida y Etapa 5 implementada; nuevos casos `CP-*`.             |
+| 1.5     | 2026-11-17 | Inventario agrupado por tipo con stock (`CP-INV-07`); conteos actualizados.                          |
+| 1.6     | 2026-11-17 | Etapa 6: imágenes, validación numérica, ver factura, apariencia y carrusel (`CP-UX-*`, `CP-IMG-01`). |

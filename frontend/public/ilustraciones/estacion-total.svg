@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Estación total">
+  <title>Estación total</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g stroke="#0b0d11" stroke-width="3" stroke-linejoin="round">
+    <path d="M200 170l-60 86M200 170l60 86M200 170v86" stroke="#8a93a3" stroke-width="7"/>
+    <rect x="160" y="150" width="80" height="22" rx="4" fill="#1c2029"/>
+    <path d="M168 150V90h64v60z" fill="#f5b301"/>
+    <rect x="174" y="64" width="52" height="32" rx="10" fill="#1c2029"/>
+    <circle cx="200" cy="80" r="11" fill="#cfd5df"/>
+    <rect x="182" y="108" width="36" height="28" rx="4" fill="#1c2029"/>
+  </g>
+</svg>

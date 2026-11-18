@@ -2,6 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import { EstadoImplemento, Prisma } from '@prisma/client';
 import type { PrismaService } from '../prisma/prisma.service';
 import { ItemsService } from './items.service';
+import type { UploadsService } from '../uploads/uploads.service';
 
 /** Inventario agrupado por tipo: una tarjeta por implemento con su stock. */
 describe('ItemsService — inventario agrupado por tipo', () => {
@@ -23,7 +24,11 @@ describe('ItemsService — inventario agrupado por tipo', () => {
       callback(tx),
     ),
   } as unknown as PrismaService;
-  const service = new ItemsService(prisma);
+  const uploads = {
+    saveImage: jest.fn(async () => '/uploads/items/nueva.webp'),
+    remove: jest.fn(),
+  };
+  const service = new ItemsService(prisma, uploads as unknown as UploadsService);
 
   const andamio = { categoriaId: 3, nombre: 'Andamio certificado 2 m' };
 
@@ -58,7 +63,8 @@ describe('ItemsService — inventario agrupado por tipo', () => {
         },
       ])
       // La última unidad no tiene descripción: se usa la más reciente no vacía.
-      .mockResolvedValueOnce([{ ...andamio, descripcion: 'Módulo con plataforma' }]);
+      .mockResolvedValueOnce([{ ...andamio, descripcion: 'Módulo con plataforma' }])
+      .mockResolvedValueOnce([{ ...andamio, imagenUrl: '/uploads/items/andamio.webp' }]);
     implemento.count.mockResolvedValue(10);
 
     const result = await service.findGroups({ page: 1, pageSize: 9 });
@@ -70,6 +76,7 @@ describe('ItemsService — inventario agrupado por tipo', () => {
         ...andamio,
         categoria: { id: 3, nombre: 'Andamios y acceso', prefijo: 'AND' },
         descripcion: 'Módulo con plataforma',
+        imagenUrl: '/uploads/items/andamio.webp',
         precioMin: '28000',
         precioMax: '28000',
         total: 10,
@@ -158,5 +165,48 @@ describe('ItemsService — inventario agrupado por tipo', () => {
       /2 de 10 unidades tienen historial/,
     );
     expect(implemento.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('las unidades nuevas heredan la imagen del tipo', async () => {
+    categoria.findUnique.mockResolvedValue({ id: 3, prefijo: 'AND' });
+    categoria.update.mockResolvedValue({ ultimoConsecutivo: 12 });
+    implemento.findFirst.mockResolvedValue({
+      nombre: 'Andamio certificado 2 m',
+      imagenUrl: '/uploads/items/andamio.webp',
+    });
+    (implemento as unknown as { findUnique: jest.Mock }).findUnique = jest
+      .fn()
+      .mockResolvedValue(null);
+    implemento.create.mockImplementation(async ({ data }) => ({ id: 2, ...data }));
+
+    await service.createBatch({
+      nombre: 'Andamio certificado 2 m',
+      categoriaId: 3,
+      precioAlquilerDiario: 28000,
+      cantidad: 1,
+    });
+
+    expect(implemento.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ imagenUrl: '/uploads/items/andamio.webp' }),
+      }),
+    );
+  });
+
+  it('reemplazar la imagen borra el archivo anterior si ya nadie lo usa', async () => {
+    implemento.findFirst.mockResolvedValueOnce(andamio);
+    implemento.findMany
+      .mockResolvedValueOnce([{ imagenUrl: '/uploads/items/vieja.webp' }])
+      .mockResolvedValue([]);
+    implemento.groupBy.mockResolvedValue([]);
+    implemento.count.mockResolvedValue(0);
+
+    await service.setGroupImage(andamio, {} as Express.Multer.File);
+
+    expect(implemento.updateMany).toHaveBeenCalledWith({
+      where: andamio,
+      data: { imagenUrl: '/uploads/items/nueva.webp' },
+    });
+    expect(uploads.remove).toHaveBeenCalledWith('/uploads/items/vieja.webp');
   });
 });

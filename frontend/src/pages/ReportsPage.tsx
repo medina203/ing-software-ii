@@ -272,7 +272,7 @@ export function ReportsPage() {
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                       {month.nombre}
                     </p>
-                    <span className="text-[10px] font-semibold text-slate-400">
+                    <span className="text-[0.625rem] font-semibold text-slate-400">
                       {month.alquileres} alq.
                     </span>
                   </div>
@@ -336,7 +336,7 @@ export function ReportsPage() {
                 <span className="text-3xl font-bold text-slate-900">
                   {inventory.total}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                   Implementos
                 </span>
               </div>
@@ -425,7 +425,7 @@ export function ReportsPage() {
                     <p className="text-lg font-bold text-slate-900">
                       {entry.totalAlquileres}
                     </p>
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                    <p className="text-[0.625rem] uppercase tracking-wide text-slate-400">
                       alquileres
                     </p>
                   </div>
@@ -440,7 +440,7 @@ export function ReportsPage() {
         title="Implementos actualmente en alquiler"
         description="Clientes responsables y fechas de devolución pactadas"
         action={
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[0.6875rem] font-semibold text-blue-700">
             {activeRentals.length} en curso
           </span>
         }
@@ -491,7 +491,7 @@ export function ReportsPage() {
                         <div className="max-w-sm space-y-0.5">
                           {rental.detalles.map((detail) => (
                             <p key={detail.id} className="text-xs text-slate-600">
-                              <span className="font-mono text-[10px] font-semibold text-slate-500">
+                              <span className="font-mono text-[0.625rem] font-semibold text-slate-500">
                                 {detail.implemento.codigoSerie}
                               </span>{' '}
                               {detail.implemento.nombre}

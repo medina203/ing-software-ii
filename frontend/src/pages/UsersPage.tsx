@@ -316,7 +316,7 @@ export function UsersPage() {
                             <p className="font-semibold text-slate-800">
                               {user.nombre}{' '}
                               {isSelf && (
-                                <span className="ml-1 text-[10px] font-semibold text-brand-600">
+                                <span className="ml-1 text-[0.625rem] font-semibold text-brand-600">
                                   (tú)
                                 </span>
                               )}

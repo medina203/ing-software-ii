@@ -14,6 +14,9 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { AnimatedNumber } from '../components/AnimatedNumber';
+import { Carousel } from '../components/Carousel';
+import { DEFAULT_CAROUSEL, useSettings } from '../lib/settings';
 import { Button, IconButton } from '../components/ui/Button';
 import {
   EmptyState,
@@ -71,6 +74,7 @@ function getGreeting(): string {
 }
 
 export function DashboardPage() {
+  const { settings } = useSettings();
   const { usuario } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -136,43 +140,28 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6 page-enter">
-      <section className="relative overflow-hidden rounded-3xl bg-ink-900 px-6 py-7 text-white shadow-xl sm:px-8 sm:py-9">
-        <div
-          className="absolute inset-0 opacity-70"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 88% 15%, rgba(245,158,11,.24), transparent 30%), radial-gradient(circle at 58% 100%, rgba(59,130,246,.1), transparent 32%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage:
-              'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
-          }}
-        />
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+      <div className="grid gap-4 lg:grid-cols-5">
+        <section className="theme-fixed relative flex flex-col justify-between overflow-hidden rounded-3xl bg-ink-900 p-6 text-white shadow-xl sm:p-7 lg:col-span-2">
+          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
+          <div className="absolute -bottom-10 right-6 h-24 w-24 -skew-x-12 bg-brand-500/80" />
+          <div className="relative">
             <p className="text-xs font-semibold capitalize text-brand-300">
               {formatDateLong(new Date())}
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-bold tracking-tight">
               {getGreeting()}, {firstName}.
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-              Este es el estado de la operación. Hay{' '}
+            <p className="mt-2 text-sm leading-6 text-slate-400">
               <span className="font-semibold text-white">
                 {resumen.alquileresEnCurso} alquileres en curso
               </span>{' '}
-              y{' '}
+              ·{' '}
               <span className="font-semibold text-brand-300">
-                {resumen.disponibles} implementos disponibles
+                {resumen.disponibles} disponibles
               </span>
-              .
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="relative mt-6 flex flex-wrap items-center gap-2">
             <Button
               variant="primary"
               icon={<Plus className="h-4 w-4" />}
@@ -186,53 +175,52 @@ export function DashboardPage() {
               icon={<Boxes className="h-4 w-4" />}
               onClick={() => navigate('/inventario')}
             >
-              Ver inventario
+              Inventario
             </Button>
+            <IconButton
+              icon={RefreshCw}
+              label="Actualizar indicadores"
+              onClick={() => void loadDashboard()}
+              className="border border-white/15 !text-slate-200 hover:!bg-white/10 hover:!text-white"
+            />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">
-            Indicadores de hoy
-          </h2>
-          <p className="text-sm text-slate-500">
-            Corte operativo actualizado al cargar el panel.
-          </p>
+        <div className="lg:col-span-3">
+          <Carousel
+            articles={settings.carrusel.length > 0 ? settings.carrusel : DEFAULT_CAROUSEL}
+          />
         </div>
-        <IconButton
-          icon={RefreshCw}
-          label="Actualizar indicadores"
-          onClick={() => void loadDashboard()}
-          variant="secondary"
-        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard
           label="Total implementos"
-          value={resumen.totalImplementos}
+          value={<AnimatedNumber value={resumen.totalImplementos} />}
+          onClick={() => navigate('/inventario')}
           hint={`${resumen.mantenimiento} en mantenimiento`}
           icon={Boxes}
         />
         <MetricCard
           label="Disponibles"
-          value={resumen.disponibles}
+          value={<AnimatedNumber value={resumen.disponibles} />}
+          onClick={() => navigate('/inventario')}
           hint="Listos para alquilar"
           icon={CheckCircle2}
           tone="emerald"
         />
         <MetricCard
           label="Alquileres en curso"
-          value={resumen.alquileresEnCurso}
+          value={<AnimatedNumber value={resumen.alquileresEnCurso} />}
+          onClick={() => navigate('/alquileres')}
           hint={`${resumen.alquilados} implementos fuera`}
           icon={ClipboardList}
           tone="blue"
         />
         <MetricCard
           label="Alquileres vencidos"
-          value={resumen.alquileresVencidos}
+          value={<AnimatedNumber value={resumen.alquileresVencidos} />}
+          onClick={() => navigate('/devoluciones')}
           hint={
             resumen.alquileresVencidos > 0 ? 'Requieren seguimiento' : 'Sin pendientes'
           }
@@ -241,7 +229,8 @@ export function DashboardPage() {
         />
         <MetricCard
           label="Clientes"
-          value={resumen.clientesRegistrados}
+          value={<AnimatedNumber value={resumen.clientesRegistrados} />}
+          onClick={() => navigate('/clientes')}
           hint={`${resumen.devolucionesEsteMes} devoluciones este mes`}
           icon={Users}
           tone="amber"
@@ -253,7 +242,7 @@ export function DashboardPage() {
         description="Últimos 14 días · tarifa diaria de los alquileres"
         action={
           <div className="text-right">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wide text-slate-400">
               Total del período
             </p>
             <p className="text-lg font-bold text-slate-900">
@@ -283,7 +272,7 @@ export function DashboardPage() {
                         style={{ height: `${height}px` }}
                       />
                     </div>
-                    <span className="whitespace-nowrap text-[10px] text-slate-400">
+                    <span className="whitespace-nowrap text-[0.625rem] text-slate-400">
                       {point.fecha.slice(8, 10)}/{point.fecha.slice(5, 7)}
                     </span>
                   </div>
@@ -389,7 +378,7 @@ export function DashboardPage() {
                     <p className="text-sm font-bold text-slate-800">
                       {entry.totalAlquileres}
                     </p>
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                    <p className="text-[0.625rem] uppercase tracking-wide text-slate-400">
                       alquileres
                     </p>
                   </div>

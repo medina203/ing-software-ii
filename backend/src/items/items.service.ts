@@ -12,6 +12,7 @@ import {
   isValidSerialPrefix,
 } from '../common/utils/serial';
 import { PrismaService } from '../prisma/prisma.service';
+import { UploadsService } from '../uploads/uploads.service';
 import { CreateItemBatchDto } from './dto/create-item-batch.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemGroupKeyDto, UpdateItemGroupDto } from './dto/item-group.dto';
@@ -31,6 +32,7 @@ export interface ItemGroupSummary {
   nombre: string;
   categoria: { id: number; nombre: string; prefijo: string };
   descripcion: string | null;
+  imagenUrl: string | null;
   precioMin: string;
   precioMax: string;
   total: number;
@@ -48,7 +50,10 @@ function groupKeyId(key: GroupKey): string {
 
 @Injectable()
 export class ItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   private buildWhere(query: ListItemsQueryDto): Prisma.ImplementoWhereInput {
     const term = normalizeSearchTerm(query.search);
@@ -137,7 +142,7 @@ export class ItemsService {
       OR: keys.map((key) => ({ categoriaId: key.categoriaId, nombre: key.nombre })),
     };
 
-    const [byState, prices, samples, descriptions] = await Promise.all([
+    const [byState, prices, samples, descriptions, images] = await Promise.all([
       this.prisma.implemento.groupBy({
         by: ['categoriaId', 'nombre', 'estado'],
         where,
@@ -170,6 +175,12 @@ export class ItemsService {
         orderBy: [{ categoriaId: 'asc' }, { nombre: 'asc' }, { id: 'desc' }],
         select: { categoriaId: true, nombre: true, descripcion: true },
       }),
+      this.prisma.implemento.findMany({
+        where: { AND: [where, { imagenUrl: { not: null } }] },
+        distinct: ['categoriaId', 'nombre'],
+        orderBy: [{ categoriaId: 'asc' }, { nombre: 'asc' }, { id: 'desc' }],
+        select: { categoriaId: true, nombre: true, imagenUrl: true },
+      }),
     ]);
 
     const counts = new Map<string, Record<EstadoImplemento, number>>();
@@ -186,6 +197,7 @@ export class ItemsService {
     }
     const priceMap = new Map(prices.map((row) => [groupKeyId(row), row]));
     const sampleMap = new Map(samples.map((row) => [groupKeyId(row), row]));
+    const imageMap = new Map(images.map((row) => [groupKeyId(row), row.imagenUrl]));
     const descriptionMap = new Map(
       descriptions.map((row) => [groupKeyId(row), row.descripcion]),
     );
@@ -205,6 +217,7 @@ export class ItemsService {
         nombre: key.nombre,
         categoria: sample?.categoria ?? { id: key.categoriaId, nombre: '', prefijo: '' },
         descripcion: descriptionMap.get(id) ?? null,
+        imagenUrl: imageMap.get(id) ?? null,
         precioMin: price?._min.precioAlquilerDiario?.toString() ?? '0',
         precioMax: price?._max.precioAlquilerDiario?.toString() ?? '0',
         total: c.DISPONIBLE + c.ALQUILADO + c.MANTENIMIENTO + c.FUERA_DE_SERVICIO,
@@ -285,6 +298,45 @@ export class ItemsService {
     });
   }
 
+  /** Asigna o reemplaza la imagen de todas las unidades de un tipo. */
+  async setGroupImage(dto: ItemGroupKeyDto, file: Express.Multer.File | undefined) {
+    const key = await this.resolveGroupKey(dto);
+    const where = { categoriaId: key.categoriaId, nombre: key.nombre };
+    const previous = await this.prisma.implemento.findMany({
+      where: { ...where, imagenUrl: { not: null } },
+      distinct: ['imagenUrl'],
+      select: { imagenUrl: true },
+    });
+    const url = await this.uploads.saveImage(file, 'items');
+    await this.prisma.implemento.updateMany({ where, data: { imagenUrl: url } });
+    await this.removeIfUnused(previous.map((row) => row.imagenUrl));
+    const [summary] = await this.summarizeGroups([key]);
+    return summary;
+  }
+
+  /** Quita la imagen subida; la interfaz vuelve a la ilustración por defecto. */
+  async clearGroupImage(dto: ItemGroupKeyDto) {
+    const key = await this.resolveGroupKey(dto);
+    const where = { categoriaId: key.categoriaId, nombre: key.nombre };
+    const previous = await this.prisma.implemento.findMany({
+      where: { ...where, imagenUrl: { not: null } },
+      distinct: ['imagenUrl'],
+      select: { imagenUrl: true },
+    });
+    await this.prisma.implemento.updateMany({ where, data: { imagenUrl: null } });
+    await this.removeIfUnused(previous.map((row) => row.imagenUrl));
+    const [summary] = await this.summarizeGroups([key]);
+    return summary;
+  }
+
+  private async removeIfUnused(urls: Array<string | null>): Promise<void> {
+    for (const url of urls) {
+      if (!url) continue;
+      const stillUsed = await this.prisma.implemento.count({ where: { imagenUrl: url } });
+      if (stillUsed === 0) await this.uploads.remove(url);
+    }
+  }
+
   private async resolveGroupKey(dto: ItemGroupKeyDto): Promise<GroupKey> {
     const nombre = normalizeSearchTerm(dto.nombre) ?? '';
     const existing = await this.prisma.implemento.findFirst({
@@ -354,9 +406,12 @@ export class ItemsService {
             categoriaId: categoria.id,
             nombre: { equals: nombreNormalizado, mode: 'insensitive' },
           },
-          select: { nombre: true },
+          select: { nombre: true, imagenUrl: true },
+          orderBy: { id: 'desc' },
         });
         const nombre = existente?.nombre ?? nombreNormalizado;
+        // Las unidades nuevas heredan la imagen del tipo.
+        const imagenUrl = existente?.imagenUrl ?? null;
 
         const items: ItemWithCategory[] = [];
 
@@ -371,6 +426,7 @@ export class ItemsService {
             data: {
               codigoSerie,
               nombre,
+              imagenUrl,
               categoriaId: categoria.id,
               descripcion: dto.descripcion?.trim() || null,
               precioAlquilerDiario: dto.precioAlquilerDiario,

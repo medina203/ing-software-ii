@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CircleDollarSign,
+  Eye,
   ReceiptText,
   RefreshCw,
   ShieldCheck,
@@ -231,10 +232,13 @@ export function InvoicesPage() {
                     return (
                       <tr key={invoice.id} className="hover:bg-slate-50/60">
                         <td className="table-td">
-                          <p className="font-mono text-xs font-bold text-slate-800">
+                          <Link
+                            to={`/alquileres/${invoice.alquilerId}#factura`}
+                            className="font-mono text-xs font-bold text-slate-800 hover:text-brand-700 hover:underline"
+                          >
                             {invoice.codigoFactura}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-slate-400">
+                          </Link>
+                          <p className="mt-0.5 text-[0.6875rem] text-slate-400">
                             Emitida {formatDate(invoice.fechaEmision)}
                           </p>
                         </td>
@@ -268,7 +272,7 @@ export function InvoicesPage() {
                             {formatDate(invoice.fechaVencimiento)}
                           </p>
                           {invoice.estado !== 'PAGADA' && (
-                            <p className="mt-0.5 text-[11px] text-slate-400">
+                            <p className="mt-0.5 text-[0.6875rem] text-slate-400">
                               {overdue > 0
                                 ? `${overdue} día(s) de atraso`
                                 : remaining === 0
@@ -289,7 +293,7 @@ export function InvoicesPage() {
                             {formatMoney(invoice.saldo)}
                           </p>
                           {invoice.pagos && invoice.pagos.length > 0 && (
-                            <p className="mt-0.5 text-[11px] text-slate-400">
+                            <p className="mt-0.5 text-[0.6875rem] text-slate-400">
                               {invoice.pagos.length}{' '}
                               {invoice.pagos.length === 1 ? 'pago' : 'pagos'}
                             </p>
@@ -299,20 +303,30 @@ export function InvoicesPage() {
                           <InvoiceStatusBadge status={invoice.estado} />
                         </td>
                         <td className="table-td text-right">
-                          {saldo > 0 && invoice.estado !== 'PAGADA' ? (
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              icon={<CircleDollarSign className="h-4 w-4" />}
-                              onClick={() => openPayment(invoice)}
+                          <div className="flex items-center justify-end gap-2">
+                            <Link
+                              to={`/alquileres/${invoice.alquilerId}#factura`}
+                              aria-label={`Ver factura ${invoice.codigoFactura}`}
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                             >
-                              Registrar pago
-                            </Button>
-                          ) : (
-                            <span className="text-xs font-medium text-emerald-700">
-                              Sin saldo pendiente
-                            </span>
-                          )}
+                              <Eye className="h-3.5 w-3.5" />
+                              Ver factura
+                            </Link>
+                            {saldo > 0 && invoice.estado !== 'PAGADA' ? (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                icon={<CircleDollarSign className="h-4 w-4" />}
+                                onClick={() => openPayment(invoice)}
+                              >
+                                Registrar pago
+                              </Button>
+                            ) : (
+                              <span className="text-xs font-medium text-emerald-700">
+                                Sin saldo
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

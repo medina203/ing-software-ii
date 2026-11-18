@@ -43,3 +43,6 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# Imágenes subidas por los usuarios
+backend/uploads/

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Arnés de seguridad">
+  <title>Arnés de seguridad</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M160 50l40 70 40-70" stroke="#f5b301" stroke-width="16"/>
+    <path d="M150 120h100M146 170h108" stroke="#f5b301" stroke-width="16"/>
+    <path d="M160 120l-12 110M240 120l12 110M200 120v50" stroke="#f5b301" stroke-width="14"/>
+    <path d="M148 230c20 14 84 14 104 0" stroke="#1c2029" stroke-width="10"/>
+  </g>
+  <g stroke="#0b0d11" stroke-width="3">
+    <circle cx="200" cy="120" r="14" fill="#cfd5df"/>
+    <rect x="186" y="160" width="28" height="22" rx="4" fill="#8a93a3"/>
+  </g>
+</svg>

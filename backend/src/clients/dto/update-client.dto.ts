@@ -1,10 +1,24 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { DOCUMENTO_REGEX, TELEFONO_REGEX } from './create-client.dto';
 
 export class UpdateClientDto {
   @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
   @IsString()
-  @MinLength(3, { message: 'El documento debe tener al menos 3 caracteres.' })
-  @MaxLength(30)
+  @Matches(DOCUMENTO_REGEX, {
+    message:
+      'El documento debe tener el tipo y solo números: CC, CE o TI con 6 a 10 dígitos, o NIT con 9 dígitos y dígito de verificación.',
+  })
   documentoIdentidad?: string;
 
   @IsOptional()
@@ -20,9 +34,11 @@ export class UpdateClientDto {
   apellidos?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
-  @MinLength(7, { message: 'El teléfono debe tener al menos 7 caracteres.' })
-  @MaxLength(30)
+  @Matches(TELEFONO_REGEX, {
+    message: 'El teléfono debe tener entre 7 y 10 dígitos, solo números.',
+  })
   telefono?: string;
 
   @IsOptional()

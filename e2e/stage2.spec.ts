@@ -10,7 +10,9 @@ const initialPassword = 'Stage2Inicial123*';
 const newPassword = 'Stage2Nueva123*';
 const itemCode = `QA-E2E-${stamp}`;
 const itemName = `Implemento QA ${stamp}`;
-const clientDocument = `QA-CC-${stamp}`;
+// Solo dígitos: el formulario arma el documento como CC-<número>.
+const clientNumber = String(Date.now()).slice(-10);
+const clientDocument = `CC-${clientNumber}`;
 const clientName = `Cliente QA ${stamp}`;
 
 let tempItemId: number;
@@ -154,7 +156,8 @@ test('registra, edita y elimina un cliente de regresión', async ({ page }) => {
   await page.goto('/clientes');
 
   await page.getByRole('button', { name: 'Nuevo cliente' }).click();
-  await page.locator('#documento').fill(clientDocument);
+  await page.locator('#docTipo').selectOption('CC');
+  await page.locator('#documento').fill(clientNumber);
   await page.locator('#telefono').fill('3001234567');
   await page.locator('#nombres').fill(clientName);
   await page.locator('#apellidos').fill('Regresión E2E');

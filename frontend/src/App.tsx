@@ -40,6 +40,9 @@ const RentalDetailPage = lazy(() =>
 const RentalsPage = lazy(() =>
   import('./pages/RentalsPage').then((module) => ({ default: module.RentalsPage })),
 );
+const AppearancePage = lazy(() =>
+  import('./pages/AppearancePage').then((module) => ({ default: module.AppearancePage })),
+);
 const ReportsPage = lazy(() =>
   import('./pages/ReportsPage').then((module) => ({ default: module.ReportsPage })),
 );
@@ -112,6 +115,14 @@ export default function App() {
               element={
                 <AdminOnly>
                   <UsersPage />
+                </AdminOnly>
+              }
+            />
+            <Route
+              path="apariencia"
+              element={
+                <AdminOnly>
+                  <AppearancePage />
                 </AdminOnly>
               }
             />

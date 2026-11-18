@@ -527,7 +527,7 @@ export function NewRentalPage() {
                           <p className="mt-0.5 text-xs text-slate-500">
                             {group.categoriaNombre}
                           </p>
-                          <p className="mt-1 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          <p className="mt-1 font-mono text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                             {group.items.length}{' '}
                             {group.items.length === 1
                               ? 'unidad disponible'
@@ -548,7 +548,7 @@ export function NewRentalPage() {
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
                         <span className="text-sm font-bold text-slate-900">
                           {formatMoney(group.precioUnitario)}
-                          <span className="ml-1 text-[10px] font-medium text-slate-400">
+                          <span className="ml-1 text-[0.625rem] font-medium text-slate-400">
                             / día
                           </span>
                         </span>
@@ -571,6 +571,12 @@ export function NewRentalPage() {
                               updateGroupQuantity(group, Number(event.target.value))
                             }
                             aria-label={`Cantidad de ${group.nombre}`}
+                            inputMode="numeric"
+                            onKeyDown={(event) => {
+                              if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+                                event.preventDefault();
+                              }
+                            }}
                             className="h-8 w-12 rounded-lg border border-slate-200 bg-white text-center text-sm font-bold text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                           />
                           <button
@@ -586,7 +592,7 @@ export function NewRentalPage() {
                       </div>
 
                       {selectedCount > 0 && (
-                        <p className="mt-2 break-words font-mono text-[10px] leading-4 text-slate-500">
+                        <p className="mt-2 break-words font-mono text-[0.625rem] leading-4 text-slate-500">
                           {group.items
                             .filter((item) => selectedIds.has(item.id))
                             .map((item) => item.codigoSerie)
@@ -612,7 +618,7 @@ export function NewRentalPage() {
             <div className="bg-ink-900 px-5 py-5 text-white">
               <div className="flex items-center gap-2 text-brand-300">
                 <ClipboardCheck className="h-4 w-4" />
-                <p className="text-[11px] font-bold uppercase tracking-wider">
+                <p className="text-[0.6875rem] font-bold uppercase tracking-wider">
                   Resumen del alquiler
                 </p>
               </div>
@@ -662,17 +668,17 @@ export function NewRentalPage() {
                           <p className="truncate text-xs font-semibold text-slate-700">
                             {group.nombre}
                           </p>
-                          <p className="text-[10px] text-slate-500">
+                          <p className="text-[0.625rem] text-slate-500">
                             {group.cantidad}{' '}
                             {group.cantidad === 1 ? 'unidad' : 'unidades'} ·{' '}
                             {formatMoney(group.precioUnitario)} c/u
                           </p>
-                          <p className="mt-1 break-words font-mono text-[10px] leading-4 text-slate-400">
+                          <p className="mt-1 break-words font-mono text-[0.625rem] leading-4 text-slate-400">
                             {group.selectedItems
                               .map((item) => item.codigoSerie)
                               .join(', ')}
                           </p>
-                          <p className="mt-1 text-[10px] font-semibold text-slate-600">
+                          <p className="mt-1 text-[0.625rem] font-semibold text-slate-600">
                             Subtotal diario: {formatMoney(group.subtotal)}
                           </p>
                         </div>
@@ -692,13 +698,13 @@ export function NewRentalPage() {
 
               {selectedClient && (
                 <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Cliente
                   </p>
                   <p className="mt-1 text-xs font-semibold text-slate-700">
                     {selectedClient.nombres} {selectedClient.apellidos}
                   </p>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[0.625rem] text-slate-500">
                     {selectedClient.documentoIdentidad}
                   </p>
                 </div>
@@ -741,7 +747,7 @@ export function NewRentalPage() {
               >
                 {needsAuthorization ? 'Autorizar y confirmar' : 'Confirmar alquiler'}
               </Button>
-              <p className="text-center text-[10px] leading-4 text-slate-400">
+              <p className="text-center text-[0.625rem] leading-4 text-slate-400">
                 Al confirmar, las unidades seleccionadas cambiarán a estado{' '}
                 {itemStatusLabels.ALQUILADO.toLowerCase()} de manera automática.
               </p>

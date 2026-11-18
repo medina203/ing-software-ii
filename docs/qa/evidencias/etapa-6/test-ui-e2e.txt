@@ -1,0 +1,30 @@
+# 2026-11-17T22:59:59-05:00
+◇ injected env (0) from backend/.env // tip: ⌘ enable debugging { debug: true }
+
+Running 21 tests using 1 worker
+
+◇ injected env (0) from backend/.env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+  ✓   1 e2e/inventory-groups.spec.ts:44:1 › muestra una sola tarjeta por tipo y gestiona sus unidades (4.0s)
+  ✓   2 e2e/smoke.spec.ts:3:1 › el endpoint de salud responde ok (21ms)
+  ✓   3 e2e/smoke.spec.ts:13:1 › login de administrador y acceso al resumen operativo (1.5s)
+  ✓   4 e2e/stage2.spec.ts:91:1 › busca cliente por cédula y nombre, y crea un alquiler (3.8s)
+  ✓   5 e2e/stage2.spec.ts:143:1 › busca clientes desde el servidor en la página de clientes (2.6s)
+  ✓   6 e2e/stage2.spec.ts:154:1 › registra, edita y elimina un cliente de regresión (7.7s)
+  ✓   7 e2e/stage2.spec.ts:189:1 › pagina el inventario sin truncar el total (3.0s)
+  ✓   8 e2e/stage2.spec.ts:228:1 › cambia la contraseña y permite volver a iniciar sesión (3.9s)
+  ✓   9 e2e/stage3.spec.ts:141:1 › crea categoría con prefijo, implemento y serial automático de solo lectura (10.3s)
+  ✓  10 e2e/stage3.spec.ts:195:1 › alquila 5 andamios y descuenta las 5 unidades correctas (3.2s)
+  ✓  11 e2e/stage3.spec.ts:248:1 › rechaza el alquiler cuando una unidad deja de estar disponible (2.9s)
+  ✓  12 e2e/stage3.spec.ts:297:1 › registra varias unidades en lote y agrega unidades a un implemento existente (10.1s)
+  ✓  13 e2e/stage3.spec.ts:362:1 › muestra la disponibilidad real cuando la cantidad solicitada la supera (2.9s)
+  ✓  14 e2e/stage4.spec.ts:88:1 › primer alquiler sin cartera y factura visible en el detalle (3.2s)
+  ✓  15 e2e/stage4.spec.ts:103:1 › EMPLEADO con cartera pendiente necesita credenciales de ADMIN (4.0s)
+  ✓  16 e2e/stage4.spec.ts:135:1 › la devolución muestra la alerta de cartera y se registra (2.9s)
+  ✓  17 e2e/stage6.spec.ts:85:1 › los campos de identificación y teléfono no aceptan letras y limitan dígitos (3.0s)
+  ✓  18 e2e/stage6.spec.ts:103:1 › desde cartera se abre la factura en el detalle del alquiler (2.9s)
+  ✓  19 e2e/stage6.spec.ts:115:1 › el panel muestra un carrusel navegable con cuatro artículos (1.9s)
+  ✓  20 e2e/stage6.spec.ts:130:1 › el ADMIN activa el modo oscuro y cambia color y tamaño de letra (4.3s)
+  ✓  21 e2e/stage6.spec.ts:160:1 › el ADMIN sube una imagen para un implemento y puede volver a la ilustración (3.6s)
+
+  21 passed (1.4m)
+exit=0

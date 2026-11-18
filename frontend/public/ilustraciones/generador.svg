@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Generador eléctrico">
+  <title>Generador eléctrico</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g stroke="#0b0d11" stroke-width="3" stroke-linejoin="round">
+    <rect x="96" y="90" width="210" height="130" rx="10" fill="none" stroke="#1c2029" stroke-width="10"/>
+    <rect x="112" y="104" width="180" height="104" rx="12" fill="#f5b301"/>
+    <rect x="128" y="120" width="70" height="50" rx="6" fill="#1c2029"/>
+    <circle cx="246" cy="146" r="28" fill="#1c2029"/><circle cx="246" cy="146" r="12" fill="#8a93a3"/>
+    <rect x="128" y="182" width="40" height="12" rx="3" fill="#cfd5df"/>
+    <circle cx="112" cy="232" r="13" fill="#1c2029"/><circle cx="292" cy="232" r="13" fill="#1c2029"/>
+  </g>
+  <path d="M152 128l-12 20h12l-6 16 18-24h-12l8-12z" fill="#f5b301"/>
+</svg>

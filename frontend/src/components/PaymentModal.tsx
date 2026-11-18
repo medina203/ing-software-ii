@@ -3,6 +3,7 @@ import { CircleDollarSign } from 'lucide-react';
 import { useToast } from './Toast';
 import { Button, Field, Select, TextInput } from './ui/Button';
 import { ErrorAlert } from './ui/Feedback';
+import { NumericInput } from './ui/NumericInput';
 import { Modal } from './ui/Modal';
 import api, { getErrorMessage } from '../lib/api';
 import { formatDate, formatMoney, paymentMethodLabels } from '../lib/format';
@@ -121,16 +122,15 @@ export function PaymentModal({ invoice, open, onClose, onPaid }: PaymentModalPro
           required
           hint={`Máximo permitido: ${formatMoney(saldo)}`}
         >
-          <TextInput
+          <NumericInput
             id="payment-amount"
-            type="number"
-            min="0.01"
-            max={saldo}
-            step="0.01"
             value={monto}
-            onChange={(event) => setMonto(event.target.value)}
+            onValueChange={setMonto}
+            maxDigits={10}
+            decimals={2}
             required
             autoFocus
+            placeholder="50000"
           />
         </Field>
 
