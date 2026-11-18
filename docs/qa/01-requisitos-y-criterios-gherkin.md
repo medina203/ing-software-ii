@@ -129,7 +129,7 @@ Quedan fuera de esta versión:
 12. La devolución no se bloquea por factura pendiente: la alerta es informativa y queda registrada.
 13. Un nuevo alquiler con factura pendiente requiere la política de autorización aprobada en la Etapa 1.
 14. Toda excepción de cartera debe registrar usuario, fecha, cliente, factura, saldo y motivo.
-15. Los días facturables son la diferencia de días calendario entre el alquiler y la devolución (mínimo 1). La factura se emite con los días pactados y se liquida con los días reales al registrar la devolución, descontando lo pagado. El reporte de ingresos usa la misma regla.
+15. Los días facturables son la diferencia de días calendario entre el alquiler y la devolución (mínimo 1). La factura se emite con los días pactados y se liquida con los días reales al registrar la devolución, descontando lo pagado. El reporte de ingresos usa la misma regla. Los días posteriores a la fecha pactada se cobran a la misma tarifa diaria y se muestran como retraso; mientras los equipos no se devuelven, el retraso se acumula a diario en la factura.
 
 ---
 

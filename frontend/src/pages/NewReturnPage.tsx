@@ -21,6 +21,7 @@ import {
   LoadingBlock,
   SectionCard,
 } from '../components/ui/Feedback';
+import { InvoiceBreakdown } from '../components/InvoiceBreakdown';
 import api, { getErrorMessage } from '../lib/api';
 import {
   daysOverdue,
@@ -447,6 +448,18 @@ export function NewReturnPage() {
         </div>
 
         <aside className="space-y-4 xl:sticky xl:top-6">
+          {rental.factura?.desglose && (
+            <div className="card p-5" data-testid="return-charge-preview">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
+                Cobro al devolver hoy
+              </p>
+              <InvoiceBreakdown desglose={rental.factura.desglose} className="mt-3" />
+              <p className="mt-2 text-[0.6875rem] leading-4 text-slate-400">
+                Al confirmar, la factura {rental.factura.codigoFactura} queda liquidada
+                con estos días.
+              </p>
+            </div>
+          )}
           <div className="card overflow-hidden">
             <div className="bg-ink-900 px-5 py-5 text-white">
               <div className="flex items-center gap-2 text-brand-300">

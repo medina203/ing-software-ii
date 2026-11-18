@@ -321,7 +321,7 @@ erDiagram
 5. La devolución debe incluir exactamente todos los implementos del alquiler.
 6. Al registrar la devolución, el alquiler pasa a `FINALIZADO` y cada implemento adopta el estado final inspeccionado.
 7. Un alquiler activo con fecha pactada anterior al día actual (en `APP_TIMEZONE`) se presenta como `VENCIDO`. Las consultas no escriben en la base de datos; `StatusSyncService` sincroniza el estado guardado al iniciar y cada 15 minutos.
-8. La factura se emite con los días pactados y se liquida con los días reales al registrar la devolución (mínimo 1 día), descontando los pagos. El reporte de ingresos usa la misma regla.
+8. La factura se emite con los días pactados y se liquida con los días reales al registrar la devolución (mínimo 1 día), descontando los pagos. El reporte de ingresos usa la misma regla. Los días después de la fecha pactada se cobran a la tarifa diaria normal y se muestran por separado (alquiler + retraso = total); mientras los equipos no se devuelven, el retraso se suma a diario.
 9. No se puede eliminar un cliente con alquileres, una categoría con implementos ni un implemento con historial de alquileres.
 10. Debe existir al menos un administrador activo; un administrador no puede desactivar su propia cuenta.
 11. Los códigos de alquiler se generan con el formato `ALQ-YYYYMMDD-00001`.
@@ -608,9 +608,9 @@ Antes de desplegar:
 Validación del 2026-11-17 (evidencia en `docs/qa/evidencias/etapa-4-5/` e informe en `docs/qa/05-evaluacion-calidad-iso25010.md`):
 
 - `npm run build` compila backend y frontend sin errores; el JS inicial pasó de más de 500 kB a 381 kB gracias a la carga diferida de rutas.
-- `npm test`: 68 pruebas unitarias de backend y 29 de frontend aprobadas.
-- `npm run test:e2e --workspace backend`: 32 pruebas de API aprobadas (Etapas 2 a 6).
-- `npm run test:e2e`: 21 pruebas Playwright aprobadas en Chrome (humo y Etapas 2 a 6).
+- `npm test`: 72 pruebas unitarias de backend y 29 de frontend aprobadas.
+- `npm run test:e2e --workspace backend`: 33 pruebas de API aprobadas (Etapas 2 a 6).
+- `npm run test:e2e`: 22 pruebas Playwright aprobadas en Chrome (humo y Etapas 2 a 6).
 - `npm run lint` y `prettier --check` finalizan sin errores.
 - `/api/health` responde `503` con PostgreSQL detenido y `200` al restablecerlo.
 

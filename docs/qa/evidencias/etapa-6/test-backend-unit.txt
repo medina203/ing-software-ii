@@ -1,24 +1,24 @@
-# 2026-11-17T22:59:32-05:00
+# 2026-11-17T23:42:42-05:00
 
 > backend@1.0.0 test:cov
 > jest --coverage
 
 PASS src/uploads/image-files.spec.ts
+PASS src/common/utils/billing.spec.ts
 PASS src/items/items.service.spec.ts
-PASS src/items/items-groups.service.spec.ts
+PASS src/clients/clients.service.spec.ts
 PASS src/app.controller.spec.ts
 PASS src/common/utils/dates.spec.ts
+PASS src/items/items-groups.service.spec.ts
 PASS src/categories/categories.service.spec.ts
-PASS src/auth/login-attempts.service.spec.ts
-PASS src/clients/clients.service.spec.ts
-PASS src/common/utils/billing.spec.ts
 PASS src/common/utils/rental-status.spec.ts
+PASS src/auth/login-attempts.service.spec.ts
 PASS src/common/utils/serial.spec.ts
 PASS src/common/utils/search.spec.ts
 -------------------------------|---------|----------|---------|---------|-------------------------------------------------------------------
 File                           | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                 
 -------------------------------|---------|----------|---------|---------|-------------------------------------------------------------------
-All files                      |   22.47 |     30.8 |   24.29 |   22.83 |                                                                   
+All files                      |   23.02 |    31.69 |   24.39 |   23.45 |                                                                   
  src                           |   18.57 |        0 |      50 |   17.18 |                                                                   
   app.controller.ts            |     100 |      100 |     100 |     100 |                                                                   
   app.module.ts                |       0 |      100 |     100 |       0 | 1-53                                                              
@@ -60,9 +60,9 @@ All files                      |   22.47 |     30.8 |   24.29 |   22.83 |
   roles.guard.ts               |       0 |        0 |       0 |       0 | 1-42                                                              
  src/common/status-sync        |       0 |        0 |       0 |       0 |                                                                   
   status-sync.module.ts        |       0 |      100 |     100 |       0 | 1-8                                                               
-  status-sync.service.ts       |       0 |        0 |       0 |       0 | 1-63                                                              
- src/common/utils              |   81.57 |    82.75 |      70 |   81.98 |                                                                   
-  billing.ts                   |   63.15 |      100 |   41.66 |   63.88 | 110-126,140-149,161-194,203                                       
+  status-sync.service.ts       |       0 |        0 |       0 |       0 | 1-65                                                              
+ src/common/utils              |   76.76 |    71.73 |   66.66 |   77.53 |                                                                   
+  billing.ts                   |    60.6 |    57.89 |      40 |    61.9 | 110-126,140-149,161-194,203,302-314,332-362                       
   dates.ts                     |     100 |      100 |     100 |     100 |                                                                   
   rental-status.ts             |   73.91 |    66.66 |      60 |   73.91 | 12-20,51,68-70,78                                                 
   search.ts                    |     100 |      100 |     100 |     100 |                                                                   
@@ -70,7 +70,7 @@ All files                      |   22.47 |     30.8 |   24.29 |   22.83 |
  src/invoices                  |       0 |        0 |       0 |       0 |                                                                   
   invoices.controller.ts       |       0 |      100 |       0 |       0 | 1-33                                                              
   invoices.module.ts           |       0 |      100 |     100 |       0 | 1-10                                                              
-  invoices.service.ts          |       0 |        0 |       0 |       0 | 1-214                                                             
+  invoices.service.ts          |       0 |        0 |       0 |       0 | 1-217                                                             
  src/invoices/dto              |       0 |      100 |       0 |       0 |                                                                   
   create-payment.dto.ts        |       0 |      100 |       0 |       0 | 1-27                                                              
   list-invoices-query.dto.ts   |       0 |      100 |       0 |       0 | 1-40                                                              
@@ -90,7 +90,7 @@ All files                      |   22.47 |     30.8 |   24.29 |   22.83 |
  src/rentals                   |       0 |        0 |       0 |       0 |                                                                   
   rentals.controller.ts        |       0 |      100 |       0 |       0 | 1-24                                                              
   rentals.module.ts            |       0 |      100 |     100 |       0 | 1-11                                                              
-  rentals.service.ts           |       0 |        0 |       0 |       0 | 1-339                                                             
+  rentals.service.ts           |       0 |        0 |       0 |       0 | 1-341                                                             
  src/rentals/dto               |       0 |      100 |       0 |       0 |                                                                   
   create-rental.dto.ts         |       0 |      100 |       0 |       0 | 1-67                                                              
   list-rentals-query.dto.ts    |       0 |      100 |       0 |       0 | 1-25                                                              
@@ -130,8 +130,8 @@ All files                      |   22.47 |     30.8 |   24.29 |   22.83 |
 -------------------------------|---------|----------|---------|---------|-------------------------------------------------------------------
 
 Test Suites: 12 passed, 12 total
-Tests:       68 passed, 68 total
+Tests:       72 passed, 72 total
 Snapshots:   0 total
-Time:        6.543 s
+Time:        6.562 s, estimated 7 s
 Ran all test suites.
 exit=0

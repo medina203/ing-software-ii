@@ -116,6 +116,22 @@ export interface Invoice {
   cliente?: Client;
   alquiler?: InvoiceRentalSummary;
   pagos?: Payment[];
+  /** Desglose a la fecha: alquiler pactado + retraso = total. */
+  desglose?: InvoiceBreakdownData;
+}
+
+export interface InvoiceBreakdownData {
+  tarifaDiaria: string;
+  diasPactados: number;
+  diasAlquiler: number;
+  montoAlquiler: string;
+  diasRetraso: number;
+  montoRetraso: string;
+  total: string;
+  pagado: string;
+  saldo: string;
+  /** El equipo no se ha devuelto y el retraso sigue sumando. */
+  retrasoEnCurso: boolean;
 }
 
 export interface PendingInvoicesResponse {

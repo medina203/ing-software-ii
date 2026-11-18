@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { CircleDollarSign } from 'lucide-react';
+import { InvoiceBreakdown } from './InvoiceBreakdown';
 import { useToast } from './Toast';
 import { Button, Field, Select, TextInput } from './ui/Button';
 import { ErrorAlert } from './ui/Feedback';
@@ -103,14 +104,14 @@ export function PaymentModal({ invoice, open, onClose, onPaid }: PaymentModalPro
         {error && <ErrorAlert message={error} />}
 
         <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-500">Total factura</span>
-            <strong className="text-slate-800">{formatMoney(invoice.total)}</strong>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-500">Saldo pendiente</span>
-            <strong className="text-rose-700">{formatMoney(invoice.saldo)}</strong>
-          </div>
+          {invoice.desglose ? (
+            <InvoiceBreakdown desglose={invoice.desglose} />
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-slate-500">Saldo pendiente</span>
+              <strong className="text-rose-700">{formatMoney(invoice.saldo)}</strong>
+            </div>
+          )}
           <p className="border-t border-slate-200 pt-2 text-xs text-slate-500">
             Vencimiento: {formatDate(invoice.fechaVencimiento)}
           </p>

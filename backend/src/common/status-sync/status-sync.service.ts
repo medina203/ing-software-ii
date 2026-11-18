@@ -4,7 +4,7 @@ import {
   OnApplicationBootstrap,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { markOverdueInvoices } from '../utils/billing';
+import { accrueOverdueInvoices, markOverdueInvoices } from '../utils/billing';
 import { markOverdueRentals } from '../utils/rental-status';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -46,7 +46,9 @@ export class StatusSyncService implements OnApplicationBootstrap, OnModuleDestro
     this.running = true;
     try {
       const alquileres = await markOverdueRentals(this.prisma);
-      const facturas = await markOverdueInvoices(this.prisma);
+      // Primero suma el retraso de los alquileres vencidos sin devolución.
+      const acumuladas = await accrueOverdueInvoices(this.prisma);
+      const facturas = (await markOverdueInvoices(this.prisma)) + acumuladas;
       if (alquileres + facturas > 0) {
         this.logger.log(
           `Estados sincronizados: ${alquileres} alquiler(es) y ${facturas} factura(s) vencidos.`,

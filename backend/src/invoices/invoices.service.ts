@@ -9,7 +9,9 @@ import {
   getPendingInvoices,
   markOverdueInvoices,
   nextInvoiceStatus,
-  withEffectiveInvoiceStatus,
+  accrueOverdueInvoices,
+  breakdownRentalSelect,
+  presentInvoice,
 } from '../common/utils/billing';
 import { invoiceStatusWhere } from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
@@ -23,9 +25,8 @@ const invoiceInclude = {
     select: {
       id: true,
       codigoAlquiler: true,
-      fechaAlquiler: true,
-      fechaPactadaDevolucion: true,
       estado: true,
+      ...breakdownRentalSelect,
     },
   },
   pagos: {
@@ -91,7 +92,7 @@ export class InvoicesService {
     ]);
 
     return {
-      data: rows.map((row) => withEffectiveInvoiceStatus(row)),
+      data: rows.map((row) => presentInvoice(row, row.alquiler)),
       total,
       page,
       pageSize,
@@ -109,7 +110,7 @@ export class InvoicesService {
       throw new NotFoundException('Factura no encontrada.');
     }
 
-    return withEffectiveInvoiceStatus(factura);
+    return presentInvoice(factura, factura.alquiler);
   }
 
   async findPendingByClient(clienteId: number) {
@@ -139,6 +140,8 @@ export class InvoicesService {
   }
 
   async createPayment(facturaId: number, dto: CreatePaymentDto, usuarioId: number) {
+    // El saldo incluye los días de retraso acumulados hasta hoy.
+    await accrueOverdueInvoices(this.prisma, facturaId);
     await markOverdueInvoices(this.prisma);
 
     const monto = new Prisma.Decimal(dto.monto);

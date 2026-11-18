@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
+import { InvoiceBreakdown } from '../components/InvoiceBreakdown';
 import { PaymentModal } from '../components/PaymentModal';
 import { Button, SearchInput, Select } from '../components/ui/Button';
 import { InvoiceStatusBadge } from '../components/ui/Badges';
@@ -281,8 +282,17 @@ export function InvoicesPage() {
                             </p>
                           )}
                         </td>
-                        <td className="table-td text-right font-semibold text-slate-800">
-                          {formatMoney(invoice.total)}
+                        <td className="table-td text-right">
+                          {invoice.desglose ? (
+                            <InvoiceBreakdown
+                              desglose={invoice.desglose}
+                              variant="compact"
+                            />
+                          ) : (
+                            <span className="font-semibold text-slate-800">
+                              {formatMoney(invoice.total)}
+                            </span>
+                          )}
                         </td>
                         <td className="table-td text-right">
                           <p

@@ -90,6 +90,7 @@
 | `CP-INV-05`  | RF-10         | Integración / concurrencia | Seis creaciones simultáneas generan seriales únicos.                       |   3   |
 | `CP-INV-06`  | RF-09         | Unitario / API / E2E       | Alta de N unidades y acción "Agregar unidades" con seriales consecutivos.  |   3   |
 | `CP-INV-07`  | RF-09         | Unitario / API / E2E       | Una tarjeta por tipo con stock por estado; seriales en "Ver unidades".     | 4 y 5 |
+| `CP-BILL-07` | RF-17         | Unitario / API / E2E       | Retraso a tarifa normal, desglosado y acumulado mientras no se devuelve.   |   6   |
 | `CP-UX-01`   | RNF-05        | Unitario / API / E2E       | Identificación y teléfono solo numéricos con límite de dígitos.            |   6   |
 | `CP-UX-02`   | RF-17         | E2E / sistema              | "Ver factura" desde cartera abre el detalle con la factura resaltada.      |   6   |
 | `CP-UX-03`   | RNF-05/RNF-11 | E2E / sistema              | Apariencia: modo oscuro, color y tamaño de letra persistentes.             |   6   |
@@ -135,9 +136,9 @@
 | ---------------------- | ------------------------------------------------------------------------------------ |
 | SRS y Gherkin          | RF-15, RF-16, RF-17 y RF-21 implementados; RNF-01 y RNF-08 implementados.            |
 | Matriz de trazabilidad | Actualizada con facturación, cartera, seguridad y recuperación.                      |
-| Pruebas backend        | 13 suites unitarias con 68 pruebas aprobadas; 6 suites API con 32 pruebas aprobadas. |
+| Pruebas backend        | 13 suites unitarias con 72 pruebas aprobadas; 6 suites API con 33 pruebas aprobadas. |
 | Pruebas frontend       | 9 archivos con 29 pruebas aprobadas.                                                 |
-| Pruebas E2E            | 21 pruebas Playwright aprobadas (smoke, Etapas 2 a 4 y 6, inventario agrupado).      |
+| Pruebas E2E            | 22 pruebas Playwright aprobadas (smoke, Etapas 2 a 4 y 6, inventario agrupado).      |
 | `.env.example`         | Verificados; backend agrega `APP_TIMEZONE`, sincronización y bloqueo de login.       |
 | Evidencias             | `docs/qa/evidencias/etapa-4-5/`.                                                     |
 | Linter y formato       | ESLint y Prettier sin errores.                                                       |

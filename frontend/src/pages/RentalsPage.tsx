@@ -17,6 +17,7 @@ import {
   LoadingBlock,
   PageHeader,
 } from '../components/ui/Feedback';
+import { InvoiceBreakdown } from '../components/InvoiceBreakdown';
 import api, { getErrorMessage } from '../lib/api';
 import { daysOverdue, formatDate, formatMoney, rentalStatusLabels } from '../lib/format';
 import type { PaginatedResponse, Rental } from '../types';
@@ -187,7 +188,7 @@ export function RentalsPage() {
                     <th className="table-th">Fechas</th>
                     <th className="table-th">Registrado por</th>
                     <th className="table-th">Estado</th>
-                    <th className="table-th text-right">Tarifa diaria</th>
+                    <th className="table-th text-right">Facturado</th>
                     <th className="table-th" />
                   </tr>
                 </thead>
@@ -264,8 +265,20 @@ export function RentalsPage() {
                         <td className="table-td">
                           <RentalStatusBadge status={rental.estado} />
                         </td>
-                        <td className="table-td text-right font-semibold text-slate-800">
-                          {formatMoney(dailyTotal)}
+                        <td className="table-td text-right">
+                          {rental.factura?.desglose ? (
+                            <InvoiceBreakdown
+                              desglose={rental.factura.desglose}
+                              variant="compact"
+                            />
+                          ) : (
+                            <span className="font-semibold text-slate-800">
+                              {formatMoney(dailyTotal)}
+                              <span className="block text-[0.6875rem] font-normal text-slate-400">
+                                por día
+                              </span>
+                            </span>
+                          )}
                         </td>
                         <td className="table-td text-right">
                           <Link

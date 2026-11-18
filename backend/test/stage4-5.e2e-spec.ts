@@ -265,6 +265,59 @@ describe('Etapas 4 y 5 — cartera, liquidación y seguridad (e2e)', () => {
     expect(factura.estado).toBe(EstadoFactura.VENCIDA);
   });
 
+  it('el retraso se cobra a la tarifa normal mientras no se devuelve y se muestra desglosado', async () => {
+    const clienteId = await createClient('H');
+    const [item] = await createItems(1, 10000);
+    const rental = await rent(adminToken, clienteId, [item.id]).expect(201);
+
+    // Alquilado hace 6 días y pactado para hace 2: 4 días pactados + 2 de retraso.
+    const sixDaysAgo = new Date(Date.now() - 6 * 86_400_000);
+    const twoDaysAgo = new Date(`${dateOnly(-2)}T12:00:00.000Z`);
+    await prisma.alquiler.update({
+      where: { id: rental.body.id },
+      data: { fechaAlquiler: sixDaysAgo, fechaPactadaDevolucion: twoDaysAgo },
+    });
+    await prisma.factura.update({
+      where: { alquilerId: rental.body.id },
+      data: {
+        fechaEmision: sixDaysAgo,
+        fechaVencimiento: twoDaysAgo,
+        total: 40000,
+        saldo: 40000,
+      },
+    });
+
+    const detail = await request(server())
+      .get(`/api/rentals/${rental.body.id}`)
+      .set(auth(adminToken))
+      .expect(200);
+    expect(detail.body.factura.desglose).toMatchObject({
+      tarifaDiaria: '10000',
+      diasPactados: 4,
+      montoAlquiler: '40000',
+      diasRetraso: 2,
+      montoRetraso: '20000',
+      total: '60000',
+      saldo: '60000',
+      retrasoEnCurso: true,
+    });
+    expect(detail.body.factura.total).toBe('60000');
+
+    // La consulta no escribe: la base conserva el valor hasta una operación o la sincronización.
+    const stored = await prisma.factura.findUniqueOrThrow({
+      where: { alquilerId: rental.body.id },
+    });
+    expect(stored.total.toString()).toBe('40000');
+
+    // El pago acepta el total con retraso y deja la factura en cero.
+    const paid = await request(server())
+      .post(`/api/invoices/${detail.body.factura.id}/payments`)
+      .set(auth(adminToken))
+      .send({ monto: 60000, metodoPago: 'EFECTIVO' })
+      .expect(201);
+    expect(paid.body).toMatchObject({ total: '60000', saldo: '0', estado: 'PAGADA' });
+  });
+
   it('RF-17: los pagos actualizan el saldo y la factura pasa a PAGADA', async () => {
     const clienteId = await createClient('E');
     const [item] = await createItems(1, 5000);

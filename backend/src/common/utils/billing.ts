@@ -205,3 +205,159 @@ export function withEffectiveInvoiceStatus<
     estado: nextInvoiceStatus(factura.saldo, factura.fechaVencimiento),
   };
 }
+
+/** Desglose de la factura de un alquiler: días pactados, retraso, total y saldo. */
+export interface InvoiceBreakdown {
+  tarifaDiaria: string;
+  diasPactados: number;
+  /** Días cobrados como alquiler normal dentro del plazo pactado. */
+  diasAlquiler: number;
+  montoAlquiler: string;
+  /** Días después de la fecha pactada (se cobran a la misma tarifa diaria). */
+  diasRetraso: number;
+  montoRetraso: string;
+  total: string;
+  pagado: string;
+  saldo: string;
+  /** true mientras los equipos no se han devuelto y el retraso sigue sumando. */
+  retrasoEnCurso: boolean;
+}
+
+export interface BreakdownInput {
+  fechaAlquiler: Date;
+  fechaPactadaDevolucion: Date;
+  fechaDevolucion: Date | null;
+  items: InvoiceRentalItem[];
+  totalGuardado: Prisma.Decimal;
+  saldoGuardado: Prisma.Decimal;
+}
+
+/**
+ * Calcula el desglose a la fecha. Si los equipos ya se devolvieron, respeta el
+ * total liquidado; si siguen afuera después de la fecha pactada, el retraso
+ * se acumula día a día a la tarifa normal (sin escribir en la base de datos).
+ */
+export function invoiceBreakdown(
+  input: BreakdownInput,
+  now = new Date(),
+): InvoiceBreakdown {
+  const tarifa = calculateInvoiceTotal(input.items, 1);
+  const diasPactados = rentalDays(input.fechaAlquiler, input.fechaPactadaDevolucion);
+  const devuelto = input.fechaDevolucion !== null;
+  const diasReales = rentalDays(input.fechaAlquiler, input.fechaDevolucion ?? now);
+  const diasCobrados = devuelto ? diasReales : Math.max(diasPactados, diasReales);
+  const diasRetraso = Math.max(0, diasCobrados - diasPactados);
+  const montoRetraso = tarifa.times(diasRetraso);
+
+  const pagado = Prisma.Decimal.max(
+    new Prisma.Decimal(0),
+    input.totalGuardado.minus(input.saldoGuardado),
+  );
+  // Devuelto: el total liquidado es la referencia. Abierto: tarifa × días a la fecha.
+  const total = devuelto ? input.totalGuardado : tarifa.times(diasCobrados);
+  const montoAlquiler = Prisma.Decimal.max(
+    new Prisma.Decimal(0),
+    total.minus(montoRetraso),
+  );
+  const saldo = Prisma.Decimal.max(new Prisma.Decimal(0), total.minus(pagado));
+
+  return {
+    tarifaDiaria: tarifa.toString(),
+    diasPactados,
+    diasAlquiler: diasCobrados - diasRetraso,
+    montoAlquiler: montoAlquiler.toString(),
+    diasRetraso,
+    montoRetraso: montoRetraso.toString(),
+    total: total.toString(),
+    pagado: pagado.toString(),
+    saldo: saldo.toString(),
+    retrasoEnCurso: !devuelto && diasRetraso > 0,
+  };
+}
+
+/** Datos del alquiler que necesita el desglose de su factura. */
+export const breakdownRentalSelect = {
+  fechaAlquiler: true,
+  fechaPactadaDevolucion: true,
+  devolucion: { select: { fechaDevolucion: true } },
+  detalles: { select: { precioUnitario: true } },
+} satisfies Prisma.AlquilerSelect;
+
+type BreakdownRental = Prisma.AlquilerGetPayload<{
+  select: typeof breakdownRentalSelect;
+}>;
+
+/**
+ * Factura lista para mostrar: total, saldo y estado efectivos (incluyen el
+ * retraso acumulado) y su desglose.
+ */
+export function presentInvoice<
+  T extends {
+    estado: EstadoFactura;
+    total: Prisma.Decimal;
+    saldo: Prisma.Decimal;
+    fechaVencimiento: Date;
+  },
+>(factura: T, alquiler: BreakdownRental, now = new Date()) {
+  const desglose = invoiceBreakdown(
+    {
+      fechaAlquiler: alquiler.fechaAlquiler,
+      fechaPactadaDevolucion: alquiler.fechaPactadaDevolucion,
+      fechaDevolucion: alquiler.devolucion?.fechaDevolucion ?? null,
+      items: alquiler.detalles,
+      totalGuardado: factura.total,
+      saldoGuardado: factura.saldo,
+    },
+    now,
+  );
+  const saldo = new Prisma.Decimal(desglose.saldo);
+  return {
+    ...factura,
+    total: new Prisma.Decimal(desglose.total),
+    saldo,
+    estado: nextInvoiceStatus(saldo, factura.fechaVencimiento),
+    desglose,
+  };
+}
+
+/**
+ * Persiste el retraso acumulado de las facturas de alquileres vencidos sin
+ * devolución, para que la cartera, los pagos y la autorización usen el saldo
+ * real. Se ejecuta en el proceso programado y antes de operaciones de escritura.
+ */
+export async function accrueOverdueInvoices(
+  prisma: Prisma.TransactionClient,
+  facturaId?: number,
+): Promise<number> {
+  const rows = await prisma.factura.findMany({
+    where: {
+      ...(facturaId ? { id: facturaId } : {}),
+      alquiler: {
+        devolucion: null,
+        fechaPactadaDevolucion: { lt: startOfBusinessToday() },
+      },
+    },
+    select: {
+      id: true,
+      total: true,
+      saldo: true,
+      fechaVencimiento: true,
+      alquiler: { select: breakdownRentalSelect },
+    },
+  });
+
+  let updated = 0;
+  for (const row of rows) {
+    const presented = presentInvoice(
+      { ...row, estado: EstadoFactura.PENDIENTE },
+      row.alquiler,
+    );
+    if (presented.total.equals(row.total) && presented.saldo.equals(row.saldo)) continue;
+    await prisma.factura.update({
+      where: { id: row.id },
+      data: { total: presented.total, saldo: presented.saldo, estado: presented.estado },
+    });
+    updated += 1;
+  }
+  return updated;
+}

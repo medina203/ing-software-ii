@@ -1,6 +1,7 @@
 import { EstadoFactura, Prisma } from '@prisma/client';
 import {
   calculateInvoiceTotal,
+  invoiceBreakdown,
   nextInvoiceStatus,
   rentalDays,
   settleInvoiceOnReturn,
@@ -106,6 +107,95 @@ describe('reglas de facturación', () => {
       expect(result.total.toFixed(0)).toBe('15000');
       expect(result.saldo.toFixed(0)).toBe('0');
       expect(result.estado).toBe(EstadoFactura.PAGADA);
+    });
+  });
+
+  describe('invoiceBreakdown (alquiler + retraso = total)', () => {
+    // Hoy: 17 nov 2026 (reloj simulado). Tarifa diaria: 10.000 + 5.000.
+    const items = [{ precioUnitario: '10000' }, { precioUnitario: '5000' }];
+    const fechaAlquiler = new Date('2026-11-10T15:00:00Z');
+
+    it('dentro del plazo no hay retraso', () => {
+      const result = invoiceBreakdown({
+        fechaAlquiler,
+        fechaPactadaDevolucion: new Date('2026-11-20T12:00:00Z'),
+        fechaDevolucion: null,
+        items,
+        totalGuardado: D(150000),
+        saldoGuardado: D(150000),
+      });
+
+      expect(result).toMatchObject({
+        tarifaDiaria: '15000',
+        diasPactados: 10,
+        diasAlquiler: 10,
+        montoAlquiler: '150000',
+        diasRetraso: 0,
+        montoRetraso: '0',
+        total: '150000',
+        saldo: '150000',
+        retrasoEnCurso: false,
+      });
+    });
+
+    it('sin devolver y vencido, el retraso suma un día normal por cada día', () => {
+      const result = invoiceBreakdown({
+        fechaAlquiler,
+        fechaPactadaDevolucion: new Date('2026-11-14T12:00:00Z'), // 4 días pactados
+        fechaDevolucion: null,
+        items,
+        totalGuardado: D(60000),
+        saldoGuardado: D(20000), // pagó 40.000
+      });
+
+      expect(result).toMatchObject({
+        diasPactados: 4,
+        montoAlquiler: '60000',
+        diasRetraso: 3, // 15, 16 y 17 de noviembre
+        montoRetraso: '45000',
+        total: '105000',
+        pagado: '40000',
+        saldo: '65000',
+        retrasoEnCurso: true,
+      });
+    });
+
+    it('devuelto tarde, respeta el total liquidado y separa el retraso', () => {
+      const result = invoiceBreakdown({
+        fechaAlquiler,
+        fechaPactadaDevolucion: new Date('2026-11-14T12:00:00Z'),
+        fechaDevolucion: new Date('2026-11-16T20:00:00Z'), // 6 días reales
+        items,
+        totalGuardado: D(90000),
+        saldoGuardado: D(0),
+      });
+
+      expect(result).toMatchObject({
+        diasAlquiler: 4,
+        montoAlquiler: '60000',
+        diasRetraso: 2,
+        montoRetraso: '30000',
+        total: '90000',
+        saldo: '0',
+        retrasoEnCurso: false,
+      });
+    });
+
+    it('devuelto antes de tiempo, no hay retraso', () => {
+      const result = invoiceBreakdown({
+        fechaAlquiler,
+        fechaPactadaDevolucion: new Date('2026-11-20T12:00:00Z'),
+        fechaDevolucion: new Date('2026-11-12T16:00:00Z'),
+        items,
+        totalGuardado: D(30000),
+        saldoGuardado: D(30000),
+      });
+
+      expect(result).toMatchObject({
+        diasAlquiler: 2,
+        montoRetraso: '0',
+        total: '30000',
+      });
     });
   });
 });

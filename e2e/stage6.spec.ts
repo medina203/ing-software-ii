@@ -195,3 +195,19 @@ test('el ADMIN sube una imagen para un implemento y puede volver a la ilustraci�
     '/ilustraciones/mezcladora.svg',
   );
 });
+
+test('la factura de un alquiler vencido muestra alquiler, retraso y total', async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto('/cartera');
+  const row = page.getByRole('row', { name: /FAC-DEMO-0002/ });
+  await expect(row.getByTestId('invoice-breakdown-compact')).toContainText('+ Retraso');
+
+  await page.getByRole('link', { name: 'Ver factura FAC-DEMO-0002' }).click();
+  const breakdown = page.getByTestId('rental-invoice').getByTestId('invoice-breakdown');
+  await expect(breakdown).toContainText(/Alquiler · 7 días/);
+  await expect(breakdown).toContainText(/Retraso · \d+ días?/);
+  await expect(breakdown).toContainText('Total');
+  await expect(breakdown).toContainText('el retraso suma');
+});

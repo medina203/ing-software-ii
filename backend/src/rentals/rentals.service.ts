@@ -12,7 +12,8 @@ import {
   createInvoiceForRental,
   getPendingInvoices,
   markOverdueInvoices,
-  withEffectiveInvoiceStatus,
+  accrueOverdueInvoices,
+  presentInvoice,
   type PendingInvoicesResult,
 } from '../common/utils/billing';
 import { parseDateOnly, startOfBusinessToday, yyyymmdd } from '../common/utils/dates';
@@ -141,7 +142,7 @@ export class RentalsService {
   private present<T extends RentalWithRelations>(alquiler: T): T {
     return {
       ...withEffectiveRentalStatus(alquiler),
-      factura: alquiler.factura ? withEffectiveInvoiceStatus(alquiler.factura) : null,
+      factura: alquiler.factura ? presentInvoice(alquiler.factura, alquiler) : null,
     };
   }
 
@@ -171,6 +172,7 @@ export class RentalsService {
 
     await markOverdueRentals(this.prisma);
     await markOverdueInvoices(this.prisma);
+    await accrueOverdueInvoices(this.prisma);
     const pendingBefore = await getPendingInvoices(this.prisma, dto.clienteId);
     const authorization = await this.resolveCarteraAuthorization(
       dto,
