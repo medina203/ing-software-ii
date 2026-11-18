@@ -27,7 +27,7 @@ El repositorio es un monorepo con dos aplicaciones:
 - Estado vencido calculado al consultar (sin escrituras en `GET`) y sincronizado por un proceso programado cada 15 minutos.
 - Facturación por alquiler, pagos parciales, cartera por cliente, alerta en devoluciones y autorización auditada de ADMIN para clientes con saldo pendiente.
 - Bloqueo temporal tras 5 intentos fallidos de inicio de sesión.
-- Imágenes por implemento: ilustración automática según el tipo o foto propia subida desde el celular o el PC.
+- Imágenes por implemento: foto propia subida desde el celular o el PC; si no hay, la foto de catálogo incluida en `frontend/public/implementos/` (andamio, arnés, compactadora, escalera, esmeriladora, estación total, generador y kits de llaves); si tampoco existe, una ilustración automática según el tipo.
 - Apariencia configurable por el ADMIN: modo oscuro, tamaño de letra, color principal, imagen del login y carrusel del panel.
 - Validación de datos: identificación por tipo y teléfono solo con números y límite de dígitos.
 - Inventario agrupado: una tarjeta por implemento con su stock (disponibles, alquiladas, en mantenimiento y fuera de servicio); los seriales se gestionan en "Ver unidades".
@@ -426,7 +426,7 @@ npm run dev
 | `PATCH`  | `/items/group`                                                | `ADMIN`     | Editar todas las unidades de un tipo      |
 | `DELETE` | `/items/group?categoriaId=&nombre=`                           | `ADMIN`     | Eliminar un tipo (todo o nada)            |
 | `POST`   | `/items/group/image` (multipart: categoriaId, nombre, imagen) | `ADMIN`     | Subir o reemplazar la imagen del tipo     |
-| `DELETE` | `/items/group/image?categoriaId=&nombre=`                     | `ADMIN`     | Volver a la ilustración por defecto       |
+| `DELETE` | `/items/group/image?categoriaId=&nombre=`                     | `ADMIN`     | Volver a la imagen por defecto            |
 | `GET`    | `/settings`                                                   | Público     | Apariencia (tema, color, letra, carrusel) |
 | `PUT`    | `/settings`                                                   | `ADMIN`     | Guardar la apariencia                     |
 | `POST`   | `/settings/login-image` · `/settings/images`                  | `ADMIN`     | Subir imagen del login o de un artículo   |

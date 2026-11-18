@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { assetUrl, itemIllustration } from '../lib/assets';
+import { assetUrl, itemIllustration, itemPhoto } from '../lib/assets';
 import { cn } from '../lib/cn';
 
 interface ItemImageProps {
@@ -10,23 +10,41 @@ interface ItemImageProps {
 }
 
 /**
- * Imagen de un tipo de implemento. Usa la foto subida por el ADMIN o, si no
- * hay (o no carga), la ilustración incluida que corresponde al tipo.
+ * Imagen de un tipo de implemento, en este orden: foto subida por el ADMIN,
+ * foto incluida en el sistema según el nombre e ilustración del tipo. Si una
+ * imagen no carga, pasa a la siguiente.
  */
 export function ItemImage({ nombre, categoria, imagenUrl, className }: ItemImageProps) {
-  const fallback = itemIllustration(nombre, categoria);
-  const [failed, setFailed] = useState<string | null>(null);
+  const [failed, setFailed] = useState<string[]>([]);
   const uploaded = assetUrl(imagenUrl);
-  const src = uploaded && failed !== uploaded ? uploaded : fallback;
+  const photo = itemPhoto(nombre);
+  const illustration = itemIllustration(nombre, categoria);
+
+  const candidates: Array<{ src: string; kind: 'subida' | 'foto' | 'ilustracion' }> = [
+    ...(uploaded ? [{ src: uploaded, kind: 'subida' as const }] : []),
+    ...(photo ? [{ src: photo, kind: 'foto' as const }] : []),
+    { src: illustration, kind: 'ilustracion' },
+  ];
+  const current =
+    candidates.find((candidate) => !failed.includes(candidate.src)) ??
+    candidates[candidates.length - 1];
+
+  // Las fotos de catálogo tienen fondo blanco: se muestran completas, sin recortar.
+  const isCatalogPhoto = current.kind === 'foto';
 
   return (
     <img
-      src={src}
+      src={current.src}
       alt={nombre}
       loading="lazy"
       decoding="async"
-      onError={() => uploaded && setFailed(uploaded)}
-      className={cn('h-full w-full object-cover', className)}
+      data-kind={current.kind}
+      onError={() => setFailed((list) => [...list, current.src])}
+      className={cn(
+        'h-full w-full',
+        isCatalogPhoto ? 'bg-white object-contain p-3' : 'object-cover',
+        className,
+      )}
     />
   );
 }
