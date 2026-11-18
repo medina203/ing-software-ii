@@ -55,12 +55,15 @@ model Usuario {
   rol          Rol      @default(EMPLEADO)
   activo       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  /// Último restablecimiento de contraseña: invalida las sesiones abiertas antes de esa fecha.
+  passwordRestablecidaEn DateTime? @map("password_restablecida_en") @db.Timestamptz(6)
 
   alquileres                Alquiler[]
   devoluciones              Devolucion[]
   pagos                     Pago[]
   autorizacionesSolicitadas AutorizacionCartera[] @relation("AutorizacionSolicitante")
   autorizacionesOtorgadas   AutorizacionCartera[] @relation("AutorizacionAdministrador")
+  tokensRecuperacion        TokenRecuperacion[]
 
   @@index([rol, activo])
   @@map("usuarios")
@@ -273,4 +276,19 @@ model Configuracion {
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@map("configuracion")
+}
+
+/// Enlaces de un solo uso para restablecer la contraseña. Solo se guarda el hash del token.
+model TokenRecuperacion {
+  id        Int       @id @default(autoincrement())
+  usuarioId Int       @map("usuario_id")
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiraEn  DateTime  @map("expira_en") @db.Timestamptz(6)
+  usadoEn   DateTime? @map("usado_en") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("tokens_recuperacion")
 }

@@ -12,6 +12,7 @@ import { SettingsModule } from './settings/settings.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ItemsModule } from './items/items.module';
+import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RentalsModule } from './rentals/rentals.module';
 import { ReportsModule } from './reports/reports.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
       envFilePath: ['.env', '../.env'],
     }),
     PrismaModule,
+    MailModule,
     StatusSyncModule,
     UploadsModule,
     SettingsModule,
