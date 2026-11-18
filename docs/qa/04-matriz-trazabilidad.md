@@ -40,6 +40,7 @@
 | **RF-19** | Ingresos diarios y mensuales                         | `reports.service.ts` (misma regla de días que la factura)                                                                        | `CP-REP-02`                           | 4 y 6 | Parcial: regla unificada; prueba de reporte en 6 |
 | **RF-20** | Paginación y filtros                                 | `frontend/src/pages/InventoryPage.tsx`, `backend/src/items/items.service.ts`                                                     | `CP-PAG-01`, `CP-PAG-02`              | 2 y 5 | Pasa: API + E2E                                  |
 | **RF-21** | Auditoría de excepciones                             | `autorizaciones_cartera`, `rentals.service.ts`                                                                                   | `CP-BILL-05`                          |   4   | Pasa: API + E2E                                  |
+| **RF-22** | Recuperación de contraseña por correo                | `backend/src/auth/password-reset.service.ts`, `frontend/src/pages/ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`               | `CP-AUTH-05`, `CP-AUTH-06`            |   7   | Pasa: unitarias + API + E2E                      |
 
 ## 3. Trazabilidad de requisitos no funcionales
 
@@ -79,6 +80,8 @@
 | `CP-AUTH-02` | RF-01         | API / integración          | Login con credenciales inválidas devuelve error.                           |   2   |
 | `CP-AUTH-03` | RF-02         | API / seguridad            | EMPLEADO recibe `403` en ruta de ADMIN.                                    |   5   |
 | `CP-AUTH-04` | RF-04         | E2E / sistema              | Cambio de contraseña desde la UI.                                          |   2   |
+| `CP-AUTH-05` | RF-22         | API / seguridad            | Enlace de un solo uso, vence a los 30 min, no revela si el correo existe.  |   7   |
+| `CP-AUTH-06` | RF-22         | E2E / sistema              | Pedir enlace, crear contraseña nueva, cerrar sesiones anteriores y entrar. |   7   |
 | `CP-USER-01` | RF-03         | API / integración          | CRUD de usuarios y protección del último ADMIN.                            |   2   |
 | `CP-CLI-01`  | RF-05         | API / integración          | CRUD de clientes y bloqueo de eliminación con alquileres.                  |   2   |
 | `CP-CLI-02`  | RF-06         | E2E / sistema              | Búsqueda de cliente por cédula en nuevo alquiler.                          |   2   |
@@ -154,3 +157,4 @@
 | 1.4     | 2026-11-17 | Evaluación ISO/IEC 25010: Etapa 4 corregida y Etapa 5 implementada; nuevos casos `CP-*`.             |
 | 1.5     | 2026-11-17 | Inventario agrupado por tipo con stock (`CP-INV-07`); conteos actualizados.                          |
 | 1.6     | 2026-11-17 | Etapa 6: imágenes, validación numérica, ver factura, apariencia y carrusel (`CP-UX-*`, `CP-IMG-01`). |
+| 1.7     | 2026-11-18 | Etapa 7: recuperación de contraseña por correo (RF-22) y login sin cuentas de demostración.          |

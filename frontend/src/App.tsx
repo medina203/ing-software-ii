@@ -5,6 +5,12 @@ import { Layout } from './components/Layout';
 import { FullPageLoader } from './components/ui/Feedback';
 import { LoginPage } from './pages/LoginPage';
 // Carga diferida por ruta: reduce el JavaScript inicial (eficiencia de desempeño).
+const ForgotPasswordPage = lazy(() =>
+  import('./pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
+);
+const ResetPasswordPage = lazy(() =>
+  import('./pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+);
 const CategoriesPage = lazy(() =>
   import('./pages/CategoriesPage').then((module) => ({ default: module.CategoriesPage })),
 );
@@ -81,6 +87,8 @@ export default function App() {
     <Suspense fallback={<FullPageLoader />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
+        <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
         <Route element={<RequireAuth />}>
           <Route element={<Layout />}>
             <Route index element={<HomeRedirect />} />

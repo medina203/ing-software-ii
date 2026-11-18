@@ -123,6 +123,57 @@ en el plan; revisa _Usage_ la primera semana para confirmarlo.
 
 ---
 
+## 8. Activar la recuperación de contraseña por correo
+
+En la pantalla de inicio de sesión está el enlace **"¿Olvidaste tu contraseña?"**.
+El usuario escribe su correo y recibe un enlace para crear una contraseña nueva. El enlace
+sirve una sola vez y vence a los 30 minutos. Al usarlo se cierran las sesiones abiertas
+en otros dispositivos.
+
+El plan Hobby de Railway **bloquea el envío de correo por SMTP** (Gmail, Outlook, etc.),
+así que el sistema envía los correos con **Resend**, un servicio con API HTTPS. Su plan
+gratuito permite 3.000 correos al mes (100 al día), de sobra para recuperar contraseñas.
+
+Mientras no se configure, la pantalla de recuperación muestra: _"Pide al administrador
+que te asigne una contraseña nueva"_. El administrador puede hacerlo en **Usuarios**.
+
+### 8.1 Crear la cuenta y la clave
+
+1. Regístrate en <https://resend.com> con el correo del negocio.
+2. En **API Keys → Create API Key**, ponle un nombre (por ejemplo `dm-alquiler`), permiso
+   **Sending access** y créala. Copia la clave (empieza por `re_`); solo se muestra una vez.
+3. En Railway, servicio del sistema → **Variables → New Variable**:
+   `RESEND_API_KEY` = la clave copiada. Pulsa **Deploy**.
+
+### 8.2 Sin dominio propio (para probar)
+
+Sin dominio, Resend envía desde `onboarding@resend.dev` y **solo entrega al correo con
+el que te registraste en Resend**. Sirve para probar y para recuperar la cuenta del
+administrador, pero no para los demás empleados.
+
+### 8.3 Con dominio propio (para todos los usuarios)
+
+1. Compra un dominio (por ejemplo `dmalquiler.com`) en cualquier registrador.
+2. En Resend: **Domains → Add Domain**, escribe el dominio y copia los registros DNS
+   que te muestra (DKIM y SPF) en la configuración DNS de tu registrador.
+3. Pulsa **Verify** en Resend. La verificación puede tardar desde minutos hasta unas horas.
+4. En Railway agrega la variable:
+   `MAIL_FROM` = `DM alquiler <no-responder@dmalquiler.com>` (con tu dominio) y despliega.
+
+Los enlaces del correo usan automáticamente la dirección pública de Railway. Si más
+adelante usas un dominio propio también para el sistema, define `APP_URL` con esa
+dirección (por ejemplo `https://sistema.dmalquiler.com`).
+
+### 8.4 Probarlo
+
+1. Cierra sesión y pulsa **"¿Olvidaste tu contraseña?"**.
+2. Escribe tu correo y revisa la bandeja de entrada (y la carpeta de spam).
+3. Abre el enlace, crea la contraseña nueva e inicia sesión con ella.
+4. Si no llega, revisa en Resend **Emails** (estado del envío) y en Railway **View logs**
+   (líneas de `MailService`).
+
+---
+
 ## Para la presentación: cargar datos de demostración (opcional)
 
 El sistema arranca vacío (solo con tu administrador). Si para la presentación quieres

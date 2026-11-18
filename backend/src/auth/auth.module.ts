@@ -5,6 +5,7 @@ import { assertJwtSecret } from '../common/config/production';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginAttemptsService } from './login-attempts.service';
+import { PasswordResetService } from './password-reset.service';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { LoginAttemptsService } from './login-attempts.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LoginAttemptsService],
-  exports: [AuthService, LoginAttemptsService, JwtModule],
+  providers: [AuthService, LoginAttemptsService, PasswordResetService],
+  exports: [AuthService, LoginAttemptsService, PasswordResetService, JwtModule],
 })
 export class AuthModule {}

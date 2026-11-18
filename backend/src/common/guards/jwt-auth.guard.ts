@@ -11,6 +11,16 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthenticatedUser, JwtPayload } from '../types/authenticated-user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 
+/** True si el token se emitió antes del último restablecimiento de contraseña. */
+export function issuedBeforeReset(
+  issuedAtSeconds: number | undefined,
+  resetAt: Date | null | undefined,
+): boolean {
+  if (!resetAt) return false;
+  if (!issuedAtSeconds) return true;
+  return issuedAtSeconds < Math.floor(resetAt.getTime() / 1000);
+}
+
 type AuthenticatedRequest = Request & { user?: AuthenticatedUser };
 
 @Injectable()
@@ -52,6 +62,7 @@ export class JwtAuthGuard implements CanActivate {
           email: true,
           rol: true,
           activo: true,
+          passwordRestablecidaEn: true,
         },
       });
 
@@ -59,7 +70,14 @@ export class JwtAuthGuard implements CanActivate {
         throw new UnauthorizedException('El usuario no existe o se encuentra inactivo.');
       }
 
-      request.user = usuario;
+      const { passwordRestablecidaEn, ...user } = usuario;
+      if (issuedBeforeReset(payload.iat, passwordRestablecidaEn)) {
+        throw new UnauthorizedException(
+          'La contraseña se restableció. Inicia sesión de nuevo.',
+        );
+      }
+
+      request.user = user;
       return true;
     } catch (error) {
       if (error instanceof UnauthorizedException) {

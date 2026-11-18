@@ -18,6 +18,7 @@ El repositorio es un monorepo con dos aplicaciones:
 - Gestión de clientes con búsqueda en servidor por documento, nombre, teléfono o correo.
 - Combobox de clientes con búsqueda por cédula, nombres o apellidos y navegación por teclado en el registro de alquileres.
 - Cambio de contraseña del usuario autenticado desde la sección “Mi cuenta”.
+- Recuperación de contraseña con “¿Olvidaste tu contraseña?”: enlace por correo de un solo uso que vence a los 30 minutos y cierra las sesiones abiertas.
 - Registro de alquileres con múltiples implementos, validación de disponibilidad y transacción atómica.
 - Devoluciones con inspección individual por implemento y asignación de estado final:
   - `DISPONIBLE`
@@ -393,7 +394,7 @@ npm run dev
 
 - URL base local: `http://localhost:4000/api`
 - Autenticación: `Authorization: Bearer <accessToken>`
-- Todas las rutas requieren token salvo `POST /auth/login` y `GET /health`.
+- Todas las rutas requieren token salvo `POST /auth/login`, las de recuperación de contraseña y `GET /health`.
 - Los listados paginados responden con `{ data, total, page, pageSize, totalPages }`.
 - Los listados simples responden con `{ data, total }`.
 - Los errores usan el formato estándar de NestJS: `{ statusCode, message, error }`.
@@ -404,6 +405,10 @@ npm run dev
 | -------- | ------------------------------------------------------------- | ----------- | ----------------------------------------- |
 | `GET`    | `/health`                                                     | Público     | Estado del servicio                       |
 | `POST`   | `/auth/login`                                                 | Público     | Inicio de sesión                          |
+| `GET`    | `/auth/password-recovery`                                     | Público     | Indica si el correo está activo           |
+| `POST`   | `/auth/forgot-password`                                       | Público     | Envía el enlace de recuperación           |
+| `GET`    | `/auth/reset-password/validate?token=`                        | Público     | Comprueba un enlace                       |
+| `POST`   | `/auth/reset-password`                                        | Público     | Crea la contraseña nueva                  |
 | `GET`    | `/auth/me`                                                    | Autenticado | Perfil del usuario actual                 |
 | `PATCH`  | `/auth/password`                                              | Autenticado | Cambio de contraseña                      |
 | `GET`    | `/users`                                                      | `ADMIN`     | Listar usuarios                           |
@@ -568,14 +573,16 @@ frontend compilado y las fotos subidas, en el mismo dominio (sin CORS). El
 `Dockerfile` de la raíz construye esa imagen y al arrancar aplica las migraciones
 pendientes (`npm run start:deploy`).
 
-| Variable                                      | Producción                                                                        |
-| --------------------------------------------- | --------------------------------------------------------------------------------- |
-| `NODE_ENV`                                    | `production` (ya viene en el `Dockerfile`).                                       |
-| `JWT_SECRET`                                  | Obligatorio, propio y de 32 caracteres o más; con el de ejemplo no arranca.       |
-| `DATABASE_URL`                                | Conexión a PostgreSQL.                                                            |
-| `FRONTEND_DIST`                               | Carpeta del frontend compilado (`/app/frontend/dist` en el `Dockerfile`).         |
-| `UPLOADS_DIR`                                 | Carpeta de fotos subidas; debe estar en un volumen persistente (`/data/uploads`). |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Crean el primer administrador solo si la base de datos no tiene usuarios.         |
+| Variable                                      | Producción                                                                                    |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                    | `production` (ya viene en el `Dockerfile`).                                                   |
+| `JWT_SECRET`                                  | Obligatorio, propio y de 32 caracteres o más; con el de ejemplo no arranca.                   |
+| `DATABASE_URL`                                | Conexión a PostgreSQL.                                                                        |
+| `FRONTEND_DIST`                               | Carpeta del frontend compilado (`/app/frontend/dist` en el `Dockerfile`).                     |
+| `UPLOADS_DIR`                                 | Carpeta de fotos subidas; debe estar en un volumen persistente (`/data/uploads`).             |
+| `RESEND_API_KEY`, `MAIL_FROM`                 | Activan la recuperación de contraseña por correo (Resend, API HTTPS). Ver guía, paso 8.       |
+| `APP_URL`                                     | Dirección pública para los enlaces del correo; en Railway se toma de `RAILWAY_PUBLIC_DOMAIN`. |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Crean el primer administrador solo si la base de datos no tiene usuarios.                     |
 
 `VITE_API_URL` y `FRONTEND_URL` ya no hacen falta cuando el frontend y la API
 comparten dominio: el frontend compilado llama a `/api`.
