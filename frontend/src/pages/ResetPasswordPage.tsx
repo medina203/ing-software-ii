@@ -87,8 +87,9 @@ export function ResetPasswordPage() {
     return (
       <AuthLayout title="Enlace no válido">
         <AuthAlert tone="error">
-          El enlace no es válido o ya venció. Los enlaces sirven una sola vez y duran 30
-          minutos.
+          El enlace no es válido o ya venció. Cada enlace dura 30 minutos y deja de servir
+          cuando la contraseña ya se cambió. Si pediste varios, abre el correo más
+          reciente (la hora aparece en el asunto).
         </AuthAlert>
         <p className="mt-8 text-center text-sm">
           <Link to="/recuperar-contrasena" className={authLinkClass}>
