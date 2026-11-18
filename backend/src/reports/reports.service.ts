@@ -1,36 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { EstadoAlquiler, EstadoImplemento, Prisma } from '@prisma/client';
-import { addDays, startOfTodayUtc } from '../common/utils/dates';
-import { markOverdueRentals } from '../common/utils/rental-status';
+import { rentalDays } from '../common/utils/billing';
+import { addDays, businessDay, startOfBusinessToday } from '../common/utils/dates';
+import {
+  rentalStatusWhere,
+  withEffectiveRentalStatus,
+} from '../common/utils/rental-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { RevenueDailyQueryDto } from './dto/revenue-daily-query.dto';
 import { RevenueMonthlyQueryDto } from './dto/revenue-monthly-query.dto';
 import { TopItemsQueryDto } from './dto/top-items-query.dto';
-
-const userSummary = {
-  id: true,
-  nombre: true,
-  email: true,
-  rol: true,
-} satisfies Prisma.UsuarioSelect;
-
-const clientSummary = {
-  id: true,
-  documentoIdentidad: true,
-  nombres: true,
-  apellidos: true,
-  telefono: true,
-  correo: true,
-} satisfies Prisma.ClienteSelect;
-
-const itemSummary = {
-  id: true,
-  codigoSerie: true,
-  nombre: true,
-  estado: true,
-  precioAlquilerDiario: true,
-  categoria: { select: { id: true, nombre: true } },
-} satisfies Prisma.ImplementoSelect;
+import { userSummary, clientSummary, itemSummary } from '../common/prisma-selects';
 
 const activeRentalInclude = {
   cliente: { select: clientSummary },
@@ -75,12 +55,6 @@ const MONTH_NAMES = [
   'Noviembre',
   'Diciembre',
 ] as const;
-
-function utcDay(date: Date): Date {
-  const result = new Date(date);
-  result.setUTCHours(0, 0, 0, 0);
-  return result;
-}
 
 function dayKey(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -143,9 +117,7 @@ export class ReportsService {
   }
 
   async getActiveRentals() {
-    await markOverdueRentals(this.prisma);
-
-    const data = await this.prisma.alquiler.findMany({
+    const rows = await this.prisma.alquiler.findMany({
       where: {
         estado: {
           in: [EstadoAlquiler.ACTIVO, EstadoAlquiler.VENCIDO],
@@ -155,12 +127,13 @@ export class ReportsService {
       orderBy: [{ fechaPactadaDevolucion: 'asc' }, { id: 'asc' }],
     });
 
+    const data = rows.map((row) => withEffectiveRentalStatus(row));
     return { data, total: data.length };
   }
 
   async getDailyRevenue(query: RevenueDailyQueryDto) {
     const days = Number(query.days ?? 14);
-    const today = startOfTodayUtc();
+    const today = startOfBusinessToday();
     const endExclusive = addDays(today, 1);
     const start = addDays(endExclusive, -days);
     const buckets = await this.buildRevenueByDay();
@@ -238,7 +211,7 @@ export class ReportsService {
     const rentals: RevenueRental[] = await this.prisma.alquiler.findMany({
       select: revenueRentalSelect,
     });
-    const today = startOfTodayUtc();
+    const today = startOfBusinessToday();
     const buckets = new Map<string, { total: number; rentalIds: Set<number> }>();
 
     for (const rental of rentals) {
@@ -248,18 +221,21 @@ export class ReportsService {
       );
       if (dailyRate <= 0) continue;
 
-      const start = utcDay(rental.fechaAlquiler);
+      // Misma regla que la factura: [inicio, fin) en días del negocio, mínimo 1 día.
+      const start = businessDay(rental.fechaAlquiler);
       if (start > today) continue;
 
-      const end = utcDay(
+      // En curso: se devenga como si se devolviera hoy.
+      const endInstant =
         rental.devolucion?.fechaDevolucion ??
-          (rental.estado === EstadoAlquiler.FINALIZADO
-            ? rental.fechaPactadaDevolucion
-            : today),
-      );
-      const endExclusive = end < start ? addDays(start, 1) : addDays(end, 1);
+        (rental.estado === EstadoAlquiler.FINALIZADO
+          ? rental.fechaPactadaDevolucion
+          : new Date());
+      const days = rentalDays(rental.fechaAlquiler, endInstant);
+      const endExclusive = addDays(start, days);
 
       for (let cursor = start; cursor < endExclusive; cursor = addDays(cursor, 1)) {
+        if (cursor > today) break;
         const key = dayKey(cursor);
         const bucket = buckets.get(key);
         if (bucket) {
@@ -278,8 +254,6 @@ export class ReportsService {
   }
 
   async getDashboard() {
-    await markOverdueRentals(this.prisma);
-
     const monthStart = new Date();
     monthStart.setUTCDate(1);
     monthStart.setUTCHours(0, 0, 0, 0);
@@ -309,7 +283,7 @@ export class ReportsService {
         where: { fechaDevolucion: { gte: monthStart } },
       }),
       this.prisma.alquiler.count({
-        where: { estado: EstadoAlquiler.VENCIDO },
+        where: rentalStatusWhere(EstadoAlquiler.VENCIDO),
       }),
       this.getTopItems({ limit: 5 }),
       this.prisma.alquiler.count({
@@ -326,7 +300,7 @@ export class ReportsService {
 
     return {
       generadoEn: new Date().toISOString(),
-      fechaCorte: startOfTodayUtc().toISOString(),
+      fechaCorte: startOfBusinessToday().toISOString(),
       resumen: {
         totalImplementos: inventorySummary.total,
         disponibles: stateCount(EstadoImplemento.DISPONIBLE),
@@ -340,7 +314,7 @@ export class ReportsService {
       },
       porEstado: inventorySummary.porEstado,
       topImplementos,
-      alquileresActivos: activeRentals,
+      alquileresActivos: activeRentals.map((row) => withEffectiveRentalStatus(row)),
     };
   }
 }

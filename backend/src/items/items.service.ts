@@ -12,8 +12,10 @@ import {
   isValidSerialPrefix,
 } from '../common/utils/serial';
 import { PrismaService } from '../prisma/prisma.service';
+import { UploadsService } from '../uploads/uploads.service';
 import { CreateItemBatchDto } from './dto/create-item-batch.dto';
 import { CreateItemDto } from './dto/create-item.dto';
+import { ItemGroupKeyDto, UpdateItemGroupDto } from './dto/item-group.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 
@@ -25,18 +27,42 @@ type ItemWithCategory = Prisma.ImplementoGetPayload<{ include: typeof itemInclud
 
 const MAX_SERIAL_ATTEMPTS = 10_000;
 
+export interface ItemGroupSummary {
+  categoriaId: number;
+  nombre: string;
+  categoria: { id: number; nombre: string; prefijo: string };
+  descripcion: string | null;
+  imagenUrl: string | null;
+  precioMin: string;
+  precioMax: string;
+  total: number;
+  disponibles: number;
+  alquilados: number;
+  mantenimiento: number;
+  fueraDeServicio: number;
+}
+
+type GroupKey = { categoriaId: number; nombre: string };
+
+function groupKeyId(key: GroupKey): string {
+  return `${key.categoriaId}\u0000${key.nombre}`;
+}
+
 @Injectable()
 export class ItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
-  async findAll(query: ListItemsQueryDto) {
-    const page = Number(query.page ?? 1);
-    const pageSize = Number(query.pageSize ?? 50);
+  private buildWhere(query: ListItemsQueryDto): Prisma.ImplementoWhereInput {
     const term = normalizeSearchTerm(query.search);
+    const nombre = normalizeSearchTerm(query.nombre);
 
-    const where: Prisma.ImplementoWhereInput = {
+    return {
       ...(query.estado ? { estado: query.estado } : {}),
       ...(query.categoriaId ? { categoriaId: query.categoriaId } : {}),
+      ...(nombre ? { nombre: { equals: nombre, mode: 'insensitive' } } : {}),
       ...(term
         ? {
             OR: [
@@ -52,12 +78,18 @@ export class ItemsService {
           }
         : {}),
     };
+  }
+
+  async findAll(query: ListItemsQueryDto) {
+    const page = Number(query.page ?? 1);
+    const pageSize = Number(query.pageSize ?? 50);
+    const where = this.buildWhere(query);
 
     const [data, total] = await Promise.all([
       this.prisma.implemento.findMany({
         where,
         include: itemInclude,
-        orderBy: [{ nombre: 'asc' }],
+        orderBy: [{ nombre: 'asc' }, { codigoSerie: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -65,6 +97,257 @@ export class ItemsService {
     ]);
 
     return { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+  }
+
+  /**
+   * Inventario agrupado por tipo (categoría + nombre): una entrada por tipo con
+   * su stock por estado. Los filtros seleccionan los tipos que tienen al menos
+   * una unidad que cumpla; los conteos siempre incluyen todas sus unidades.
+   */
+  async findGroups(query: ListItemsQueryDto) {
+    const page = Number(query.page ?? 1);
+    const pageSize = Number(query.pageSize ?? 50);
+
+    const matching = await this.prisma.implemento.groupBy({
+      by: ['categoriaId', 'nombre'],
+      where: this.buildWhere(query),
+      orderBy: [{ nombre: 'asc' }, { categoriaId: 'asc' }],
+    });
+
+    const total = matching.length;
+    const keys: GroupKey[] = matching
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map(({ categoriaId, nombre }) => ({ categoriaId, nombre }));
+
+    const [totalUnidades, data] = await Promise.all([
+      this.prisma.implemento.count({
+        where: this.buildWhere({ ...query, estado: undefined }),
+      }),
+      this.summarizeGroups(keys),
+    ]);
+
+    return {
+      data,
+      total,
+      totalUnidades,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  private async summarizeGroups(keys: GroupKey[]): Promise<ItemGroupSummary[]> {
+    if (keys.length === 0) return [];
+    const where: Prisma.ImplementoWhereInput = {
+      OR: keys.map((key) => ({ categoriaId: key.categoriaId, nombre: key.nombre })),
+    };
+
+    const [byState, prices, samples, descriptions, images] = await Promise.all([
+      this.prisma.implemento.groupBy({
+        by: ['categoriaId', 'nombre', 'estado'],
+        where,
+        _count: { _all: true },
+      }),
+      this.prisma.implemento.groupBy({
+        by: ['categoriaId', 'nombre'],
+        where,
+        _min: { precioAlquilerDiario: true },
+        _max: { precioAlquilerDiario: true },
+      }),
+      this.prisma.implemento.findMany({
+        where,
+        distinct: ['categoriaId', 'nombre'],
+        orderBy: [{ categoriaId: 'asc' }, { nombre: 'asc' }, { id: 'desc' }],
+        select: {
+          categoriaId: true,
+          nombre: true,
+          descripcion: true,
+          categoria: { select: { id: true, nombre: true, prefijo: true } },
+        },
+      }),
+      // Descripción más reciente que no esté vacía (una unidad agregada sin
+      // descripción no debe borrar la del tipo en la tarjeta).
+      this.prisma.implemento.findMany({
+        where: {
+          AND: [where, { descripcion: { not: null } }, { NOT: { descripcion: '' } }],
+        },
+        distinct: ['categoriaId', 'nombre'],
+        orderBy: [{ categoriaId: 'asc' }, { nombre: 'asc' }, { id: 'desc' }],
+        select: { categoriaId: true, nombre: true, descripcion: true },
+      }),
+      this.prisma.implemento.findMany({
+        where: { AND: [where, { imagenUrl: { not: null } }] },
+        distinct: ['categoriaId', 'nombre'],
+        orderBy: [{ categoriaId: 'asc' }, { nombre: 'asc' }, { id: 'desc' }],
+        select: { categoriaId: true, nombre: true, imagenUrl: true },
+      }),
+    ]);
+
+    const counts = new Map<string, Record<EstadoImplemento, number>>();
+    for (const row of byState) {
+      const id = groupKeyId(row);
+      const current = counts.get(id) ?? {
+        DISPONIBLE: 0,
+        ALQUILADO: 0,
+        MANTENIMIENTO: 0,
+        FUERA_DE_SERVICIO: 0,
+      };
+      current[row.estado] += row._count._all;
+      counts.set(id, current);
+    }
+    const priceMap = new Map(prices.map((row) => [groupKeyId(row), row]));
+    const sampleMap = new Map(samples.map((row) => [groupKeyId(row), row]));
+    const imageMap = new Map(images.map((row) => [groupKeyId(row), row.imagenUrl]));
+    const descriptionMap = new Map(
+      descriptions.map((row) => [groupKeyId(row), row.descripcion]),
+    );
+
+    return keys.map((key) => {
+      const id = groupKeyId(key);
+      const c = counts.get(id) ?? {
+        DISPONIBLE: 0,
+        ALQUILADO: 0,
+        MANTENIMIENTO: 0,
+        FUERA_DE_SERVICIO: 0,
+      };
+      const price = priceMap.get(id);
+      const sample = sampleMap.get(id);
+      return {
+        categoriaId: key.categoriaId,
+        nombre: key.nombre,
+        categoria: sample?.categoria ?? { id: key.categoriaId, nombre: '', prefijo: '' },
+        descripcion: descriptionMap.get(id) ?? null,
+        imagenUrl: imageMap.get(id) ?? null,
+        precioMin: price?._min.precioAlquilerDiario?.toString() ?? '0',
+        precioMax: price?._max.precioAlquilerDiario?.toString() ?? '0',
+        total: c.DISPONIBLE + c.ALQUILADO + c.MANTENIMIENTO + c.FUERA_DE_SERVICIO,
+        disponibles: c.DISPONIBLE,
+        alquilados: c.ALQUILADO,
+        mantenimiento: c.MANTENIMIENTO,
+        fueraDeServicio: c.FUERA_DE_SERVICIO,
+      };
+    });
+  }
+
+  /** Aplica nombre, descripción o tarifa a todas las unidades de un tipo. */
+  async updateGroup(dto: UpdateItemGroupDto): Promise<ItemGroupSummary> {
+    const key = await this.resolveGroupKey(dto);
+    const nuevoNombre = normalizeSearchTerm(dto.nuevoNombre);
+
+    if (nuevoNombre && nuevoNombre.toLowerCase() !== key.nombre.toLowerCase()) {
+      const clash = await this.prisma.implemento.findFirst({
+        where: {
+          categoriaId: key.categoriaId,
+          nombre: { equals: nuevoNombre, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (clash) {
+        throw new ConflictException(
+          `Ya existe un implemento "${nuevoNombre}" en esta categoría. Use "Agregar unidades" en ese implemento.`,
+        );
+      }
+    }
+
+    const data: Prisma.ImplementoUpdateManyMutationInput = {};
+    if (nuevoNombre) data.nombre = nuevoNombre;
+    if (dto.descripcion !== undefined) data.descripcion = dto.descripcion.trim() || null;
+    if (dto.precioAlquilerDiario !== undefined) {
+      data.precioAlquilerDiario = dto.precioAlquilerDiario;
+    }
+
+    await this.prisma.implemento.updateMany({
+      where: { categoriaId: key.categoriaId, nombre: key.nombre },
+      data,
+    });
+
+    const [summary] = await this.summarizeGroups([
+      { categoriaId: key.categoriaId, nombre: nuevoNombre ?? key.nombre },
+    ]);
+    return summary;
+  }
+
+  /**
+   * Elimina un tipo completo. Es todo o nada: si alguna unidad está alquilada
+   * o tiene historial, no se elimina ninguna.
+   */
+  async removeGroup(dto: ItemGroupKeyDto) {
+    const key = await this.resolveGroupKey(dto);
+    const where = { categoriaId: key.categoriaId, nombre: key.nombre };
+
+    return this.prisma.$transaction(async (tx) => {
+      const [rented, withHistory, total] = await Promise.all([
+        tx.implemento.count({ where: { ...where, estado: EstadoImplemento.ALQUILADO } }),
+        tx.implemento.count({ where: { ...where, detalles: { some: {} } } }),
+        tx.implemento.count({ where }),
+      ]);
+
+      if (rented > 0 || withHistory > 0) {
+        throw new ConflictException(
+          `No se puede eliminar "${key.nombre}": ${withHistory} de ${total} unidades tienen historial de alquileres${
+            rented > 0 ? ` y ${rented} están alquiladas` : ''
+          }. Para retirarlas, cambie su estado a Fuera de servicio.`,
+        );
+      }
+
+      const { count } = await tx.implemento.deleteMany({ where });
+      return {
+        message: `Se eliminaron ${count} unidades de "${key.nombre}".`,
+        total: count,
+      };
+    });
+  }
+
+  /** Asigna o reemplaza la imagen de todas las unidades de un tipo. */
+  async setGroupImage(dto: ItemGroupKeyDto, file: Express.Multer.File | undefined) {
+    const key = await this.resolveGroupKey(dto);
+    const where = { categoriaId: key.categoriaId, nombre: key.nombre };
+    const previous = await this.prisma.implemento.findMany({
+      where: { ...where, imagenUrl: { not: null } },
+      distinct: ['imagenUrl'],
+      select: { imagenUrl: true },
+    });
+    const url = await this.uploads.saveImage(file, 'items');
+    await this.prisma.implemento.updateMany({ where, data: { imagenUrl: url } });
+    await this.removeIfUnused(previous.map((row) => row.imagenUrl));
+    const [summary] = await this.summarizeGroups([key]);
+    return summary;
+  }
+
+  /** Quita la imagen subida; la interfaz vuelve a la ilustración por defecto. */
+  async clearGroupImage(dto: ItemGroupKeyDto) {
+    const key = await this.resolveGroupKey(dto);
+    const where = { categoriaId: key.categoriaId, nombre: key.nombre };
+    const previous = await this.prisma.implemento.findMany({
+      where: { ...where, imagenUrl: { not: null } },
+      distinct: ['imagenUrl'],
+      select: { imagenUrl: true },
+    });
+    await this.prisma.implemento.updateMany({ where, data: { imagenUrl: null } });
+    await this.removeIfUnused(previous.map((row) => row.imagenUrl));
+    const [summary] = await this.summarizeGroups([key]);
+    return summary;
+  }
+
+  private async removeIfUnused(urls: Array<string | null>): Promise<void> {
+    for (const url of urls) {
+      if (!url) continue;
+      const stillUsed = await this.prisma.implemento.count({ where: { imagenUrl: url } });
+      if (stillUsed === 0) await this.uploads.remove(url);
+    }
+  }
+
+  private async resolveGroupKey(dto: ItemGroupKeyDto): Promise<GroupKey> {
+    const nombre = normalizeSearchTerm(dto.nombre) ?? '';
+    const existing = await this.prisma.implemento.findFirst({
+      where: {
+        categoriaId: dto.categoriaId,
+        nombre: { equals: nombre, mode: 'insensitive' },
+      },
+      select: { categoriaId: true, nombre: true },
+    });
+    if (!existing) throw new NotFoundException('Implemento no encontrado.');
+    return existing;
   }
 
   async findAvailable() {
@@ -115,6 +398,21 @@ export class ItemsService {
           );
         }
 
+        // Si ya existe el tipo con otra capitalización o espacios, se reutiliza su
+        // nombre para que las nuevas unidades sumen al mismo stock.
+        const nombreNormalizado = normalizeSearchTerm(dto.nombre) ?? dto.nombre.trim();
+        const existente = await tx.implemento.findFirst({
+          where: {
+            categoriaId: categoria.id,
+            nombre: { equals: nombreNormalizado, mode: 'insensitive' },
+          },
+          select: { nombre: true, imagenUrl: true },
+          orderBy: { id: 'desc' },
+        });
+        const nombre = existente?.nombre ?? nombreNormalizado;
+        // Las unidades nuevas heredan la imagen del tipo.
+        const imagenUrl = existente?.imagenUrl ?? null;
+
         const items: ItemWithCategory[] = [];
 
         for (let index = 0; index < dto.cantidad; index += 1) {
@@ -127,7 +425,8 @@ export class ItemsService {
           const item = await tx.implemento.create({
             data: {
               codigoSerie,
-              nombre: dto.nombre.trim(),
+              nombre,
+              imagenUrl,
               categoriaId: categoria.id,
               descripcion: dto.descripcion?.trim() || null,
               precioAlquilerDiario: dto.precioAlquilerDiario,

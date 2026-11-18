@@ -1,14 +1,23 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { UPLOADS_PUBLIC_PREFIX, uploadsRoot } from './uploads/uploads.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = new Logger('Bootstrap');
 
-  app.use(helmet());
+  // Las imágenes subidas se muestran desde el frontend (otro origen en desarrollo).
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.useStaticAssets(uploadsRoot(), {
+    prefix: UPLOADS_PUBLIC_PREFIX,
+    maxAge: '7d',
+    index: false,
+    dotfiles: 'deny',
+  });
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
 

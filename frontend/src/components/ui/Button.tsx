@@ -35,7 +35,7 @@ const buttonVariants: Record<ButtonVariant, string> = {
 const buttonSizes: Record<ButtonSize, string> = {
   sm: 'h-9 px-3 text-sm',
   md: 'h-10 px-4 text-sm',
-  lg: 'h-11 px-5 text-[15px]',
+  lg: 'h-11 px-5 text-[0.9375rem]',
 };
 
 export function Button({

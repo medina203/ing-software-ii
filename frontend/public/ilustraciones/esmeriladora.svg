@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Esmeriladora angular">
+  <title>Esmeriladora angular</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g stroke="#0b0d11" stroke-width="3" stroke-linejoin="round">
+    <circle cx="118" cy="160" r="62" fill="#8a93a3"/>
+    <circle cx="118" cy="160" r="54" fill="#cfd5df"/>
+    <circle cx="118" cy="160" r="12" fill="#1c2029"/>
+    <path d="M90 104a64 64 0 0 1 64 0l-8 22h-48z" fill="#1c2029"/>
+    <rect x="140" y="130" width="72" height="54" rx="10" fill="#1c2029"/>
+    <rect x="200" y="124" width="150" height="66" rx="30" fill="#f5b301"/>
+    <rect x="300" y="138" width="56" height="38" rx="14" fill="#1c2029"/>
+    <rect x="236" y="84" width="20" height="44" rx="8" fill="#1c2029"/>
+  </g>
+  <rect x="220" y="140" width="66" height="9" rx="4" fill="#ffcf3f"/>
+</svg>

@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Package,
+  Palette,
   RotateCcw,
   Tags,
   Users,
@@ -17,6 +18,7 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { cn } from '../lib/cn';
+import { ErrorBoundary } from './ErrorBoundary';
 import { initials, roleLabels } from '../lib/format';
 
 const navigation = [
@@ -35,6 +37,7 @@ const navigation = [
   { to: '/reportes', label: 'Reportes', icon: BarChart3, adminOnly: true },
   { to: '/categorias', label: 'Categorías', icon: Tags, adminOnly: true },
   { to: '/usuarios', label: 'Usuarios', icon: Package, adminOnly: true },
+  { to: '/apariencia', label: 'Apariencia', icon: Palette, adminOnly: true },
 ];
 
 export function Layout() {
@@ -69,20 +72,20 @@ export function Layout() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-ink-900 text-slate-300 transition-transform duration-200 lg:translate-x-0',
+          'theme-fixed fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-ink-900 text-slate-300 transition-transform duration-200 lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex h-20 items-center justify-between px-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-ink-900 shadow-lg shadow-brand-500/10">
-              <span className="text-lg font-black tracking-tighter">OG</span>
+              <span className="text-lg font-black tracking-tighter">DM</span>
             </div>
             <div>
               <p className="text-lg font-bold leading-tight tracking-tight text-white">
-                DM alquiuler
+                DM alquiler
               </p>
-              <p className="text-[11px] font-medium text-slate-500">
+              <p className="text-[0.6875rem] font-medium text-slate-500">
                 Inventario & alquiler
               </p>
             </div>
@@ -100,7 +103,7 @@ export function Layout() {
         <div className="mx-5 h-px bg-white/5" />
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
+          <p className="px-3 pb-2 text-[0.625rem] font-bold uppercase tracking-[0.2em] text-slate-600">
             Operación
           </p>
           {visibleNavigation.map((item) => {
@@ -149,7 +152,7 @@ export function Layout() {
               <p className="truncate text-sm font-semibold text-white">
                 {usuario?.nombre}
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[0.6875rem] text-slate-500">
                 {usuario ? roleLabels[usuario.rol] : ''}
               </p>
             </div>
@@ -172,8 +175,8 @@ export function Layout() {
               <LogOut className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-3 text-center text-[10px] text-slate-600">
-            DM alquiuler · v1.0 · {new Date().getFullYear()}
+          <p className="mt-3 text-center text-[0.625rem] text-slate-600">
+            DM alquiler · v1.0 · {new Date().getFullYear()}
           </p>
         </div>
       </aside>
@@ -190,9 +193,9 @@ export function Layout() {
           </button>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-black text-ink-900">
-              OG
+              DM
             </div>
-            <span className="font-bold tracking-tight text-slate-900">DM alquiuler</span>
+            <span className="font-bold tracking-tight text-slate-900">DM alquiler</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
             {usuario ? initials(usuario.nombre) : 'US'}
@@ -200,7 +203,9 @@ export function Layout() {
         </header>
 
         <main className="mx-auto min-h-screen max-w-[1500px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <Outlet />
+          <ErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

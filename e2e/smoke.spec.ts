@@ -18,5 +18,7 @@ test('login de administrador y acceso al resumen operativo', async ({ page }) =>
   await page.getByRole('button', { name: 'Ingresar al sistema' }).click();
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('heading', { name: 'Resumen operativo' })).toBeVisible();
+  // Panel rediseñado: saludo personalizado y carrusel de artículos.
+  await expect(page.getByRole('heading', { level: 1, name: /Daniel/ })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Artículos destacados' })).toBeVisible();
 });

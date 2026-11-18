@@ -16,7 +16,7 @@
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d --wait && npm run db:setup",
     "db:setup": "npm run prisma:generate --workspace backend && npm run prisma:deploy --workspace backend && npm run prisma:seed --workspace backend",
-    "db:deploy": "npm run prisma:deploy --workspace backend",
+    "db:deploy": "npm run prisma:deploy --workspace backend && npm run prisma:generate --workspace backend",
     "db:migrate": "npm run prisma:migrate:dev --workspace backend",
     "db:seed": "npm run prisma:seed --workspace backend",
     "db:studio": "npm run prisma:studio --workspace backend",

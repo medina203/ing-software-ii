@@ -1,8 +1,8 @@
 # Plan de mejoras y correcciones por etapas — ObraGest
 
 **Fecha de creación:** 9 de noviembre de 2026  
-**Última actualización:** 15 de noviembre de 2026  
-**Estado:** Etapas 1, 2 y 3 cerradas; Etapa 4 pendiente de inicio  
+**Última actualización:** 17 de noviembre de 2026  
+**Estado:** Etapas 1 a 5 cerradas; Etapa 6 en curso: usabilidad, personalización e imágenes implementadas (ver `evidencias/etapa-6/`)  
 **Objetivo:** Ordenar las mejoras y correcciones en etapas verificables, con pruebas y criterio de salida al final de cada una.
 
 > **Nota de seguimiento:** H-03 (`.env.example`) fue verificado: los tres archivos existen en raíz, backend y frontend. La Etapa 1 quedó cerrada con SRS, Gherkin, matriz de trazabilidad, entorno de pruebas, linter, Git y evidencias en `docs/qa/evidencias/etapa-1/`. La Etapa 2 fue aprobada y la Etapa 3 se cerró el 2026-11-15; sus evidencias están en `docs/qa/evidencias/etapa-2/` y `docs/qa/evidencias/etapa-3/`.
@@ -202,6 +202,8 @@ Mejorar la integridad y la operación del inventario con seriales automáticos y
 
 ## 7. Etapa 4 — Facturación y cartera
 
+**Estado:** Cerrada el 2026-11-17 tras la evaluación ISO/IEC 25010. El commit `038ca9a` dejó el frontend sin compilar y la suite en rojo; se corrigió, se agregó la liquidación de la factura en la devolución y la alerta en la UI. Evidencia en `docs/qa/evidencias/etapa-4-5/`.
+
 ### Objetivo
 
 Incorporar el control de facturas pendientes y definir la política de autorización con trazabilidad.
@@ -244,6 +246,8 @@ Incorporar el control de facturas pendientes y definir la política de autorizac
 ---
 
 ## 8. Etapa 5 — Seguridad, confiabilidad y mantenibilidad
+
+**Estado:** Cerrada el 2026-11-17. Bloqueo de login y de credenciales de ADMIN, health check real, `ErrorBoundary`, `GET` sin escrituras (proceso programado `StatusSyncService`), selectores centralizados y fechas en zona del negocio. Evidencia en `docs/qa/evidencias/etapa-4-5/`.
 
 ### Objetivo
 

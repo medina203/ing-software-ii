@@ -1,0 +1,9 @@
+# 2026-11-17T16:16:26-05:00
+
+> inventario-alquiler-implementos@1.0.0 check:env
+> node scripts/check-env-examples.mjs
+
+OK: .env.example
+OK: backend/.env.example
+OK: frontend/.env.example
+OK: plantillas .env.example verificadas.

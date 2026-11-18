@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { PrismaClient, Rol } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { deleteRentalsCascade } from './helpers/cleanup';
 
 const prisma = new PrismaClient();
 const stamp = Date.now();
@@ -9,7 +10,9 @@ const initialPassword = 'Stage2Inicial123*';
 const newPassword = 'Stage2Nueva123*';
 const itemCode = `QA-E2E-${stamp}`;
 const itemName = `Implemento QA ${stamp}`;
-const clientDocument = `QA-CC-${stamp}`;
+// Solo dígitos: el formulario arma el documento como CC-<número>.
+const clientNumber = String(Date.now()).slice(-10);
+const clientDocument = `CC-${clientNumber}`;
 const clientName = `Cliente QA ${stamp}`;
 
 let tempItemId: number;
@@ -65,11 +68,7 @@ test.afterAll(async () => {
     });
     const rentalIds = [...new Set(details.map((detail) => detail.alquilerId))];
 
-    if (rentalIds.length > 0) {
-      await prisma.alquiler.deleteMany({
-        where: { id: { in: rentalIds } },
-      });
-    }
+    await deleteRentalsCascade(prisma, rentalIds);
 
     await prisma.implemento.deleteMany({
       where: { id: tempItemId },
@@ -129,7 +128,12 @@ test('busca cliente por cédula y nombre, y crea un alquiler', async ({ page }) 
   await quantityInput.fill('1');
   await expect(quantityInput).toHaveValue('1');
 
-  await page.getByRole('button', { name: 'Confirmar alquiler' }).click();
+  // El cliente demo tiene la factura FAC-DEMO-0001 pendiente (Etapa 4): el ADMIN
+  // registra el motivo de la excepción en el mismo flujo.
+  await expect(page.getByTestId('cartera-alert')).toBeVisible();
+  await page.getByRole('button', { name: 'Autorizar y confirmar' }).click();
+  await page.locator('#cartera-motivo').fill('Cliente demo con pago comprometido');
+  await page.getByRole('button', { name: 'Autorizar y registrar' }).click();
 
   await expect(page).toHaveURL(/\/alquileres\/\d+$/);
   await expect(page.getByText(itemCode).first()).toBeVisible();
@@ -152,7 +156,8 @@ test('registra, edita y elimina un cliente de regresión', async ({ page }) => {
   await page.goto('/clientes');
 
   await page.getByRole('button', { name: 'Nuevo cliente' }).click();
-  await page.locator('#documento').fill(clientDocument);
+  await page.locator('#docTipo').selectOption('CC');
+  await page.locator('#documento').fill(clientNumber);
   await page.locator('#telefono').fill('3001234567');
   await page.locator('#nombres').fill(clientName);
   await page.locator('#apellidos').fill('Regresión E2E');
@@ -182,19 +187,42 @@ test('registra, edita y elimina un cliente de regresión', async ({ page }) => {
 });
 
 test('pagina el inventario sin truncar el total', async ({ page }) => {
-  await login(page, 'admin@obragest.local', 'Admin123*');
-  await page.goto('/inventario');
+  // Diez tipos distintos garantizan más de una página (9 tipos por página).
+  const stampPag = Date.now().toString(36).toUpperCase().slice(-5);
+  const category = await prisma.categoria.create({
+    data: {
+      nombre: `Categoría paginación E2E ${stampPag}`,
+      prefijo: `P${stampPag}`,
+      ultimoConsecutivo: 10,
+    },
+  });
+  try {
+    await prisma.implemento.createMany({
+      data: Array.from({ length: 10 }, (_, index) => ({
+        codigoSerie: `P${stampPag}-${String(index + 1).padStart(3, '0')}`,
+        nombre: `Tipo paginación ${stampPag} ${index}`,
+        categoriaId: category.id,
+        precioAlquilerDiario: 1000,
+      })),
+    });
 
-  await expect(page.getByText(/Página 1 de \d+ · \d+ registros/)).toBeVisible();
+    await login(page, 'admin@obragest.local', 'Admin123*');
+    await page.goto('/inventario');
 
-  const nextButton = page.getByRole('button', { name: 'Siguiente' });
-  await expect(nextButton).toBeEnabled();
-  await nextButton.click();
+    await expect(page.getByText(/Página 1 de \d+ · \d+ implementos/)).toBeVisible();
 
-  await expect(page.getByText(/Página 2 de \d+ · \d+ registros/)).toBeVisible();
+    const nextButton = page.getByRole('button', { name: 'Siguiente' });
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
 
-  await page.getByRole('button', { name: 'Anterior' }).click();
-  await expect(page.getByText(/Página 1 de \d+ · \d+ registros/)).toBeVisible();
+    await expect(page.getByText(/Página 2 de \d+ · \d+ implementos/)).toBeVisible();
+
+    await page.getByRole('button', { name: 'Anterior' }).click();
+    await expect(page.getByText(/Página 1 de \d+ · \d+ implementos/)).toBeVisible();
+  } finally {
+    await prisma.implemento.deleteMany({ where: { categoriaId: category.id } });
+    await prisma.categoria.delete({ where: { id: category.id } });
+  }
 });
 
 test('cambia la contraseña y permite volver a iniciar sesión', async ({ page }) => {

@@ -1,0 +1,68 @@
+# 2026-11-17T23:42:58-05:00
+(node:1467) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/stage4-5.e2e-spec.ts (5.186 s)
+  Etapas 4 y 5 — cartera, liquidación y seguridad (e2e)
+    ✓ RF-17: el alquiler genera una factura PENDIENTE por los días pactados (75 ms)
+    ✓ RF-16/RF-21: un EMPLEADO necesita autorización de ADMIN y queda auditada (350 ms)
+    ✓ RF-15: la devolución con cartera pendiente se permite y registra la alerta (80 ms)
+    ✓ liquida la factura con los días reales en una devolución tardía (77 ms)
+    ✓ el retraso se cobra a la tarifa normal mientras no se devuelve y se muestra desglosado (103 ms)
+    ✓ RF-17: los pagos actualizan el saldo y la factura pasa a PAGADA (132 ms)
+    ✓ H-06: las consultas GET no modifican la base de datos y muestran el estado efectivo (183 ms)
+    ✓ RNF-08: /api/health verifica la base de datos (4 ms)
+    ✓ RNF-01: tras 5 intentos fallidos el login responde 429 (571 ms)
+    ✓ RNF-01: la validación de credenciales de ADMIN en cartera también se bloquea (733 ms)
+
+PASS test/stage6.e2e-spec.ts
+  Etapa 6 — imágenes, apariencia y validación de datos (e2e)
+    imágenes de implementos
+      ✓ sube la imagen del tipo, la hereda la unidad nueva y se puede quitar (103 ms)
+      ✓ rechaza archivos que no son imágenes aunque digan serlo (7 ms)
+    apariencia
+      ✓ es pública para leer y solo el ADMIN la modifica (21 ms)
+      ✓ valida tema, color, cantidad de artículos y enlaces (16 ms)
+      ✓ sube y quita la imagen del login (15 ms)
+    validación de clientes
+      ✓ rechaza documentos con letras o longitud inválida y teléfonos no numéricos (20 ms)
+      ✓ acepta CC y NIT con el formato correcto (12 ms)
+
+PASS test/stage2.e2e-spec.ts
+  Etapa 2 — búsqueda, paginación y contraseña (e2e)
+    ✓ busca clientes por cédula, nombre y apellido (33 ms)
+    ✓ limita las coincidencias sin perder el total de clientes (13 ms)
+    ✓ pagina el inventario y devuelve metadatos consistentes (11 ms)
+    ✓ pagina más de 200 implementos sin truncar el inventario (54 ms)
+    ✓ permite cambiar la contraseña de un ADMIN y volver a iniciar sesión (728 ms)
+
+(node:1467) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+PASS test/stage3.e2e-spec.ts
+  Etapa 3 — seriales automáticos y cantidad (e2e)
+    ✓ crea categorías con prefijo único y rechaza duplicados o formatos inválidos (35 ms)
+    ✓ genera seriales consecutivos y no acepta un serial manual (46 ms)
+    ✓ crea varias unidades en una sola operación con seriales consecutivos (46 ms)
+    ✓ genera seriales únicos bajo creación concurrente (72 ms)
+    ✓ registra un alquiler con 5 unidades del mismo tipo y las descuenta (137 ms)
+    ✓ rechaza la cantidad cuando no hay unidades suficientes y no deja estados parciales (95 ms)
+
+(node:1467) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+PASS test/inventory-groups.e2e-spec.ts
+  Inventario agrupado por tipo (e2e)
+    ✓ las unidades del mismo tipo forman una sola entrada con su stock (74 ms)
+    ✓ el stock refleja alquileres y cambios de estado (113 ms)
+    ✓ editar el tipo actualiza todas sus unidades y evita duplicar nombres (23 ms)
+    ✓ eliminar un tipo es todo o nada (46 ms)
+
+PASS test/health.e2e-spec.ts
+  Health (e2e)
+    ✓ GET /health responde con estado ok (18 ms)
+
+Test Suites: 6 passed, 6 total
+Tests:       33 passed, 33 total
+Snapshots:   0 total
+Time:        9.436 s, estimated 16 s
+Ran all test suites.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.
+exit=0

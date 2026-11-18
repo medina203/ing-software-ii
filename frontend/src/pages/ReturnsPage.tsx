@@ -144,7 +144,7 @@ export function ReturnsPage() {
                             </Link>
                             <RentalStatusBadge status={rental.estado} />
                             {overdue > 0 && (
-                              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[0.625rem] font-bold text-rose-700">
                                 {overdue} día(s) de retraso
                               </span>
                             )}
@@ -178,7 +178,7 @@ export function ReturnsPage() {
                             {rental.detalles.map((detail) => (
                               <span
                                 key={detail.id}
-                                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-500"
+                                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[0.625rem] font-semibold text-slate-500"
                               >
                                 {detail.implemento.codigoSerie}
                               </span>
@@ -264,7 +264,7 @@ export function ReturnsPage() {
                               <span
                                 key={detail.id}
                                 title={`${detail.implemento.nombre}: ${detail.estadoFinal}`}
-                                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-500"
+                                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[0.625rem] text-slate-500"
                               >
                                 {detail.implemento.codigoSerie}
                               </span>
@@ -274,7 +274,7 @@ export function ReturnsPage() {
                         <td className="table-td">
                           <div className="flex flex-col items-start gap-1.5">
                             <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                              className={`rounded-full px-2 py-0.5 text-[0.625rem] font-semibold ${
                                 record.estadoEntregaImplementos === 'Sin novedades'
                                   ? 'bg-emerald-50 text-emerald-700'
                                   : 'bg-amber-50 text-amber-700'

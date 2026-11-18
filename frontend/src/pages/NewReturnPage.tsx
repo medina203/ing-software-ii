@@ -21,6 +21,7 @@ import {
   LoadingBlock,
   SectionCard,
 } from '../components/ui/Feedback';
+import { InvoiceBreakdown } from '../components/InvoiceBreakdown';
 import api, { getErrorMessage } from '../lib/api';
 import {
   daysOverdue,
@@ -28,7 +29,7 @@ import {
   formatDate,
   formatMoney,
 } from '../lib/format';
-import type { DeliveryStatus, Rental } from '../types';
+import type { DeliveryStatus, PendingInvoicesResponse, Rental } from '../types';
 
 interface ItemReturnState {
   estadoFinal: DeliveryStatus;
@@ -52,6 +53,7 @@ export function NewReturnPage() {
   const [loadError, setLoadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [cartera, setCartera] = useState<PendingInvoicesResponse | null>(null);
 
   const loadRental = useCallback(async () => {
     if (!id) return;
@@ -60,6 +62,13 @@ export function NewReturnPage() {
     try {
       const response = await api.get<Rental>(`/rentals/${id}`);
       setRental(response.data);
+      // RF-15: la alerta de cartera es informativa; si falla no bloquea la devolución.
+      api
+        .get<PendingInvoicesResponse>(
+          `/invoices/client/${response.data.clienteId}/pending`,
+        )
+        .then((pending) => setCartera(pending.data))
+        .catch(() => setCartera(null));
       if (!response.data.devolucion) {
         const states = Object.fromEntries(
           response.data.detalles.map((detail) => [
@@ -250,6 +259,26 @@ export function NewReturnPage() {
         </div>
       )}
 
+      {cartera && cartera.cantidad > 0 && (
+        <div
+          role="status"
+          data-testid="return-cartera-alert"
+          className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-900"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div>
+            <p className="font-semibold">Cliente con cartera pendiente</p>
+            <p className="mt-0.5 text-xs leading-5 text-amber-800">
+              Saldo de {formatMoney(cartera.totalSaldo)} en {cartera.cantidad}{' '}
+              {cartera.cantidad === 1 ? 'factura' : 'facturas'}
+              {cartera.vencidas > 0 && ` (${cartera.vencidas} vencida(s))`}. Infórmale al
+              cliente; la devolución se puede registrar y la alerta quedará registrada. Al
+              confirmar, la factura de este alquiler se liquida con los días reales.
+            </p>
+          </div>
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit}
         className="grid items-start gap-6 xl:grid-cols-[1fr_360px]"
@@ -263,7 +292,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Cliente
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -277,7 +306,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Fecha de devolución
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -289,7 +318,7 @@ export function NewReturnPage() {
               <div className="flex items-start gap-2.5">
                 <ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                     Devolución pactada
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-slate-700">
@@ -334,7 +363,7 @@ export function NewReturnPage() {
                           {index + 1}
                         </span>
                         <div>
-                          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          <p className="font-mono text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                             {detail.implemento.codigoSerie}
                           </p>
                           <p className="mt-0.5 text-sm font-semibold text-slate-800">
@@ -419,11 +448,23 @@ export function NewReturnPage() {
         </div>
 
         <aside className="space-y-4 xl:sticky xl:top-6">
+          {rental.factura?.desglose && (
+            <div className="card p-5" data-testid="return-charge-preview">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
+                Cobro al devolver hoy
+              </p>
+              <InvoiceBreakdown desglose={rental.factura.desglose} className="mt-3" />
+              <p className="mt-2 text-[0.6875rem] leading-4 text-slate-400">
+                Al confirmar, la factura {rental.factura.codigoFactura} queda liquidada
+                con estos días.
+              </p>
+            </div>
+          )}
           <div className="card overflow-hidden">
             <div className="bg-ink-900 px-5 py-5 text-white">
               <div className="flex items-center gap-2 text-brand-300">
                 <RotateCcw className="h-4 w-4" />
-                <p className="text-[11px] font-bold uppercase tracking-wider">
+                <p className="text-[0.6875rem] font-bold uppercase tracking-wider">
                   Resumen de devolución
                 </p>
               </div>
@@ -487,7 +528,7 @@ export function NewReturnPage() {
               >
                 Confirmar devolución
               </Button>
-              <p className="text-center text-[10px] leading-4 text-slate-400">
+              <p className="text-center text-[0.625rem] leading-4 text-slate-400">
                 El alquiler pasará a Finalizado y los estados del inventario se
                 actualizarán en una sola transacción.
               </p>

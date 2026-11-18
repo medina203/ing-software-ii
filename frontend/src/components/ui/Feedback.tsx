@@ -84,7 +84,7 @@ export function FullPageLoader() {
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink-900 text-brand-400 shadow-lg">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-        <p className="text-sm font-semibold text-slate-500">Preparando DM alquiuler…</p>
+        <p className="text-sm font-semibold text-slate-500">Preparando DM alquiler…</p>
       </div>
     </div>
   );
@@ -128,12 +128,15 @@ export function MetricCard({
   hint,
   icon: Icon,
   tone = 'slate',
+  onClick,
 }: {
   label: string;
-  value: string | number;
+  value: ReactNode;
   hint?: string;
   icon: LucideIcon;
   tone?: 'slate' | 'emerald' | 'blue' | 'amber' | 'rose';
+  /** Si se indica, la tarjeta es clicable (lleva al detalle). */
+  onClick?: () => void;
 }) {
   const tones = {
     slate: 'bg-slate-100 text-slate-600',
@@ -143,19 +146,32 @@ export function MetricCard({
     rose: 'bg-rose-100 text-rose-700',
   };
 
+  const Wrapper = onClick ? 'button' : 'div';
   return (
-    <div className="card p-5">
+    <Wrapper
+      {...(onClick ? { type: 'button' as const, onClick } : {})}
+      className={cn(
+        'card group w-full p-5 text-left transition duration-200',
+        onClick &&
+          'hover:-translate-y-0.5 hover:shadow-pop focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20',
+      )}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
           {hint && <p className="mt-2 text-xs text-slate-500">{hint}</p>}
         </div>
-        <div className={cn('rounded-xl p-2.5', tones[tone])}>
+        <div
+          className={cn(
+            'rounded-xl p-2.5 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6',
+            tones[tone],
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 

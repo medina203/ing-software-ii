@@ -12,40 +12,21 @@ import {
   createInvoiceForRental,
   getPendingInvoices,
   markOverdueInvoices,
+  accrueOverdueInvoices,
+  presentInvoice,
   type PendingInvoicesResult,
 } from '../common/utils/billing';
-import { parseDateOnly, startOfTodayUtc, yyyymmdd } from '../common/utils/dates';
-import { markOverdueRentals } from '../common/utils/rental-status';
+import { parseDateOnly, startOfBusinessToday, yyyymmdd } from '../common/utils/dates';
+import {
+  markOverdueRentals,
+  rentalStatusWhere,
+  withEffectiveRentalStatus,
+} from '../common/utils/rental-status';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { ListRentalsQueryDto } from './dto/list-rentals-query.dto';
-
-const userSummary = {
-  id: true,
-  nombre: true,
-  email: true,
-  rol: true,
-} satisfies Prisma.UsuarioSelect;
-
-const clientSummary = {
-  id: true,
-  documentoIdentidad: true,
-  nombres: true,
-  apellidos: true,
-  telefono: true,
-  correo: true,
-  direccion: true,
-} satisfies Prisma.ClienteSelect;
-
-const itemSummary = {
-  id: true,
-  codigoSerie: true,
-  nombre: true,
-  estado: true,
-  precioAlquilerDiario: true,
-  categoria: { select: { id: true, nombre: true } },
-} satisfies Prisma.ImplementoSelect;
+import { userSummary, clientSummary, itemSummary } from '../common/prisma-selects';
 
 const rentalInclude = {
   cliente: { select: clientSummary },
@@ -77,6 +58,8 @@ const rentalInclude = {
   },
 } satisfies Prisma.AlquilerInclude;
 
+type RentalWithRelations = Prisma.AlquilerGetPayload<{ include: typeof rentalInclude }>;
+
 @Injectable()
 export class RentalsService {
   constructor(
@@ -85,44 +68,44 @@ export class RentalsService {
   ) {}
 
   async findAll(query: ListRentalsQueryDto) {
-    await markOverdueRentals(this.prisma);
-
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 20);
     const term = query.search?.trim();
 
     const where: Prisma.AlquilerWhereInput = {
-      ...(query.estado ? { estado: query.estado } : {}),
-      ...(term
-        ? {
-            OR: [
-              {
-                codigoAlquiler: { contains: term, mode: 'insensitive' },
-              },
-              {
-                cliente: {
-                  documentoIdentidad: {
-                    contains: term,
-                    mode: 'insensitive',
+      AND: [
+        query.estado ? rentalStatusWhere(query.estado) : {},
+        term
+          ? {
+              OR: [
+                {
+                  codigoAlquiler: { contains: term, mode: 'insensitive' },
+                },
+                {
+                  cliente: {
+                    documentoIdentidad: {
+                      contains: term,
+                      mode: 'insensitive',
+                    },
                   },
                 },
-              },
-              {
-                cliente: {
-                  nombres: { contains: term, mode: 'insensitive' },
+                {
+                  cliente: {
+                    nombres: { contains: term, mode: 'insensitive' },
+                  },
                 },
-              },
-              {
-                cliente: {
-                  apellidos: { contains: term, mode: 'insensitive' },
+                {
+                  cliente: {
+                    apellidos: { contains: term, mode: 'insensitive' },
+                  },
                 },
-              },
-            ],
-          }
-        : {}),
+              ],
+            }
+          : {},
+      ],
     };
 
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.alquiler.findMany({
         where,
         include: rentalInclude,
@@ -134,7 +117,7 @@ export class RentalsService {
     ]);
 
     return {
-      data,
+      data: rows.map((row) => this.present(row)),
       total,
       page,
       pageSize,
@@ -143,8 +126,6 @@ export class RentalsService {
   }
 
   async findOne(id: number) {
-    await markOverdueRentals(this.prisma);
-
     const alquiler = await this.prisma.alquiler.findUnique({
       where: { id },
       include: rentalInclude,
@@ -154,12 +135,20 @@ export class RentalsService {
       throw new NotFoundException('Alquiler no encontrado.');
     }
 
-    return alquiler;
+    return this.present(alquiler);
+  }
+
+  /** Respuesta con estados efectivos (vencido por fecha) sin escribir en la BD. */
+  private present<T extends RentalWithRelations>(alquiler: T): T {
+    return {
+      ...withEffectiveRentalStatus(alquiler),
+      factura: alquiler.factura ? presentInvoice(alquiler.factura, alquiler) : null,
+    };
   }
 
   async create(dto: CreateRentalDto, usuario: AuthenticatedUser) {
     const fechaPactada = parseDateOnly(dto.fechaPactadaDevolucion);
-    if (fechaPactada < startOfTodayUtc()) {
+    if (fechaPactada < startOfBusinessToday()) {
       throw new BadRequestException(
         'La fecha pactada de devolución no puede ser anterior a hoy.',
       );
@@ -181,7 +170,9 @@ export class RentalsService {
       throw new NotFoundException('Cliente no encontrado.');
     }
 
+    await markOverdueRentals(this.prisma);
     await markOverdueInvoices(this.prisma);
+    await accrueOverdueInvoices(this.prisma);
     const pendingBefore = await getPendingInvoices(this.prisma, dto.clienteId);
     const authorization = await this.resolveCarteraAuthorization(
       dto,
@@ -299,10 +290,11 @@ export class RentalsService {
           );
         }
 
-        return tx.alquiler.findUniqueOrThrow({
+        const creado = await tx.alquiler.findUniqueOrThrow({
           where: { id: alquilerTemporal.id },
           include: rentalInclude,
         });
+        return this.present(creado);
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -343,6 +335,7 @@ export class RentalsService {
     const administrador = await this.authService.validateAdminCredentials(
       adminEmail,
       adminPassword,
+      `rental-auth:user-${usuario.id}`,
     );
 
     return { administradorId: administrador.id, motivo };

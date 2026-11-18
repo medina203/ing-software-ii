@@ -42,6 +42,26 @@ export interface Item {
   categoria: Pick<Category, 'id' | 'nombre'>;
 }
 
+/** Tipo de implemento: todas las unidades con la misma categoría y nombre. */
+export interface ItemGroup {
+  categoriaId: number;
+  nombre: string;
+  categoria: Pick<Category, 'id' | 'nombre' | 'prefijo'>;
+  descripcion: string | null;
+  imagenUrl: string | null;
+  precioMin: string;
+  precioMax: string;
+  total: number;
+  disponibles: number;
+  alquilados: number;
+  mantenimiento: number;
+  fueraDeServicio: number;
+}
+
+export interface ItemGroupsResponse extends PaginatedResponse<ItemGroup> {
+  totalUnidades: number;
+}
+
 export interface ClientPortfolio {
   saldoPendiente: string;
   facturasPendientes: number;
@@ -96,6 +116,22 @@ export interface Invoice {
   cliente?: Client;
   alquiler?: InvoiceRentalSummary;
   pagos?: Payment[];
+  /** Desglose a la fecha: alquiler pactado + retraso = total. */
+  desglose?: InvoiceBreakdownData;
+}
+
+export interface InvoiceBreakdownData {
+  tarifaDiaria: string;
+  diasPactados: number;
+  diasAlquiler: number;
+  montoAlquiler: string;
+  diasRetraso: number;
+  montoRetraso: string;
+  total: string;
+  pagado: string;
+  saldo: string;
+  /** El equipo no se ha devuelto y el retraso sigue sumando. */
+  retrasoEnCurso: boolean;
 }
 
 export interface PendingInvoicesResponse {

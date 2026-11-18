@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Taladro percutor">
+  <title>Taladro percutor</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262b36"/><stop offset="1" stop-color="#0f1218"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#f5b301" stop-opacity="0.22"/><stop offset="1" stop-color="#f5b301" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect width="400" height="300" fill="url(#dots)"/>
+  <path d="M300 0h100v300h-20z" fill="#f5b301" fill-opacity="0.9"/>
+  <path d="M262 0h22l96 300h-22z" fill="#f5b301" fill-opacity="0.25"/>
+  <rect width="400" height="300" fill="url(#glow)"/>
+  <ellipse cx="200" cy="252" rx="130" ry="12" fill="#000" fill-opacity="0.35"/>
+
+  <g stroke="#0b0d11" stroke-width="3" stroke-linejoin="round">
+    <rect x="96" y="92" width="170" height="64" rx="24" fill="#f5b301"/>
+    <rect x="236" y="98" width="40" height="52" rx="12" fill="#1c2029"/>
+    <rect x="276" y="112" width="34" height="24" rx="5" fill="#cfd5df"/>
+    <path d="M310 118h46l6 6-6 6h-46z" fill="#8a93a3"/>
+    <path d="M150 150h52l-10 70h-40z" fill="#1c2029"/>
+    <rect x="130" y="216" width="92" height="34" rx="8" fill="#f5b301"/>
+    <rect x="136" y="224" width="80" height="18" rx="4" fill="#1c2029"/>
+  </g>
+  <rect x="118" y="106" width="70" height="10" rx="5" fill="#ffcf3f"/>
+  <circle cx="114" cy="124" r="10" fill="#1c2029"/>
+</svg>

@@ -250,7 +250,7 @@ export function ClientSearchSelect({
                 ))}
               </ul>
               {total > options.length && (
-                <p className="border-t border-slate-100 px-4 py-2 text-[11px] text-slate-500">
+                <p className="border-t border-slate-100 px-4 py-2 text-[0.6875rem] text-slate-500">
                   Mostrando {options.length} de {total} coincidencias. Escribe para afinar
                   la búsqueda.
                 </p>

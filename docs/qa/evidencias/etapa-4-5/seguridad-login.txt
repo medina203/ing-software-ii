@@ -1,0 +1,10 @@
+# Seguridad (RNF-01) — 7 intentos con contraseña incorrecta — 2026-11-17T16:18:44-05:00
+intento 1: 401
+intento 2: 401
+intento 3: 401
+intento 4: 401
+intento 5: 401
+intento 6: 429
+intento 7: 429
+## respuesta del intento bloqueado
+{"statusCode":429,"code":"TOO_MANY_ATTEMPTS","message":"Demasiados intentos fallidos. Intente de nuevo en 15 minuto(s).","retryAfterSeconds":900}

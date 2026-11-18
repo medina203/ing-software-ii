@@ -1,0 +1,7 @@
+# Recuperación (RNF-08) — 2026-11-17T16:18:36-05:00
+## PostgreSQL arriba
+{"status":"ok","service":"inventario-alquiler-api","database":"up","timestamp":"2026-11-17T21:18:36.721Z"}  -> HTTP 200
+## PostgreSQL detenido
+{"status":"error","service":"inventario-alquiler-api","database":"down","timestamp":"2026-11-17T21:18:38.914Z","message":"La base de datos no está disponible."}  -> HTTP 503
+## PostgreSQL restablecido
+{"status":"ok","service":"inventario-alquiler-api","database":"up","timestamp":"2026-11-17T21:18:44.162Z"}  -> HTTP 200

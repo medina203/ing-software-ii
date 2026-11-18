@@ -85,7 +85,7 @@ export function ProfilePage() {
         >
           <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                 Nombre
               </p>
               <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-800">
@@ -94,7 +94,7 @@ export function ProfilePage() {
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                 Correo electrónico
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-800">
@@ -102,7 +102,7 @@ export function ProfilePage() {
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                 Rol
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-800">
@@ -110,7 +110,7 @@ export function ProfilePage() {
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[0.625rem] font-bold uppercase tracking-wider text-slate-400">
                 Estado
               </p>
               <p className="mt-1 text-sm font-semibold text-emerald-700">

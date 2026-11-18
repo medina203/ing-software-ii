@@ -81,7 +81,7 @@ export function CarteraAuthorizationModal({
 
         {pending && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-amber-700">
               Saldo pendiente del cliente
             </p>
             <p className="mt-1 text-2xl font-bold text-amber-900">
@@ -93,7 +93,7 @@ export function CarteraAuthorizationModal({
               {pending.vencidas > 0 && ` · ${pending.vencidas} vencida(s)`}
             </p>
             {pending.facturas[0] && (
-              <p className="mt-2 border-t border-amber-200 pt-2 text-[11px] leading-5 text-amber-800">
+              <p className="mt-2 border-t border-amber-200 pt-2 text-[0.6875rem] leading-5 text-amber-800">
                 Factura de referencia:{' '}
                 <span className="font-mono font-semibold">
                   {pending.facturas[0].codigoFactura}
@@ -166,7 +166,7 @@ export function CarteraAuthorizationModal({
                 />
               </Field>
             </div>
-            <p className="text-[11px] leading-5 text-slate-500">
+            <p className="text-[0.6875rem] leading-5 text-slate-500">
               Las credenciales se validan en el servidor y no se almacenan en el
               navegador.
             </p>

@@ -1,9 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { EstadoImplemento, PrismaClient } from '@prisma/client';
+import { deleteRentalsCascade } from './helpers/cleanup';
 
 const prisma = new PrismaClient();
 const stamp = Date.now();
 const createdCategoryNames: string[] = [];
+// Cliente propio sin cartera: desde la Etapa 4 un cliente con saldo pendiente
+// exige autorización (RF-16) y ese flujo se prueba en stage4.spec.ts.
+const clientDocument = `E2E-ST3-${stamp}`;
+const secondClientDocument = `E2E-ST3B-${stamp}`;
 
 function uniquePrefix(letter: string): string {
   return `${letter}${stamp.toString(36).toUpperCase().slice(-4)}`;
@@ -17,11 +22,24 @@ async function login(page: Page) {
   await expect(page).not.toHaveURL(/\/login$/);
 }
 
-async function selectClient(page: Page) {
+/** Abre "Ver unidades" de un tipo y comprueba sus seriales. */
+async function expectSerials(page: Page, itemName: string, serials: string[]) {
+  await page
+    .getByRole('button', { name: `Ver unidades de ${itemName}`, exact: true })
+    .click();
+  const dialog = page.getByRole('dialog');
+  for (const serial of serials) {
+    await expect(dialog.getByText(serial, { exact: true })).toBeVisible();
+  }
+  await dialog.getByRole('button', { name: 'Cerrar', exact: true }).first().click();
+  await expect(dialog).toHaveCount(0);
+}
+
+async function selectClient(page: Page, document = clientDocument) {
   const clientSearch = page.locator('#cliente');
-  await clientSearch.fill('CC-10324567');
+  await clientSearch.fill(document);
   const option = page.getByRole('option', {
-    name: /CC-10324567 · Carlos Andrés Gómez Ruiz/,
+    name: new RegExp(`${document} · Cliente E2E Etapa 3`),
   });
   await expect(option).toBeVisible();
   await option.click();
@@ -68,6 +86,16 @@ async function createCategoryWithItems(options: {
 
 test.beforeAll(async () => {
   await prisma.$connect();
+  for (const documentoIdentidad of [clientDocument, secondClientDocument]) {
+    await prisma.cliente.create({
+      data: {
+        documentoIdentidad,
+        nombres: 'Cliente E2E',
+        apellidos: 'Etapa 3',
+        telefono: '3000000000',
+      },
+    });
+  }
 });
 
 test.afterAll(async () => {
@@ -93,11 +121,7 @@ test.afterAll(async () => {
         });
         const rentalIds = [...new Set(details.map((detail) => detail.alquilerId))];
 
-        if (rentalIds.length > 0) {
-          await prisma.alquiler.deleteMany({
-            where: { id: { in: rentalIds } },
-          });
-        }
+        await deleteRentalsCascade(prisma, rentalIds);
 
         await prisma.implemento.deleteMany({
           where: { id: { in: itemIds } },
@@ -106,6 +130,9 @@ test.afterAll(async () => {
 
       await prisma.categoria.delete({ where: { id: category.id } });
     }
+    await prisma.cliente.deleteMany({
+      where: { documentoIdentidad: { in: [clientDocument, secondClientDocument] } },
+    });
   } finally {
     await prisma.$disconnect();
   }
@@ -148,7 +175,7 @@ test('crea categoría con prefijo, implemento y serial automático de solo lectu
 
   const search = page.getByRole('textbox', { name: 'Buscar implementos' });
   await search.fill(itemName);
-  await expect(page.getByText(`${prefix}-001`)).toBeVisible();
+  await expectSerials(page, itemName, [`${prefix}-001`]);
 
   await page.getByRole('button', { name: 'Nuevo implemento' }).click();
   await page.locator('#nombre').fill(`${itemName} 2`);
@@ -162,7 +189,7 @@ test('crea categoría con prefijo, implemento y serial automático de solo lectu
   ).toBeVisible();
 
   await search.fill(`${itemName} 2`);
-  await expect(page.getByText(`${prefix}-002`)).toBeVisible();
+  await expectSerials(page, `${itemName} 2`, [`${prefix}-002`]);
 });
 
 test('alquila 5 andamios y descuenta las 5 unidades correctas', async ({ page }) => {
@@ -233,7 +260,7 @@ test('rechaza el alquiler cuando una unidad deja de estar disponible', async ({
 
   await login(page);
   await page.goto('/alquileres/nuevo');
-  await selectClient(page);
+  await selectClient(page, secondClientDocument);
 
   const itemSearch = page.getByRole('textbox', {
     name: 'Buscar implementos disponibles',
@@ -304,9 +331,15 @@ test('registra varias unidades en lote y agrega unidades a un implemento existen
   const search = page.getByRole('textbox', { name: 'Buscar implementos' });
   await search.fill(itemName);
 
-  for (const serial of [`${prefix}-001`, `${prefix}-002`, `${prefix}-003`]) {
-    await expect(page.getByText(serial).first()).toBeVisible();
-  }
+  // Una sola tarjeta para el tipo, con su stock.
+  const card = page.getByRole('article', { name: itemName, exact: true });
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId('item-group-stock')).toHaveText('3 de 3 unidades');
+  await expectSerials(page, itemName, [
+    `${prefix}-001`,
+    `${prefix}-002`,
+    `${prefix}-003`,
+  ]);
 
   await page
     .getByRole('button', { name: `Agregar unidades de ${itemName}` })
@@ -321,9 +354,9 @@ test('registra varias unidades en lote y agrega unidades a un implemento existen
 
   await search.fill(itemName);
 
-  for (const serial of [`${prefix}-004`, `${prefix}-005`]) {
-    await expect(page.getByText(serial).first()).toBeVisible();
-  }
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId('item-group-stock')).toHaveText('5 de 5 unidades');
+  await expectSerials(page, itemName, [`${prefix}-004`, `${prefix}-005`]);
 });
 
 test('muestra la disponibilidad real cuando la cantidad solicitada la supera', async ({

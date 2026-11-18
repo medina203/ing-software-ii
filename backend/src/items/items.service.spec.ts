@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { EstadoImplemento } from '@prisma/client';
 import type { PrismaService } from '../prisma/prisma.service';
 import { ItemsService } from './items.service';
+import type { UploadsService } from '../uploads/uploads.service';
 
 const tx = {
   categoria: {
@@ -12,6 +13,7 @@ const tx = {
   implemento: {
     create: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(async () => null),
     update: jest.fn(),
   },
 };
@@ -30,7 +32,8 @@ const prisma = {
   },
 } as unknown as PrismaService;
 
-const service = new ItemsService(prisma);
+const uploads = { saveImage: jest.fn(), remove: jest.fn() } as unknown as UploadsService;
+const service = new ItemsService(prisma, uploads);
 
 const baseItem = {
   id: 1,

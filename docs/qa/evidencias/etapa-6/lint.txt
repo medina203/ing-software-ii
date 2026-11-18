@@ -1,0 +1,6 @@
+# 2026-11-17T23:42:20-05:00
+
+> inventario-alquiler-implementos@1.0.0 lint
+> eslint backend/src frontend/src
+
+exit=0

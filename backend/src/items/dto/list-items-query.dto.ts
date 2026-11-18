@@ -7,6 +7,11 @@ export class ListItemsQueryDto {
   @IsString()
   search?: string;
 
+  /** Nombre exacto (sin distinguir mayúsculas) para listar las unidades de un tipo. */
+  @IsOptional()
+  @IsString()
+  nombre?: string;
+
   @IsOptional()
   @IsEnum(EstadoImplemento, { message: 'El estado del implemento no es válido.' })
   estado?: EstadoImplemento;
