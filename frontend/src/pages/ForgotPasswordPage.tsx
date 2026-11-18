@@ -77,8 +77,8 @@ export function ForgotPasswordPage() {
       <AuthLayout title="Revisa tu correo">
         <AuthAlert tone="success">{sentMessage}</AuthAlert>
         <p className="mt-4 text-xs text-slate-500">
-          El enlace vence en 30 minutos y solo sirve una vez. Si no llega, espera un
-          momento y vuelve a pedirlo.
+          El enlace vence en 30 minutos y solo sirve una vez. Si no llega en unos minutos,
+          revisa la carpeta de spam antes de pedir otro.
         </p>
         {backToLogin}
       </AuthLayout>

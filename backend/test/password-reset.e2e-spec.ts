@@ -107,7 +107,9 @@ describe('Recuperación de contraseña (e2e)', () => {
       .expect(200);
     const message = sent[sent.length - 1];
     expect(message.to).toBe(email);
-    expect(message.subject).toContain('Restablece tu contraseña');
+    expect(message.subject).toMatch(
+      /^Restablece tu contraseña de DM alquiler \(\d{1,2}:\d{2} [ap]\. m\.\)$/,
+    );
     const token = tokenFrom(message);
 
     const stored = await prisma.tokenRecuperacion.findMany({
@@ -152,21 +154,35 @@ describe('Recuperación de contraseña (e2e)', () => {
     expect(reuse.body.message).toContain('no es válido o ya venció');
   });
 
-  it('un enlace nuevo invalida el anterior y los enlaces vencidos no sirven', async () => {
+  it('si se piden varios enlaces cualquiera sirve, y al usar uno se anulan los demás', async () => {
     const first = await requestLink();
     const second = await requestLink();
+    for (const token of [first, second]) {
+      await request(server())
+        .get('/api/auth/reset-password/validate')
+        .query({ token })
+        .expect(200, { valido: true });
+    }
+
     await request(server())
       .post('/api/auth/reset-password')
       .send({ token: first, newPassword: 'ClaveTres2026' })
+      .expect(200);
+    await request(server())
+      .post('/api/auth/reset-password')
+      .send({ token: second, newPassword: 'ClaveCuatro2026' })
       .expect(400);
+  });
 
+  it('los enlaces vencidos no sirven', async () => {
+    const token = await requestLink();
     await prisma.tokenRecuperacion.updateMany({
       where: { usuarioId: userId, usadoEn: null },
       data: { expiraEn: new Date(Date.now() - 1000) },
     });
     await request(server())
       .post('/api/auth/reset-password')
-      .send({ token: second, newPassword: 'ClaveTres2026' })
+      .send({ token, newPassword: 'ClaveCinco2026' })
       .expect(400);
   });
 

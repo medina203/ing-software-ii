@@ -87,12 +87,24 @@ describe('PasswordResetService.requestReset', () => {
     expect(message.text).toContain('/restablecer-contrasena?token=');
   });
 
-  it('invalida los enlaces anteriores sin usar del mismo usuario', async () => {
+  it('conserva los enlaces anteriores vigentes y solo borra los vencidos', async () => {
     const { service, prisma } = setup();
     await service.requestReset('ana@negocio.com', '1.1.1.1', NOW);
     expect(prisma.tokenRecuperacion.deleteMany).toHaveBeenCalledWith({
-      where: { usuarioId: 7, usadoEn: null },
+      where: { usuarioId: 7, usadoEn: null, expiraEn: { lte: NOW } },
     });
+  });
+
+  it('el correo indica la hora de la solicitud en la zona del negocio', async () => {
+    const { service, mail } = setup();
+    await service.requestReset(
+      'ana@negocio.com',
+      '1.1.1.1',
+      new Date('2026-11-18T23:30:00Z'),
+    );
+    const message = mail.send.mock.calls[0][0];
+    expect(message.subject).toBe('Restablece tu contraseña de DM alquiler (6:30 p. m.)');
+    expect(message.text).toContain('18 de noviembre a las 6:30 p. m.');
   });
 
   it('responde lo mismo si la cuenta no existe o está inactiva, sin enviar correo', async () => {

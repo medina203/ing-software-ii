@@ -8,6 +8,7 @@ import {
 import bcrypt from 'bcryptjs';
 import { createHash, randomBytes } from 'crypto';
 import { publicAppUrl } from '../common/config/app-url';
+import { businessTimezone } from '../common/utils/dates';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginAttemptsService } from './login-attempts.service';
@@ -31,7 +32,8 @@ interface Limit {
 /**
  * Recuperación de contraseña con enlace de un solo uso (RF-22, ISO 25010 seguridad):
  * - El token es aleatorio (256 bits); en la base de datos solo se guarda su hash.
- * - Vence a los PASSWORD_RESET_MINUTES (30 por defecto) y se invalida al usarse.
+ * - Vence a los PASSWORD_RESET_MINUTES (30 por defecto). Si se piden varios, todos
+ *   sirven mientras estén vigentes; al usar uno se anulan los demás.
  * - La respuesta de la solicitud es la misma exista o no la cuenta (no revela correos).
  * - Al restablecer se cierran las sesiones abiertas antes y se libera el bloqueo de login.
  */
@@ -82,9 +84,11 @@ export class PasswordResetService {
     const token = randomBytes(32).toString('base64url');
     const minutes = this.ttlMinutes;
     await this.prisma.$transaction([
-      // Un solo enlace vigente por usuario: el último solicitado.
+      // Los enlaces anteriores sin usar siguen sirviendo hasta que venzan (si el
+      // usuario pidió varios, cualquiera funciona); al usar uno se anulan todos.
+      // Solo se limpian los vencidos.
       this.prisma.tokenRecuperacion.deleteMany({
-        where: { usuarioId: usuario.id, usadoEn: null },
+        where: { usuarioId: usuario.id, usadoEn: null, expiraEn: { lte: now } },
       }),
       this.prisma.tokenRecuperacion.create({
         data: {
@@ -97,7 +101,14 @@ export class PasswordResetService {
 
     const link = `${publicAppUrl()}${RESET_PATH}?token=${encodeURIComponent(token)}`;
     const sent = await this.mail.send(
-      passwordResetEmail({ to: usuario.email, nombre: usuario.nombre, link, minutes }),
+      passwordResetEmail({
+        to: usuario.email,
+        nombre: usuario.nombre,
+        link,
+        minutes,
+        requestedAt: now,
+        timeZone: businessTimezone(),
+      }),
     );
     if (!sent) {
       this.logger.warn(
