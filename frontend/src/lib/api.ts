@@ -3,8 +3,16 @@ import type { ApiErrorBody } from '../types';
 
 export const TOKEN_STORAGE_KEY = 'obragest_token';
 
+/**
+ * En desarrollo la API corre aparte (puerto 4000). En producción el mismo servidor
+ * entrega el frontend y la API, así que basta con la ruta relativa /api.
+ */
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api',
+  baseURL: API_BASE_URL,
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
