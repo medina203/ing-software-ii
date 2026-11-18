@@ -1,0 +1,15 @@
+# Solo se necesita el código fuente; todo lo demás se genera dentro de la imagen.
+**/node_modules
+**/dist
+**/coverage
+backend/uploads
+**/.env
+**/.env.*
+!**/.env.example
+.git
+docs
+e2e
+test-results
+playwright-report
+imagenes
+*.log

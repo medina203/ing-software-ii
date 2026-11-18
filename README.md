@@ -561,32 +561,33 @@ Los alquileres demo solo se crean si la tabla de alquileres está vacía. Volver
 
 ## 14. Build y producción
 
+**Guía paso a paso para publicar el sistema en Railway: [`docs/despliegue-railway.md`](docs/despliegue-railway.md).**
+
+En producción todo corre en **un solo servicio**: la API NestJS entrega también el
+frontend compilado y las fotos subidas, en el mismo dominio (sin CORS). El
+`Dockerfile` de la raíz construye esa imagen y al arrancar aplica las migraciones
+pendientes (`npm run start:deploy`).
+
+| Variable                                      | Producción                                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------------- |
+| `NODE_ENV`                                    | `production` (ya viene en el `Dockerfile`).                                       |
+| `JWT_SECRET`                                  | Obligatorio, propio y de 32 caracteres o más; con el de ejemplo no arranca.       |
+| `DATABASE_URL`                                | Conexión a PostgreSQL.                                                            |
+| `FRONTEND_DIST`                               | Carpeta del frontend compilado (`/app/frontend/dist` en el `Dockerfile`).         |
+| `UPLOADS_DIR`                                 | Carpeta de fotos subidas; debe estar en un volumen persistente (`/data/uploads`). |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Crean el primer administrador solo si la base de datos no tiene usuarios.         |
+
+`VITE_API_URL` y `FRONTEND_URL` ya no hacen falta cuando el frontend y la API
+comparten dominio: el frontend compilado llama a `/api`.
+
+Prueba local del modo producción:
+
 ```powershell
 npm run build
+cd backend
+$env:NODE_ENV = "production"; $env:FRONTEND_DIST = "../frontend/dist"; $env:JWT_SECRET = "<secreto de 32+ caracteres>"
+npm run start:deploy   # abre http://localhost:4000
 ```
-
-Resultados:
-
-- `backend/dist/`: aplicación NestJS compilada.
-- `frontend/dist/`: SPA estática.
-
-Ejecución del backend compilado:
-
-```powershell
-$env:NODE_ENV = "production"
-node backend/dist/main.js
-```
-
-Antes de desplegar:
-
-1. Use un `JWT_SECRET` largo y aleatorio.
-2. Cambie las credenciales demo y la contraseña de PostgreSQL.
-3. Configure `FRONTEND_URL` con el dominio real.
-4. Ejecute `npm run db:deploy` (nunca `migrate dev` en producción).
-5. Sirva `frontend/dist/` con un servidor estático y configure fallback SPA hacia `index.html`.
-6. Publique la API detrás de HTTPS y un proxy inverso.
-7. Defina `VITE_API_URL` con la URL pública de la API antes de compilar el frontend.
-8. Monte `UPLOADS_DIR` en un volumen persistente con copia de seguridad: allí quedan las imágenes subidas.
 
 ---
 
