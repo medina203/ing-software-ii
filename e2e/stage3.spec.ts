@@ -22,6 +22,19 @@ async function login(page: Page) {
   await expect(page).not.toHaveURL(/\/login$/);
 }
 
+/** Abre "Ver unidades" de un tipo y comprueba sus seriales. */
+async function expectSerials(page: Page, itemName: string, serials: string[]) {
+  await page
+    .getByRole('button', { name: `Ver unidades de ${itemName}`, exact: true })
+    .click();
+  const dialog = page.getByRole('dialog');
+  for (const serial of serials) {
+    await expect(dialog.getByText(serial, { exact: true })).toBeVisible();
+  }
+  await dialog.getByRole('button', { name: 'Cerrar', exact: true }).first().click();
+  await expect(dialog).toHaveCount(0);
+}
+
 async function selectClient(page: Page, document = clientDocument) {
   const clientSearch = page.locator('#cliente');
   await clientSearch.fill(document);
@@ -162,7 +175,7 @@ test('crea categoría con prefijo, implemento y serial automático de solo lectu
 
   const search = page.getByRole('textbox', { name: 'Buscar implementos' });
   await search.fill(itemName);
-  await expect(page.getByText(`${prefix}-001`)).toBeVisible();
+  await expectSerials(page, itemName, [`${prefix}-001`]);
 
   await page.getByRole('button', { name: 'Nuevo implemento' }).click();
   await page.locator('#nombre').fill(`${itemName} 2`);
@@ -176,7 +189,7 @@ test('crea categoría con prefijo, implemento y serial automático de solo lectu
   ).toBeVisible();
 
   await search.fill(`${itemName} 2`);
-  await expect(page.getByText(`${prefix}-002`)).toBeVisible();
+  await expectSerials(page, `${itemName} 2`, [`${prefix}-002`]);
 });
 
 test('alquila 5 andamios y descuenta las 5 unidades correctas', async ({ page }) => {
@@ -318,9 +331,15 @@ test('registra varias unidades en lote y agrega unidades a un implemento existen
   const search = page.getByRole('textbox', { name: 'Buscar implementos' });
   await search.fill(itemName);
 
-  for (const serial of [`${prefix}-001`, `${prefix}-002`, `${prefix}-003`]) {
-    await expect(page.getByText(serial).first()).toBeVisible();
-  }
+  // Una sola tarjeta para el tipo, con su stock.
+  const card = page.getByRole('article', { name: itemName, exact: true });
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId('item-group-stock')).toHaveText('3 de 3 unidades');
+  await expectSerials(page, itemName, [
+    `${prefix}-001`,
+    `${prefix}-002`,
+    `${prefix}-003`,
+  ]);
 
   await page
     .getByRole('button', { name: `Agregar unidades de ${itemName}` })
@@ -335,9 +354,9 @@ test('registra varias unidades en lote y agrega unidades a un implemento existen
 
   await search.fill(itemName);
 
-  for (const serial of [`${prefix}-004`, `${prefix}-005`]) {
-    await expect(page.getByText(serial).first()).toBeVisible();
-  }
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId('item-group-stock')).toHaveText('5 de 5 unidades');
+  await expectSerials(page, itemName, [`${prefix}-004`, `${prefix}-005`]);
 });
 
 test('muestra la disponibilidad real cuando la cantidad solicitada la supera', async ({

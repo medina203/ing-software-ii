@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CircleDollarSign,
+  List,
   Package,
   PackageSearch,
   Pencil,
@@ -22,7 +23,7 @@ import {
   TextArea,
   TextInput,
 } from '../components/ui/Button';
-import { ItemStatusBadge } from '../components/ui/Badges';
+import { ItemUnitsModal } from '../components/ItemUnitsModal';
 import {
   ConfirmDialog,
   EmptyState,
@@ -36,10 +37,10 @@ import api, { getErrorMessage } from '../lib/api';
 import { formatMoney, itemStatusLabels } from '../lib/format';
 import type {
   Category,
-  Item,
+  ItemGroup,
+  ItemGroupsResponse,
   ItemStatus,
   ListResponse,
-  PaginatedResponse,
 } from '../types';
 
 interface ItemFormState {
@@ -63,14 +64,49 @@ const emptyForm: ItemFormState = {
 const MANUAL_STATES: ItemStatus[] = ['DISPONIBLE', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO'];
 const PAGE_SIZE = 9;
 
+type FormMode = 'create' | 'add' | 'edit';
+
+function priceLabel(group: ItemGroup): string {
+  return group.precioMin === group.precioMax
+    ? formatMoney(group.precioMin)
+    : `${formatMoney(group.precioMin)} – ${formatMoney(group.precioMax)}`;
+}
+
+/** Barra de stock: proporción de unidades por estado. */
+function StockBar({ group }: { group: ItemGroup }) {
+  const segments = [
+    { value: group.disponibles, className: 'bg-emerald-500' },
+    { value: group.alquilados, className: 'bg-sky-500' },
+    { value: group.mantenimiento, className: 'bg-amber-400' },
+    { value: group.fueraDeServicio, className: 'bg-slate-400' },
+  ];
+  return (
+    <div
+      className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100"
+      aria-hidden
+    >
+      {segments.map((segment, index) =>
+        segment.value > 0 ? (
+          <div
+            key={index}
+            className={segment.className}
+            style={{ width: `${(segment.value / Math.max(1, group.total)) * 100}%` }}
+          />
+        ) : null,
+      )}
+    </div>
+  );
+}
+
 export function InventoryPage() {
   const { usuario } = useAuth();
   const { success, error: showError } = useToast();
   const isAdmin = usuario?.rol === 'ADMIN';
 
-  const [items, setItems] = useState<Item[]>([]);
+  const [groups, setGroups] = useState<ItemGroup[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalUnits, setTotalUnits] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -82,12 +118,13 @@ export function InventoryPage() {
   const requestIdRef = useRef(0);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [addUnitsFrom, setAddUnitsFrom] = useState<Item | null>(null);
+  const [mode, setMode] = useState<FormMode>('create');
+  const [targetGroup, setTargetGroup] = useState<ItemGroup | null>(null);
+  const [unitsGroup, setUnitsGroup] = useState<ItemGroup | null>(null);
   const [form, setForm] = useState<ItemFormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ItemGroup | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -104,7 +141,7 @@ export function InventoryPage() {
     setLoadError('');
     try {
       const [itemsResponse, categoriesResponse] = await Promise.all([
-        api.get<PaginatedResponse<Item>>('/items', {
+        api.get<ItemGroupsResponse>('/items/groups', {
           params: {
             page,
             pageSize: PAGE_SIZE,
@@ -118,8 +155,9 @@ export function InventoryPage() {
         api.get<ListResponse<Category>>('/categories'),
       ]);
       if (requestId !== requestIdRef.current) return;
-      setItems(itemsResponse.data.data);
+      setGroups(itemsResponse.data.data);
       setTotal(itemsResponse.data.total);
+      setTotalUnits(itemsResponse.data.totalUnidades);
       setTotalPages(Math.max(1, itemsResponse.data.totalPages));
       setCategories(categoriesResponse.data.data);
 
@@ -141,39 +179,34 @@ export function InventoryPage() {
   }, [loadData]);
 
   const openCreate = () => {
-    setEditingItem(null);
-    setAddUnitsFrom(null);
+    setMode('create');
+    setTargetGroup(null);
     setForm(emptyForm);
     setFormError('');
     setModalOpen(true);
   };
 
-  const openEdit = (item: Item) => {
-    setEditingItem(item);
-    setAddUnitsFrom(null);
-    setForm({
-      nombre: item.nombre,
-      categoriaId: String(item.categoriaId),
-      descripcion: item.descripcion ?? '',
-      precio: item.precioAlquilerDiario,
-      estado: item.estado,
-      cantidad: '1',
-    });
+  const groupForm = (group: ItemGroup): ItemFormState => ({
+    nombre: group.nombre,
+    categoriaId: String(group.categoriaId),
+    descripcion: group.descripcion ?? '',
+    precio: group.precioMax,
+    estado: 'DISPONIBLE',
+    cantidad: '1',
+  });
+
+  const openEdit = (group: ItemGroup) => {
+    setMode('edit');
+    setTargetGroup(group);
+    setForm(groupForm(group));
     setFormError('');
     setModalOpen(true);
   };
 
-  const openAddUnits = (item: Item) => {
-    setEditingItem(null);
-    setAddUnitsFrom(item);
-    setForm({
-      nombre: item.nombre,
-      categoriaId: String(item.categoriaId),
-      descripcion: item.descripcion ?? '',
-      precio: item.precioAlquilerDiario,
-      estado: 'DISPONIBLE',
-      cantidad: '1',
-    });
+  const openAddUnits = (group: ItemGroup) => {
+    setMode('add');
+    setTargetGroup(group);
+    setForm(groupForm(group));
     setFormError('');
     setModalOpen(true);
   };
@@ -181,8 +214,7 @@ export function InventoryPage() {
   const closeModal = () => {
     if (saving) return;
     setModalOpen(false);
-    setEditingItem(null);
-    setAddUnitsFrom(null);
+    setTargetGroup(null);
   };
 
   const updateField = <K extends keyof ItemFormState>(
@@ -208,36 +240,37 @@ export function InventoryPage() {
     }
 
     const quantity = Number(form.cantidad);
-    if (!editingItem && (!Number.isInteger(quantity) || quantity < 1 || quantity > 100)) {
+    if (
+      mode !== 'edit' &&
+      (!Number.isInteger(quantity) || quantity < 1 || quantity > 100)
+    ) {
       setFormError('Ingrese una cantidad entre 1 y 100 unidades.');
       return;
     }
 
-    const isEditingRented = editingItem?.estado === 'ALQUILADO';
-    const payload = {
-      nombre: form.nombre.trim(),
-      categoriaId: Number(form.categoriaId),
-      descripcion: form.descripcion.trim(),
-      precioAlquilerDiario: price,
-      ...(isEditingRented ? {} : { estado: form.estado }),
-    };
-
     setSaving(true);
     try {
-      if (editingItem) {
-        await api.patch(`/items/${editingItem.id}`, payload);
-        success('Implemento actualizado correctamente.');
+      if (mode === 'edit' && targetGroup) {
+        await api.patch('/items/group', {
+          categoriaId: targetGroup.categoriaId,
+          nombre: targetGroup.nombre,
+          nuevoNombre: form.nombre.trim(),
+          descripcion: form.descripcion.trim(),
+          precioAlquilerDiario: price,
+        });
+        success(`"${form.nombre.trim()}" actualizado en todas sus unidades.`);
       } else {
-        const response = await api.post<{ items: Item[]; total: number }>(
-          '/items/batch',
-          {
-            ...payload,
-            cantidad: quantity,
-          },
-        );
+        const response = await api.post<{ total: number }>('/items/batch', {
+          nombre: form.nombre.trim(),
+          categoriaId: Number(form.categoriaId),
+          descripcion: form.descripcion.trim(),
+          precioAlquilerDiario: price,
+          estado: form.estado,
+          cantidad: quantity,
+        });
         const created = response.data.total;
 
-        if (addUnitsFrom) {
+        if (mode === 'add') {
           success(
             created === 1
               ? 'Unidad agregada correctamente.'
@@ -252,8 +285,7 @@ export function InventoryPage() {
         }
       }
       setModalOpen(false);
-      setEditingItem(null);
-      setAddUnitsFrom(null);
+      setTargetGroup(null);
       await loadData();
     } catch (error) {
       setFormError(getErrorMessage(error));
@@ -266,8 +298,10 @@ export function InventoryPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.delete(`/items/${deleteTarget.id}`);
-      success('Implemento eliminado correctamente.');
+      const response = await api.delete<{ message: string }>('/items/group', {
+        params: { categoriaId: deleteTarget.categoriaId, nombre: deleteTarget.nombre },
+      });
+      success(response.data.message);
       setDeleteTarget(null);
       await loadData();
     } catch (error) {
@@ -288,25 +322,22 @@ export function InventoryPage() {
 
   const hasFilters =
     Boolean(search) || statusFilter !== 'TODOS' || categoryFilter !== 'TODAS';
-  const rented = editingItem?.estado === 'ALQUILADO';
   const quantity = Math.max(1, Math.trunc(Number(form.cantidad) || 1));
   const selectedCategory = categories.find(
     (category) => category.id === Number(form.categoriaId),
   );
-  const serialPreview = editingItem
-    ? editingItem.codigoSerie
-    : selectedCategory
-      ? `${selectedCategory.prefijo}-${String(
-          selectedCategory.ultimoConsecutivo + 1,
-        ).padStart(3, '0')}`
-      : '';
+  const serialPreview = selectedCategory
+    ? `${selectedCategory.prefijo}-${String(
+        selectedCategory.ultimoConsecutivo + 1,
+      ).padStart(3, '0')}`
+    : '';
 
   return (
     <div className="space-y-6 page-enter">
       <PageHeader
         eyebrow="Catálogo"
         title="Inventario de implementos"
-        description="Consulta disponibilidad, estado y tarifas. Solo los implementos disponibles pueden incluirse en un alquiler."
+        description="Cada implemento aparece una sola vez con su stock. Solo las unidades disponibles pueden incluirse en un alquiler."
         actions={
           <>
             <IconButton
@@ -376,8 +407,10 @@ export function InventoryPage() {
         </div>
         <div className="mt-3 flex items-center justify-between">
           <p className="text-xs text-slate-500">
-            Mostrando <span className="font-semibold">{items.length}</span> de {total}{' '}
-            implementos
+            Mostrando <span className="font-semibold">{groups.length}</span> de {total}{' '}
+            {total === 1 ? 'implemento' : 'implementos'} ·{' '}
+            <span className="font-semibold">{totalUnits}</span>{' '}
+            {totalUnits === 1 ? 'unidad' : 'unidades'} en total
           </p>
           {hasFilters && (
             <button
@@ -395,7 +428,7 @@ export function InventoryPage() {
 
       {loading ? (
         <LoadingBlock message="Cargando inventario…" />
-      ) : items.length === 0 ? (
+      ) : groups.length === 0 ? (
         <EmptyState
           icon={PackageSearch}
           title={total === 0 && !hasFilters ? 'Aún no hay implementos' : 'Sin resultados'}
@@ -420,70 +453,135 @@ export function InventoryPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
-            <article
-              key={item.id}
-              className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-pop"
-            >
-              <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-                  <Package className="h-5 w-5" />
-                </div>
-                <ItemStatusBadge status={item.estado} />
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <p className="font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  {item.codigoSerie}
-                </p>
-                <h3 className="mt-1 text-base font-bold leading-6 text-slate-900">
-                  {item.nombre}
-                </h3>
-                <p className="mt-0.5 text-xs font-medium text-brand-600">
-                  {item.categoria.nombre}
-                </p>
-                <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-500">
-                  {item.descripcion || 'Sin descripción adicional.'}
-                </p>
-                <div className="mt-5 flex items-end justify-between border-t border-slate-100 pt-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Tarifa diaria
-                    </p>
-                    <p className="mt-1 flex items-center gap-1 text-lg font-bold text-slate-900">
-                      {formatMoney(item.precioAlquilerDiario)}
-                    </p>
+          {groups.map((group) => {
+            const hasStock = group.disponibles > 0;
+            const others = [
+              { label: 'Alquiladas', value: group.alquilados, dot: 'bg-sky-500' },
+              { label: 'Mantenimiento', value: group.mantenimiento, dot: 'bg-amber-400' },
+              {
+                label: 'Fuera de servicio',
+                value: group.fueraDeServicio,
+                dot: 'bg-slate-400',
+              },
+            ];
+            return (
+              <article
+                key={`${group.categoriaId}-${group.nombre}`}
+                data-testid="item-group-card"
+                aria-label={group.nombre}
+                className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-pop"
+              >
+                <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                    <Package className="h-5 w-5" />
                   </div>
-                  {isAdmin && (
+                  <span
+                    className={
+                      hasStock
+                        ? 'inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700'
+                        : 'inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-rose-700'
+                    }
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${hasStock ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                    />
+                    {hasStock ? 'Con stock' : 'Sin stock'}
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="text-base font-bold leading-6 text-slate-900">
+                    {group.nombre}
+                  </h3>
+                  <p className="mt-0.5 text-xs font-medium text-brand-600">
+                    {group.categoria.nombre}
+                    <span className="ml-1.5 font-mono text-slate-400">
+                      {group.categoria.prefijo}
+                    </span>
+                  </p>
+                  <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-500">
+                    {group.descripcion || 'Sin descripción adicional.'}
+                  </p>
+
+                  <div className="mt-4 space-y-2.5 rounded-xl bg-slate-50 p-3.5">
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Stock disponible
+                      </p>
+                      <p
+                        className="text-sm text-slate-500"
+                        data-testid="item-group-stock"
+                      >
+                        <span className="text-xl font-bold text-slate-900">
+                          {group.disponibles}
+                        </span>{' '}
+                        de {group.total} {group.total === 1 ? 'unidad' : 'unidades'}
+                      </p>
+                    </div>
+                    <StockBar group={group} />
+                    {others.some((item) => item.value > 0) && (
+                      <ul className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                        {others
+                          .filter((item) => item.value > 0)
+                          .map((item) => (
+                            <li key={item.label} className="flex items-center gap-1">
+                              <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
+                              {item.label}:{' '}
+                              <span className="font-semibold">{item.value}</span>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex items-end justify-between border-t border-slate-100 pt-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Tarifa diaria
+                      </p>
+                      <p className="mt-1 text-lg font-bold text-slate-900">
+                        {priceLabel(group)}
+                      </p>
+                    </div>
                     <div className="flex items-center gap-1">
                       <IconButton
-                        icon={Plus}
-                        label={`Agregar unidades de ${item.nombre}`}
-                        onClick={() => openAddUnits(item)}
+                        icon={List}
+                        label={`Ver unidades de ${group.nombre}`}
+                        onClick={() => setUnitsGroup(group)}
                       />
-                      <IconButton
-                        icon={Pencil}
-                        label="Editar implemento"
-                        onClick={() => openEdit(item)}
-                      />
-                      <IconButton
-                        icon={Trash2}
-                        label="Eliminar implemento"
-                        variant="danger"
-                        onClick={() => setDeleteTarget(item)}
-                      />
+                      {isAdmin && (
+                        <>
+                          <IconButton
+                            icon={Plus}
+                            label={`Agregar unidades de ${group.nombre}`}
+                            onClick={() => openAddUnits(group)}
+                          />
+                          <IconButton
+                            icon={Pencil}
+                            label={`Editar ${group.nombre}`}
+                            onClick={() => openEdit(group)}
+                          />
+                          <IconButton
+                            icon={Trash2}
+                            label={`Eliminar ${group.nombre}`}
+                            variant="danger"
+                            onClick={() => setDeleteTarget(group)}
+                          />
+                        </>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
 
-      {!loading && items.length > 0 && (
+      {!loading && groups.length > 0 && (
         <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-xs text-slate-500">
-            Página {page} de {totalPages} · {total} registros
+            Página {page} de {totalPages} · {total}{' '}
+            {total === 1 ? 'implemento' : 'implementos'}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -520,18 +618,18 @@ export function InventoryPage() {
         open={modalOpen}
         onClose={closeModal}
         title={
-          editingItem
+          mode === 'edit'
             ? 'Editar implemento'
-            : addUnitsFrom
+            : mode === 'add'
               ? 'Agregar unidades'
               : 'Nuevo implemento'
         }
         description={
-          editingItem
-            ? 'Actualiza los datos del equipo. Los cambios de tarifa aplican a los próximos alquileres.'
-            : addUnitsFrom
-              ? `Crea nuevas unidades de "${addUnitsFrom.nombre}" con seriales consecutivos.`
-              : 'Registra uno o varios equipos con su código único, categoría y tarifa diaria.'
+          mode === 'edit'
+            ? `Los cambios se aplican a las ${targetGroup?.total ?? 0} unidades. La tarifa nueva rige para los próximos alquileres.`
+            : mode === 'add'
+              ? `Suma unidades al stock de "${targetGroup?.nombre ?? ''}" con seriales consecutivos.`
+              : 'Registra uno o varios equipos iguales. Si el nombre ya existe en la categoría, las unidades se suman a su stock.'
         }
         size="lg"
         footer={
@@ -544,16 +642,16 @@ export function InventoryPage() {
               form="item-form"
               loading={saving}
               icon={
-                addUnitsFrom ? (
+                mode === 'add' ? (
                   <Plus className="h-4 w-4" />
                 ) : (
                   <Package className="h-4 w-4" />
                 )
               }
             >
-              {editingItem
+              {mode === 'edit'
                 ? 'Guardar cambios'
-                : addUnitsFrom
+                : mode === 'add'
                   ? 'Agregar unidades'
                   : 'Registrar implemento'}
             </Button>
@@ -563,31 +661,32 @@ export function InventoryPage() {
         <form id="item-form" onSubmit={handleSubmit} className="space-y-4">
           {formError && <ErrorAlert message={formError} />}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Código de serie"
-              htmlFor="codigoSerie"
-              hint={
-                editingItem
-                  ? 'El serial es de solo lectura y se conserva aunque cambien los demás datos.'
-                  : selectedCategory && quantity > 1
+            {mode !== 'edit' && (
+              <Field
+                label="Código de serie"
+                htmlFor="codigoSerie"
+                hint={
+                  selectedCategory && quantity > 1
                     ? `Se generarán ${quantity} seriales consecutivos desde ${serialPreview}.`
                     : 'Vista previa. El serial definitivo se genera automáticamente al guardar.'
-              }
-            >
-              <TextInput
-                id="codigoSerie"
-                value={serialPreview}
-                readOnly
-                aria-readonly="true"
-                className="bg-slate-50 font-mono text-slate-600"
-                placeholder="Seleccione una categoría"
-              />
-            </Field>
+                }
+              >
+                <TextInput
+                  id="codigoSerie"
+                  value={serialPreview}
+                  readOnly
+                  aria-readonly="true"
+                  className="bg-slate-50 font-mono text-slate-600"
+                  placeholder="Seleccione una categoría"
+                />
+              </Field>
+            )}
             <Field label="Nombre" htmlFor="nombre" required>
               <TextInput
                 id="nombre"
                 value={form.nombre}
                 onChange={(event) => updateField('nombre', event.target.value)}
+                readOnly={mode === 'add'}
                 required
                 maxLength={140}
                 placeholder="Taladro percutor 850 W"
@@ -598,6 +697,7 @@ export function InventoryPage() {
                 id="categoriaId"
                 value={form.categoriaId}
                 onChange={(event) => updateField('categoriaId', event.target.value)}
+                disabled={mode !== 'create'}
                 required
               >
                 <option value="">Seleccione una categoría</option>
@@ -640,7 +740,7 @@ export function InventoryPage() {
             </Field>
           </div>
 
-          {!editingItem && (
+          {mode !== 'edit' && (
             <Field
               label="Cantidad de unidades"
               htmlFor="cantidad"
@@ -664,31 +764,27 @@ export function InventoryPage() {
             </Field>
           )}
 
-          <Field label="Estado operativo" htmlFor="estado">
-            <Select
-              id="estado"
-              value={form.estado}
-              onChange={(event) =>
-                updateField('estado', event.target.value as ItemStatus)
-              }
-              disabled={rented}
+          {mode !== 'edit' && (
+            <Field
+              label="Estado inicial de las unidades"
+              htmlFor="estado"
+              hint="El estado de cada unidad se cambia luego desde Ver unidades."
             >
-              {rented ? (
-                <option value="ALQUILADO">Alquilado</option>
-              ) : (
-                MANUAL_STATES.map((state) => (
+              <Select
+                id="estado"
+                value={form.estado}
+                onChange={(event) =>
+                  updateField('estado', event.target.value as ItemStatus)
+                }
+              >
+                {MANUAL_STATES.map((state) => (
                   <option key={state} value={state}>
                     {itemStatusLabels[state]}
                   </option>
-                ))
-              )}
-            </Select>
-            <p className="mt-1 text-xs text-slate-500">
-              {rented
-                ? 'El estado se actualizará automáticamente cuando se registre la devolución.'
-                : 'El estado Alquilado solo lo asigna el sistema al crear un alquiler.'}
-            </p>
-          </Field>
+                ))}
+              </Select>
+            </Field>
+          )}
 
           <Field label="Descripción" htmlFor="descripcion">
             <TextArea
@@ -708,9 +804,16 @@ export function InventoryPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => void handleDelete()}
         title="Eliminar implemento"
-        description={`¿Confirma que desea eliminar "${deleteTarget?.nombre ?? ''}"? Esta acción no se puede deshacer y fallará si el equipo tiene historial de alquileres.`}
+        description={`¿Eliminar "${deleteTarget?.nombre ?? ''}" y sus ${deleteTarget?.total ?? 0} unidades? Solo es posible si ninguna ha sido alquilada; para retirar unidades con historial, cámbialas a Fuera de servicio en Ver unidades.`}
         confirmLabel="Eliminar"
         loading={deleting}
+      />
+
+      <ItemUnitsModal
+        group={unitsGroup}
+        isAdmin={isAdmin}
+        onClose={() => setUnitsGroup(null)}
+        onChanged={() => void loadData()}
       />
     </div>
   );

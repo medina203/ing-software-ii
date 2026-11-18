@@ -184,19 +184,42 @@ test('registra, edita y elimina un cliente de regresión', async ({ page }) => {
 });
 
 test('pagina el inventario sin truncar el total', async ({ page }) => {
-  await login(page, 'admin@obragest.local', 'Admin123*');
-  await page.goto('/inventario');
+  // Diez tipos distintos garantizan más de una página (9 tipos por página).
+  const stampPag = Date.now().toString(36).toUpperCase().slice(-5);
+  const category = await prisma.categoria.create({
+    data: {
+      nombre: `Categoría paginación E2E ${stampPag}`,
+      prefijo: `P${stampPag}`,
+      ultimoConsecutivo: 10,
+    },
+  });
+  try {
+    await prisma.implemento.createMany({
+      data: Array.from({ length: 10 }, (_, index) => ({
+        codigoSerie: `P${stampPag}-${String(index + 1).padStart(3, '0')}`,
+        nombre: `Tipo paginación ${stampPag} ${index}`,
+        categoriaId: category.id,
+        precioAlquilerDiario: 1000,
+      })),
+    });
 
-  await expect(page.getByText(/Página 1 de \d+ · \d+ registros/)).toBeVisible();
+    await login(page, 'admin@obragest.local', 'Admin123*');
+    await page.goto('/inventario');
 
-  const nextButton = page.getByRole('button', { name: 'Siguiente' });
-  await expect(nextButton).toBeEnabled();
-  await nextButton.click();
+    await expect(page.getByText(/Página 1 de \d+ · \d+ implementos/)).toBeVisible();
 
-  await expect(page.getByText(/Página 2 de \d+ · \d+ registros/)).toBeVisible();
+    const nextButton = page.getByRole('button', { name: 'Siguiente' });
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
 
-  await page.getByRole('button', { name: 'Anterior' }).click();
-  await expect(page.getByText(/Página 1 de \d+ · \d+ registros/)).toBeVisible();
+    await expect(page.getByText(/Página 2 de \d+ · \d+ implementos/)).toBeVisible();
+
+    await page.getByRole('button', { name: 'Anterior' }).click();
+    await expect(page.getByText(/Página 1 de \d+ · \d+ implementos/)).toBeVisible();
+  } finally {
+    await prisma.implemento.deleteMany({ where: { categoriaId: category.id } });
+    await prisma.categoria.delete({ where: { id: category.id } });
+  }
 });
 
 test('cambia la contraseña y permite volver a iniciar sesión', async ({ page }) => {

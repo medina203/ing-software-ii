@@ -12,20 +12,21 @@
 
 ## Archivos
 
-| Archivo                      | Contenido                                                                  |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| `estado-inicial-038ca9a.txt` | Verificación del estado recibido (antes de las correcciones).              |
-| `build.txt`                  | `npm run build`: backend Nest y frontend Vite/TypeScript.                  |
-| `lint.txt`                   | `npm run lint`: ESLint sin errores.                                        |
-| `prettier-check.txt`         | Formato verificado con Prettier.                                           |
-| `check-env.txt`              | `npm run check:env`.                                                       |
-| `test-backend-unit.txt`      | `npm run test:cov --workspace backend`: 10 suites, 57 pruebas y cobertura. |
-| `test-frontend.txt`          | `npm test --workspace frontend`: 6 archivos, 18 pruebas.                   |
-| `test-api-e2e.txt`           | `npm run test:e2e --workspace backend`: 4 suites, 21 pruebas.              |
-| `test-ui-e2e.txt`            | `npm run test:e2e`: 15 pruebas Playwright en Chrome.                       |
-| `recuperacion-health.txt`    | `/api/health` con PostgreSQL arriba, detenido (503) y restablecido.        |
-| `seguridad-login.txt`        | Siete intentos fallidos de login: 401 × 5 y 429 desde el sexto.            |
-| `gate-etapas-4-5.md`         | Checklist del gate de salida.                                              |
+| Archivo                         | Contenido                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| `estado-inicial-038ca9a.txt`    | Verificación del estado recibido (antes de las correcciones).              |
+| `build.txt`                     | `npm run build`: backend Nest y frontend Vite/TypeScript.                  |
+| `lint.txt`                      | `npm run lint`: ESLint sin errores.                                        |
+| `prettier-check.txt`            | Formato verificado con Prettier.                                           |
+| `check-env.txt`                 | `npm run check:env`.                                                       |
+| `test-backend-unit.txt`         | `npm run test:cov --workspace backend`: 11 suites, 63 pruebas y cobertura. |
+| `test-frontend.txt`             | `npm test --workspace frontend`: 6 archivos, 18 pruebas.                   |
+| `test-api-e2e.txt`              | `npm run test:e2e --workspace backend`: 5 suites, 25 pruebas.              |
+| `test-ui-e2e.txt`               | `npm run test:e2e`: 16 pruebas Playwright en Chrome.                       |
+| `mejora-inventario-agrupado.md` | Inventario con una tarjeta por tipo y su stock.                            |
+| `recuperacion-health.txt`       | `/api/health` con PostgreSQL arriba, detenido (503) y restablecido.        |
+| `seguridad-login.txt`           | Siete intentos fallidos de login: 401 × 5 y 429 desde el sexto.            |
+| `gate-etapas-4-5.md`            | Checklist del gate de salida.                                              |
 
 ## Resultado
 
@@ -33,8 +34,8 @@
 | ------------------ | -------------------------- | ------------------- |
 | Build frontend     | Falla (5 errores TS)       | Pasa                |
 | Lint               | Falla (1 error)            | Pasa                |
-| Unitarias backend  | 25/28                      | 57/57               |
+| Unitarias backend  | 25/28                      | 63/63               |
 | Unitarias frontend | 12/12                      | 18/18               |
-| API e2e            | 10/12 + limpieza fallida   | 21/21               |
-| UI e2e             | No ejecutable (0/12)       | 15/15               |
-| **Total**          | **47/64 (73 %)**           | **111/111 (100 %)** |
+| API e2e            | 10/12 + limpieza fallida   | 25/25               |
+| UI e2e             | No ejecutable (0/12)       | 16/16               |
+| **Total**          | **47/64 (73 %)**           | **122/122 (100 %)** |

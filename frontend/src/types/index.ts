@@ -42,6 +42,25 @@ export interface Item {
   categoria: Pick<Category, 'id' | 'nombre'>;
 }
 
+/** Tipo de implemento: todas las unidades con la misma categoría y nombre. */
+export interface ItemGroup {
+  categoriaId: number;
+  nombre: string;
+  categoria: Pick<Category, 'id' | 'nombre' | 'prefijo'>;
+  descripcion: string | null;
+  precioMin: string;
+  precioMax: string;
+  total: number;
+  disponibles: number;
+  alquilados: number;
+  mantenimiento: number;
+  fueraDeServicio: number;
+}
+
+export interface ItemGroupsResponse extends PaginatedResponse<ItemGroup> {
+  totalUnidades: number;
+}
+
 export interface ClientPortfolio {
   saldoPendiente: string;
   facturasPendientes: number;

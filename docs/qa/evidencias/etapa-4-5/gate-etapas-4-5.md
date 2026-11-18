@@ -11,7 +11,7 @@
 | Toda excepción queda auditada                 |   Pasa    | `stage4-5.e2e-spec.ts` › RF-16/RF-21 (usuario, ADMIN, saldo, motivo, fecha)       |
 | El pago actualiza el saldo correctamente      |   Pasa    | `stage4-5.e2e-spec.ts` › pagos parcial, total, sobrepago (400) y doble pago (409) |
 | La factura refleja los días reales (agregado) |   Pasa    | `billing.spec.ts`, `stage4-5.e2e-spec.ts` › devolución tardía                     |
-| Todas las pruebas y la regresión pasan        |   Pasa    | 111/111                                                                           |
+| Todas las pruebas y la regresión pasan        |   Pasa    | 122/122                                                                           |
 
 ## Etapa 5 — Seguridad, confiabilidad y mantenibilidad
 

@@ -27,6 +27,7 @@ El repositorio es un monorepo con dos aplicaciones:
 - Estado vencido calculado al consultar (sin escrituras en `GET`) y sincronizado por un proceso programado cada 15 minutos.
 - Facturación por alquiler, pagos parciales, cartera por cliente, alerta en devoluciones y autorización auditada de ADMIN para clientes con saldo pendiente.
 - Bloqueo temporal tras 5 intentos fallidos de inicio de sesión.
+- Inventario agrupado: una tarjeta por implemento con su stock (disponibles, alquiladas, en mantenimiento y fuera de servicio); los seriales se gestionan en "Ver unidades".
 - Reportes de inventario por estado, implementos más alquilados y alquileres vigentes/vencidos.
 - Administración de categorías y usuarios.
 - Interfaz adaptada a móvil, con modales, notificaciones y vistas imprimibles de alquiler y reportes.
@@ -417,6 +418,9 @@ npm run dev
 | `DELETE` | `/categories/:id`                                     | `ADMIN`     | Eliminar categoría sin implementos     |
 | `GET`    | `/items?search=&estado=&categoriaId=&page=&pageSize=` | Autenticado | Listar/filtrar inventario              |
 | `GET`    | `/items/available`                                    | Autenticado | Implementos disponibles                |
+| `GET`    | `/items/groups?search=&estado=&categoriaId=&page=`    | Autenticado | Inventario agrupado por tipo con stock |
+| `PATCH`  | `/items/group`                                        | `ADMIN`     | Editar todas las unidades de un tipo   |
+| `DELETE` | `/items/group?categoriaId=&nombre=`                   | `ADMIN`     | Eliminar un tipo (todo o nada)         |
 | `GET`    | `/items/:id`                                          | Autenticado | Consultar implemento                   |
 | `POST`   | `/items`                                              | `ADMIN`     | Crear implemento                       |
 | `PATCH`  | `/items/:id`                                          | `ADMIN`     | Editar implemento                      |
@@ -594,9 +598,9 @@ Antes de desplegar:
 Validación del 2026-11-17 (evidencia en `docs/qa/evidencias/etapa-4-5/` e informe en `docs/qa/05-evaluacion-calidad-iso25010.md`):
 
 - `npm run build` compila backend y frontend sin errores; el JS inicial pasó de más de 500 kB a 381 kB gracias a la carga diferida de rutas.
-- `npm test`: 57 pruebas unitarias de backend y 18 de frontend aprobadas.
-- `npm run test:e2e --workspace backend`: 21 pruebas de API aprobadas (Etapas 2 a 5).
-- `npm run test:e2e`: 15 pruebas Playwright aprobadas en Chrome (humo y Etapas 2 a 4).
+- `npm test`: 63 pruebas unitarias de backend y 18 de frontend aprobadas.
+- `npm run test:e2e --workspace backend`: 25 pruebas de API aprobadas (Etapas 2 a 5 e inventario agrupado).
+- `npm run test:e2e`: 16 pruebas Playwright aprobadas en Chrome (humo, Etapas 2 a 4 e inventario agrupado).
 - `npm run lint` y `prettier --check` finalizan sin errores.
 - `/api/health` responde `503` con PostgreSQL detenido y `200` al restablecerlo.
 

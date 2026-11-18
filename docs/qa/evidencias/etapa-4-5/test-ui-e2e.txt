@@ -1,24 +1,25 @@
-# 2026-11-17T16:17:30-05:00
-◇ injected env (0) from backend/.env // tip: ⌁ auth for agents [www.vestauth.com]
-
-Running 15 tests using 1 worker
-
+# 2026-11-17T22:05:28-05:00
 ◇ injected env (0) from backend/.env // tip: ◈ secrets for agents [www.dotenvx.com]
-  ✓   1 e2e/smoke.spec.ts:3:1 › el endpoint de salud responde ok (40ms)
-  ✓   2 e2e/smoke.spec.ts:13:1 › login de administrador y acceso al resumen operativo (1.4s)
-  ✓   3 e2e/stage2.spec.ts:89:1 › busca cliente por cédula y nombre, y crea un alquiler (3.9s)
-  ✓   4 e2e/stage2.spec.ts:141:1 › busca clientes desde el servidor en la página de clientes (2.6s)
-  ✓   5 e2e/stage2.spec.ts:152:1 › registra, edita y elimina un cliente de regresión (4.7s)
-  ✓   6 e2e/stage2.spec.ts:186:1 › pagina el inventario sin truncar el total (2.8s)
-  ✓   7 e2e/stage2.spec.ts:202:1 › cambia la contraseña y permite volver a iniciar sesión (3.5s)
-  ✓   8 e2e/stage3.spec.ts:128:1 › crea categoría con prefijo, implemento y serial automático de solo lectura (9.4s)
-  ✓   9 e2e/stage3.spec.ts:182:1 › alquila 5 andamios y descuenta las 5 unidades correctas (3.4s)
-  ✓  10 e2e/stage3.spec.ts:235:1 › rechaza el alquiler cuando una unidad deja de estar disponible (2.8s)
-  ✓  11 e2e/stage3.spec.ts:284:1 › registra varias unidades en lote y agrega unidades a un implemento existente (9.3s)
-  ✓  12 e2e/stage3.spec.ts:343:1 › muestra la disponibilidad real cuando la cantidad solicitada la supera (2.8s)
-  ✓  13 e2e/stage4.spec.ts:88:1 › primer alquiler sin cartera y factura visible en el detalle (2.9s)
-  ✓  14 e2e/stage4.spec.ts:103:1 › EMPLEADO con cartera pendiente necesita credenciales de ADMIN (4.0s)
-  ✓  15 e2e/stage4.spec.ts:135:1 › la devolución muestra la alerta de cartera y se registra (2.7s)
 
-  15 passed (57.9s)
+Running 16 tests using 1 worker
+
+◇ injected env (0) from backend/.env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+  ✓   1 e2e/inventory-groups.spec.ts:44:1 › muestra una sola tarjeta por tipo y gestiona sus unidades (3.9s)
+  ✓   2 e2e/smoke.spec.ts:3:1 › el endpoint de salud responde ok (27ms)
+  ✓   3 e2e/smoke.spec.ts:13:1 › login de administrador y acceso al resumen operativo (1.2s)
+  ✓   4 e2e/stage2.spec.ts:89:1 › busca cliente por cédula y nombre, y crea un alquiler (3.9s)
+  ✓   5 e2e/stage2.spec.ts:141:1 › busca clientes desde el servidor en la página de clientes (2.8s)
+  ✓   6 e2e/stage2.spec.ts:152:1 › registra, edita y elimina un cliente de regresión (4.3s)
+  ✓   7 e2e/stage2.spec.ts:186:1 › pagina el inventario sin truncar el total (3.0s)
+  ✓   8 e2e/stage2.spec.ts:225:1 › cambia la contraseña y permite volver a iniciar sesión (3.0s)
+  ✓   9 e2e/stage3.spec.ts:141:1 › crea categoría con prefijo, implemento y serial automático de solo lectura (9.5s)
+  ✓  10 e2e/stage3.spec.ts:195:1 › alquila 5 andamios y descuenta las 5 unidades correctas (3.2s)
+  ✓  11 e2e/stage3.spec.ts:248:1 › rechaza el alquiler cuando una unidad deja de estar disponible (2.9s)
+  ✓  12 e2e/stage3.spec.ts:297:1 › registra varias unidades en lote y agrega unidades a un implemento existente (9.7s)
+  ✓  13 e2e/stage3.spec.ts:362:1 › muestra la disponibilidad real cuando la cantidad solicitada la supera (2.9s)
+  ✓  14 e2e/stage4.spec.ts:88:1 › primer alquiler sin cartera y factura visible en el detalle (3.2s)
+  ✓  15 e2e/stage4.spec.ts:103:1 › EMPLEADO con cartera pendiente necesita credenciales de ADMIN (3.9s)
+  ✓  16 e2e/stage4.spec.ts:135:1 › la devolución muestra la alerta de cartera y se registra (2.5s)
+
+  16 passed (1.0m)
 exit=0

@@ -12,6 +12,7 @@ const tx = {
   implemento: {
     create: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(async () => null),
     update: jest.fn(),
   },
 };

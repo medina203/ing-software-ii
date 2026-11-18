@@ -1,38 +1,46 @@
-# 2026-11-17T16:17:19-05:00
-(node:4607) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# 2026-11-17T22:05:19-05:00
+(node:2305) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-PASS test/stage3.e2e-spec.ts (5.575 s)
+PASS test/stage3.e2e-spec.ts
   Etapa 3 — seriales automáticos y cantidad (e2e)
-    ✓ crea categorías con prefijo único y rechaza duplicados o formatos inválidos (37 ms)
-    ✓ genera seriales consecutivos y no acepta un serial manual (48 ms)
-    ✓ crea varias unidades en una sola operación con seriales consecutivos (45 ms)
-    ✓ genera seriales únicos bajo creación concurrente (87 ms)
-    ✓ registra un alquiler con 5 unidades del mismo tipo y las descuenta (133 ms)
-    ✓ rechaza la cantidad cuando no hay unidades suficientes y no deja estados parciales (73 ms)
+    ✓ crea categorías con prefijo único y rechaza duplicados o formatos inválidos (38 ms)
+    ✓ genera seriales consecutivos y no acepta un serial manual (50 ms)
+    ✓ crea varias unidades en una sola operación con seriales consecutivos (37 ms)
+    ✓ genera seriales únicos bajo creación concurrente (82 ms)
+    ✓ registra un alquiler con 5 unidades del mismo tipo y las descuenta (137 ms)
+    ✓ rechaza la cantidad cuando no hay unidades suficientes y no deja estados parciales (70 ms)
 
-(node:4607) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(node:2305) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+PASS test/inventory-groups.e2e-spec.ts
+  Inventario agrupado por tipo (e2e)
+    ✓ las unidades del mismo tipo forman una sola entrada con su stock (85 ms)
+    ✓ el stock refleja alquileres y cambios de estado (124 ms)
+    ✓ editar el tipo actualiza todas sus unidades y evita duplicar nombres (25 ms)
+    ✓ eliminar un tipo es todo o nada (42 ms)
+
+(node:2305) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
 PASS test/stage4-5.e2e-spec.ts
   Etapas 4 y 5 — cartera, liquidación y seguridad (e2e)
-    ✓ RF-17: el alquiler genera una factura PENDIENTE por los días pactados (58 ms)
-    ✓ RF-16/RF-21: un EMPLEADO necesita autorización de ADMIN y queda auditada (314 ms)
-    ✓ RF-15: la devolución con cartera pendiente se permite y registra la alerta (76 ms)
-    ✓ liquida la factura con los días reales en una devolución tardía (67 ms)
-    ✓ RF-17: los pagos actualizan el saldo y la factura pasa a PAGADA (90 ms)
-    ✓ H-06: las consultas GET no modifican la base de datos y muestran el estado efectivo (198 ms)
+    ✓ RF-17: el alquiler genera una factura PENDIENTE por los días pactados (52 ms)
+    ✓ RF-16/RF-21: un EMPLEADO necesita autorización de ADMIN y queda auditada (338 ms)
+    ✓ RF-15: la devolución con cartera pendiente se permite y registra la alerta (82 ms)
+    ✓ liquida la factura con los días reales en una devolución tardía (68 ms)
+    ✓ RF-17: los pagos actualizan el saldo y la factura pasa a PAGADA (102 ms)
+    ✓ H-06: las consultas GET no modifican la base de datos y muestran el estado efectivo (150 ms)
     ✓ RNF-08: /api/health verifica la base de datos (4 ms)
-    ✓ RNF-01: tras 5 intentos fallidos el login responde 429 (581 ms)
-    ✓ RNF-01: la validación de credenciales de ADMIN en cartera también se bloquea (707 ms)
+    ✓ RNF-01: tras 5 intentos fallidos el login responde 429 (603 ms)
+    ✓ RNF-01: la validación de credenciales de ADMIN en cartera también se bloquea (677 ms)
 
 PASS test/stage2.e2e-spec.ts
   Etapa 2 — búsqueda, paginación y contraseña (e2e)
-    ✓ busca clientes por cédula, nombre y apellido (28 ms)
-    ✓ limita las coincidencias sin perder el total de clientes (7 ms)
-    ✓ pagina el inventario y devuelve metadatos consistentes (14 ms)
-    ✓ pagina más de 200 implementos sin truncar el inventario (71 ms)
-    ✓ permite cambiar la contraseña de un ADMIN y volver a iniciar sesión (765 ms)
+    ✓ busca clientes por cédula, nombre y apellido (26 ms)
+    ✓ limita las coincidencias sin perder el total de clientes (8 ms)
+    ✓ pagina el inventario y devuelve metadatos consistentes (11 ms)
+    ✓ pagina más de 200 implementos sin truncar el inventario (58 ms)
+    ✓ permite cambiar la contraseña de un ADMIN y volver a iniciar sesión (736 ms)
 
-[Nest] 4607  - 11/17/2026, 4:17:29 PM   ERROR [StatusSyncService] No se pudieron sincronizar los estados vencidos.
-[Nest] 4607  - 11/17/2026, 4:17:29 PM   ERROR [StatusSyncService] PrismaClientKnownRequestError: 
+[Nest] 2305  - 11/17/2026, 10:05:28 PM   ERROR [StatusSyncService] No se pudieron sincronizar los estados vencidos.
+[Nest] 2305  - 11/17/2026, 10:05:28 PM   ERROR [StatusSyncService] PrismaClientKnownRequestError: 
 Invalid `t=Object.create()` invocation in
 /home/claude/repo/node_modules/.prisma/client/runtime/client.js:27:2556
 
@@ -46,11 +54,11 @@ Transaction API error: Transaction already closed: A rollback cannot be executed
     at di.request (/home/claude/repo/node_modules/.prisma/client/runtime/client.js:85:6300)
     at processTicksAndRejections (node:internal/process/task_queues:103:5)
     at a (/home/claude/repo/node_modules/.prisma/client/runtime/client.js:94:9551)
-    at markOverdueInvoices (/home/claude/repo/backend/src/common/utils/billing.ts:140:18)
-    at StatusSyncService.sync (/home/claude/repo/backend/src/common/status-sync/status-sync.service.ts:49:24) {
+    at markOverdueRentals (/home/claude/repo/backend/src/common/utils/rental-status.ts:12:18)
+    at StatusSyncService.sync (/home/claude/repo/backend/src/common/status-sync/status-sync.service.ts:48:26) {
   code: 'P2028',
   meta: {
-    modelName: 'Factura'
+    modelName: 'Alquiler'
   },
   clientVersion: '6.19.3'
 }
@@ -58,9 +66,9 @@ PASS test/health.e2e-spec.ts
   Health (e2e)
     ✓ GET /health responde con estado ok (12 ms)
 
-Test Suites: 4 passed, 4 total
-Tests:       21 passed, 21 total
+Test Suites: 5 passed, 5 total
+Tests:       25 passed, 25 total
 Snapshots:   0 total
-Time:        9.937 s, estimated 15 s
+Time:        8.133 s, estimated 14 s
 Ran all test suites.
 exit=0

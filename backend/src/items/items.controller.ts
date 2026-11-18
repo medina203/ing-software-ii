@@ -13,6 +13,7 @@ import { Rol } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CreateItemBatchDto } from './dto/create-item-batch.dto';
 import { CreateItemDto } from './dto/create-item.dto';
+import { ItemGroupKeyDto, UpdateItemGroupDto } from './dto/item-group.dto';
 import { ListItemsQueryDto } from './dto/list-items-query.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemsService } from './items.service';
@@ -24,6 +25,24 @@ export class ItemsController {
   @Get()
   findAll(@Query() query: ListItemsQueryDto) {
     return this.itemsService.findAll(query);
+  }
+
+  /** Inventario agrupado por tipo con stock por estado. */
+  @Get('groups')
+  findGroups(@Query() query: ListItemsQueryDto) {
+    return this.itemsService.findGroups(query);
+  }
+
+  @Roles(Rol.ADMIN)
+  @Patch('group')
+  updateGroup(@Body() dto: UpdateItemGroupDto) {
+    return this.itemsService.updateGroup(dto);
+  }
+
+  @Roles(Rol.ADMIN)
+  @Delete('group')
+  removeGroup(@Query() dto: ItemGroupKeyDto) {
+    return this.itemsService.removeGroup(dto);
   }
 
   @Get('available')
