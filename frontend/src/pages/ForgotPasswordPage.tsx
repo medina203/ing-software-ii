@@ -80,6 +80,10 @@ export function ForgotPasswordPage() {
           El enlace vence en 30 minutos y solo sirve una vez. Si no llega en unos minutos,
           revisa la carpeta de spam antes de pedir otro.
         </p>
+        <p className="mt-2 text-xs text-slate-500">
+          ¿Sigue sin llegar? Pide al administrador que te asigne una contraseña nueva
+          desde la sección <strong className="text-slate-400">Usuarios</strong>.
+        </p>
         {backToLogin}
       </AuthLayout>
     );

@@ -76,6 +76,10 @@ describe('ForgotPasswordPage', () => {
       await screen.findByRole('heading', { name: 'Revisa tu correo' }),
     ).toBeInTheDocument();
     expect(screen.getByText('Si el correo pertenece a una cuenta…')).toBeInTheDocument();
+    // Si el correo no llega (p. ej. Resend sin dominio), se indica la alternativa.
+    expect(
+      screen.getByText(/pide al administrador que te asigne una contraseña nueva/i),
+    ).toBeInTheDocument();
   });
 
   it('si el correo no está configurado indica pedir la contraseña al administrador', async () => {

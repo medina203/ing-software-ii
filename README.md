@@ -573,16 +573,17 @@ frontend compilado y las fotos subidas, en el mismo dominio (sin CORS). El
 `Dockerfile` de la raíz construye esa imagen y al arrancar aplica las migraciones
 pendientes (`npm run start:deploy`).
 
-| Variable                                      | Producción                                                                                    |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `NODE_ENV`                                    | `production` (ya viene en el `Dockerfile`).                                                   |
-| `JWT_SECRET`                                  | Obligatorio, propio y de 32 caracteres o más; con el de ejemplo no arranca.                   |
-| `DATABASE_URL`                                | Conexión a PostgreSQL.                                                                        |
-| `FRONTEND_DIST`                               | Carpeta del frontend compilado (`/app/frontend/dist` en el `Dockerfile`).                     |
-| `UPLOADS_DIR`                                 | Carpeta de fotos subidas; debe estar en un volumen persistente (`/data/uploads`).             |
-| `RESEND_API_KEY`, `MAIL_FROM`                 | Activan la recuperación de contraseña por correo (Resend, API HTTPS). Ver guía, paso 8.       |
-| `APP_URL`                                     | Dirección pública para los enlaces del correo; en Railway se toma de `RAILWAY_PUBLIC_DOMAIN`. |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Crean el primer administrador solo si la base de datos no tiene usuarios.                     |
+| Variable                                      | Producción                                                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                    | `production` (ya viene en el `Dockerfile`).                                                                   |
+| `JWT_SECRET`                                  | Obligatorio, propio y de 32 caracteres o más; con el de ejemplo no arranca.                                   |
+| `DATABASE_URL`                                | Conexión a PostgreSQL.                                                                                        |
+| `FRONTEND_DIST`                               | Carpeta del frontend compilado (`/app/frontend/dist` en el `Dockerfile`).                                     |
+| `UPLOADS_DIR`                                 | Carpeta de fotos subidas; debe estar en un volumen persistente (`/data/uploads`).                             |
+| `CLIENT_IP_HEADER`                            | Encabezado con la IP real del cliente detrás del proxy (`x-real-ip` en Railway; ya viene en el `Dockerfile`). |
+| `RESEND_API_KEY`, `MAIL_FROM`                 | Activan la recuperación de contraseña por correo (Resend, API HTTPS). Ver guía, paso 8.                       |
+| `APP_URL`                                     | Dirección pública para los enlaces del correo; en Railway se toma de `RAILWAY_PUBLIC_DOMAIN`.                 |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Crean el primer administrador solo si la base de datos no tiene usuarios.                                     |
 
 `VITE_API_URL` y `FRONTEND_URL` ya no hacen falta cuando el frontend y la API
 comparten dominio: el frontend compilado llama a `/api`.
