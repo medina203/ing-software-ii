@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, Ip, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Query } from '@nestjs/common';
+import { ClientIp } from '../common/decorators/client-ip.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { AuthenticatedUser } from '../common/types/authenticated-user.interface';
@@ -18,7 +19,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(200)
-  login(@Body() dto: LoginDto, @Ip() ip: string) {
+  login(@Body() dto: LoginDto, @ClientIp() ip: string) {
     return this.authService.login(dto, ip);
   }
 
@@ -32,7 +33,7 @@ export class AuthController {
   @Public()
   @Post('forgot-password')
   @HttpCode(200)
-  forgotPassword(@Body() dto: ForgotPasswordDto, @Ip() ip: string) {
+  forgotPassword(@Body() dto: ForgotPasswordDto, @ClientIp() ip: string) {
     return this.passwordReset.requestReset(dto.email, ip);
   }
 

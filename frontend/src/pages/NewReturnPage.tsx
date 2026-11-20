@@ -281,7 +281,7 @@ export function NewReturnPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="grid items-start gap-6 xl:grid-cols-[1fr_360px]"
+        className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]"
       >
         <div className="space-y-6">
           <SectionCard
@@ -377,7 +377,7 @@ export function NewReturnPage() {
                       <ItemStatusBadge status={detail.implemento.estado} />
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-[220px_1fr]">
+                    <div className="grid gap-4 sm:grid-cols-[220px_minmax(0,1fr)]">
                       <Field
                         label="Estado final"
                         htmlFor={`estado-${detail.implementoId}`}

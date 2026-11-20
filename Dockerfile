@@ -31,11 +31,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl tzdata \
     && rm -rf /var/lib/apt/lists/*
 
+# CLIENT_IP_HEADER: el borde de Railway sobrescribe X-Real-IP con la IP real del cliente.
 ENV NODE_ENV=production \
     TZ=America/Bogota \
     APP_TIMEZONE=America/Bogota \
     FRONTEND_DIST=/app/frontend/dist \
-    UPLOADS_DIR=/data/uploads
+    UPLOADS_DIR=/data/uploads \
+    CLIENT_IP_HEADER=x-real-ip
 
 # node_modules incluye la CLI de Prisma, necesaria para aplicar migraciones al arrancar.
 COPY --from=build /app/package.json /app/package-lock.json ./

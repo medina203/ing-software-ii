@@ -148,13 +148,14 @@
 
 ## 7. Control de cambios
 
-| Versión | Fecha      | Cambio                                                                                               |
-| ------- | ---------- | ---------------------------------------------------------------------------------------------------- |
-| 1.0     | 2026-11-09 | Creación inicial de la matriz.                                                                       |
-| 1.1     | 2026-11-09 | Cierre de Etapa 2: búsqueda de clientes, cambio de contraseña y paginación de inventario.            |
-| 1.2     | 2026-11-15 | Cierre de Etapa 3: prefijo único, serial automático, concurrencia y selector de cantidad.            |
-| 1.3     | 2026-11-15 | Alta por cantidad en inventario y acción "Agregar unidades"; conteos actualizados.                   |
-| 1.4     | 2026-11-17 | Evaluación ISO/IEC 25010: Etapa 4 corregida y Etapa 5 implementada; nuevos casos `CP-*`.             |
-| 1.5     | 2026-11-17 | Inventario agrupado por tipo con stock (`CP-INV-07`); conteos actualizados.                          |
-| 1.6     | 2026-11-17 | Etapa 6: imágenes, validación numérica, ver factura, apariencia y carrusel (`CP-UX-*`, `CP-IMG-01`). |
-| 1.7     | 2026-11-18 | Etapa 7: recuperación de contraseña por correo (RF-22) y login sin cuentas de demostración.          |
+| Versión | Fecha      | Cambio                                                                                                                                               |
+| ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 2026-11-09 | Creación inicial de la matriz.                                                                                                                       |
+| 1.1     | 2026-11-09 | Cierre de Etapa 2: búsqueda de clientes, cambio de contraseña y paginación de inventario.                                                            |
+| 1.2     | 2026-11-15 | Cierre de Etapa 3: prefijo único, serial automático, concurrencia y selector de cantidad.                                                            |
+| 1.3     | 2026-11-15 | Alta por cantidad en inventario y acción "Agregar unidades"; conteos actualizados.                                                                   |
+| 1.4     | 2026-11-17 | Evaluación ISO/IEC 25010: Etapa 4 corregida y Etapa 5 implementada; nuevos casos `CP-*`.                                                             |
+| 1.5     | 2026-11-17 | Inventario agrupado por tipo con stock (`CP-INV-07`); conteos actualizados.                                                                          |
+| 1.6     | 2026-11-17 | Etapa 6: imágenes, validación numérica, ver factura, apariencia y carrusel (`CP-UX-*`, `CP-IMG-01`).                                                 |
+| 1.7     | 2026-11-18 | Etapa 7: recuperación de contraseña por correo (RF-22) y login sin cuentas de demostración.                                                          |
+| 1.8     | 2026-11-20 | Revisión en producción: pantallas sin desborde en celular (`e2e/responsive.spec.ts`), IP real del cliente detrás del proxy de Railway (`X-Real-IP`). |

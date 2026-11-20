@@ -188,7 +188,7 @@ export function RentalDetailPage() {
         </div>
       )}
 
-      <div className="grid items-start gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
           <SectionCard
             title="Implementos del alquiler"

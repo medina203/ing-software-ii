@@ -78,7 +78,7 @@ export function ProfilePage() {
         description="Consulta los datos de tu cuenta y actualiza tu contraseña de acceso."
       />
 
-      <div className="grid items-start gap-6 xl:grid-cols-[1fr_420px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <SectionCard
           title="Datos de la cuenta"
           description="Información asociada a tu sesión actual."
